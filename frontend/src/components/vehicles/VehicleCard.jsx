@@ -1,0 +1,179 @@
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import Badge from '../ui/Badge.jsx';
+import Button from '../ui/Button.jsx';
+import styles from './VehicleCard.module.css';
+
+/**
+ * Formatage d'un montant monétaire en FCFA sans décimales.
+ *
+ * @param {number} amount
+ * @returns {string}
+ */
+function formatPrice(amount) {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'decimal',
+    maximumFractionDigits: 0,
+  }).format(amount) + ' FCFA';
+}
+
+/**
+ * Carte de présentation d'un véhicule pour la grille du catalogue automobile.
+ *
+ * @param {{
+ *   vehicle: {
+ *     id: number,
+ *     slug: string,
+ *     brand: string,
+ *     model: string,
+ *     year?: number,
+ *     mode: 'sale' | 'rental' | 'both',
+ *     status: 'available' | 'reserved' | 'sold' | 'unavailable',
+ *     price_sale?: number | null,
+ *     price_rental_day?: number | null,
+ *     description?: string | null,
+ *     main_image?: string | null,
+ *     category?: {
+ *       name: string,
+ *       slug: string
+ *     }
+ *   },
+ *   onSelect: (vehicle: any) => void
+ * }} props
+ * @returns {JSX.Element}
+ */
+export function VehicleCard({ vehicle, onSelect }) {
+  const { t } = useTranslation();
+
+  const fullName = `${vehicle.brand} ${vehicle.model}`;
+
+  // Détermination de la variante du badge selon le statut
+  const badgeVariant =
+    vehicle.status === 'available'
+      ? 'available'
+      : vehicle.status === 'reserved'
+      ? 'reserved'
+      : vehicle.status === 'sold'
+      ? 'sold'
+      : 'unavailable';
+
+  const hasSalePrice =
+    vehicle.price_sale !== null &&
+    vehicle.price_sale !== undefined &&
+    Number(vehicle.price_sale) > 0;
+
+  const hasRentalPrice =
+    vehicle.price_rental_day !== null &&
+    vehicle.price_rental_day !== undefined &&
+    Number(vehicle.price_rental_day) > 0;
+
+  return (
+    <article className={styles.card} aria-labelledby={`vehicle-title-${vehicle.id}`}>
+      {/* Zone visuelle */}
+      <div
+        className={styles.imageWrapper}
+        onClick={() => onSelect(vehicle)}
+        role="button"
+        tabIndex="0"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onSelect(vehicle);
+          }
+        }}
+        aria-label={`${t('vehicles.viewDetails')} - ${fullName}`}
+      >
+        {vehicle.main_image ? (
+          <img
+            src={vehicle.main_image}
+            alt={fullName}
+            className={styles.image}
+            loading="lazy"
+            width="400"
+            height="260"
+          />
+        ) : (
+          <div className={styles.placeholderImage}>
+            <svg className={styles.placeholderIcon} viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z" />
+            </svg>
+            <span>{t('catalog.noImage')}</span>
+          </div>
+        )}
+
+        <div className={styles.badgeTop}>
+          <Badge variant={badgeVariant}>
+            {t(`vehicles.status_${vehicle.status}`)}
+          </Badge>
+        </div>
+
+        <span className={styles.modeTag}>
+          {t(`vehicles.mode_${vehicle.mode}`)}
+        </span>
+      </div>
+
+      {/* Contenu textuel */}
+      <div className={styles.content}>
+        <div className={styles.headerRow}>
+          <span className={styles.brand}>{vehicle.brand}</span>
+          <h3
+            id={`vehicle-title-${vehicle.id}`}
+            className={styles.title}
+            onClick={() => onSelect(vehicle)}
+          >
+            {vehicle.model}{' '}
+            {vehicle.year ? <span className={styles.year}>({vehicle.year})</span> : null}
+          </h3>
+        </div>
+
+        {vehicle.description && (
+          <p className={styles.description}>{vehicle.description}</p>
+        )}
+
+        {/* Lignes tarifaires */}
+        <div className={styles.pricesBlock}>
+          {(vehicle.mode === 'rental' || vehicle.mode === 'both') && (
+            <div className={styles.priceItem}>
+              <span className={styles.priceLabel}>{t('vehicles.rentalPerDay')} :</span>
+              {hasRentalPrice ? (
+                <span className={styles.priceValue}>
+                  {formatPrice(Number(vehicle.price_rental_day))}
+                </span>
+              ) : (
+                <span className={styles.priceOnDemand}>{t('catalog.priceOnDemand')}</span>
+              )}
+            </div>
+          )}
+
+          {(vehicle.mode === 'sale' || vehicle.mode === 'both') && (
+            <div className={styles.priceItem}>
+              <span className={styles.priceLabel}>{t('vehicles.salePrice')} :</span>
+              {hasSalePrice ? (
+                <span className={styles.priceValue}>
+                  {formatPrice(Number(vehicle.price_sale))}
+                </span>
+              ) : (
+                <span className={styles.priceOnDemand}>{t('catalog.priceOnDemand')}</span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Bouton d'action */}
+        <div className={styles.actions}>
+          <Button
+            variant="primary"
+            size="sm"
+            fullWidth
+            onClick={() => onSelect(vehicle)}
+          >
+            {t('vehicles.viewDetails')}
+          </Button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+export default VehicleCard;
+

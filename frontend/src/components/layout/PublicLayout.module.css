@@ -1,0 +1,13 @@
+.layoutRoot {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  position: relative;
+}
+
+.mainContent {
+  flex: 1 0 auto;
+  padding-top: 76px; /* Compense la hauteur du header fixe */
+  outline: none;
+}
+

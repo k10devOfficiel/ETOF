@@ -1,0 +1,10 @@
+User-agent: *
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api
+Disallow: /api/
+
+# Sitemaps officiels ETOF SARL (bilingues FR / EN)
+Sitemap: https://www.etofsarl.com/sitemap.xml
+Sitemap: https://www.etofsarl.com/sitemap-dynamic.php
+

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://www.etofsarl.com</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.etofsarl.com" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.etofsarl.com" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.etofsarl.com" />
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://www.etofsarl.com/a-propos</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.etofsarl.com/a-propos" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.etofsarl.com/a-propos" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.etofsarl.com/a-propos" />
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.etofsarl.com/activites/ferme</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.etofsarl.com/activites/ferme" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.etofsarl.com/activites/ferme" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.etofsarl.com/activites/ferme" />
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.etofsarl.com/activites/vehicules</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.etofsarl.com/activites/vehicules" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.etofsarl.com/activites/vehicules" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.etofsarl.com/activites/vehicules" />
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.etofsarl.com/activites/fournitures</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.etofsarl.com/activites/fournitures" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.etofsarl.com/activites/fournitures" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.etofsarl.com/activites/fournitures" />
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.etofsarl.com/activites/hydrocarbures</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.etofsarl.com/activites/hydrocarbures" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.etofsarl.com/activites/hydrocarbures" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.etofsarl.com/activites/hydrocarbures" />
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.etofsarl.com/catalogue</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.etofsarl.com/catalogue" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.etofsarl.com/catalogue" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.etofsarl.com/catalogue" />
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.etofsarl.com/vehicules</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.etofsarl.com/vehicules" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.etofsarl.com/vehicules" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.etofsarl.com/vehicules" />
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.etofsarl.com/devis</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.etofsarl.com/devis" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.etofsarl.com/devis" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.etofsarl.com/devis" />
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.etofsarl.com/commande</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.etofsarl.com/commande" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.etofsarl.com/commande" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.etofsarl.com/commande" />
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.etofsarl.com/contact</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.etofsarl.com/contact" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.etofsarl.com/contact" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.etofsarl.com/contact" />
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.etofsarl.com/mentions-legales</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.etofsarl.com/mentions-legales" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.etofsarl.com/mentions-legales" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.etofsarl.com/mentions-legales" />
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://www.etofsarl.com/politique-de-confidentialite</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.etofsarl.com/politique-de-confidentialite" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.etofsarl.com/politique-de-confidentialite" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.etofsarl.com/politique-de-confidentialite" />
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://www.etofsarl.com/conditions-generales</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://www.etofsarl.com/conditions-generales" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.etofsarl.com/conditions-generales" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.etofsarl.com/conditions-generales" />
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+</urlset>

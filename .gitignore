@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+vendor/
+backend/vendor/
+
+# Environment files
+.env
+backend/.env
+frontend/.env
+*.env.local
+
+# Logs
+storage/logs/*
+backend/storage/logs/*
+!storage/logs/.gitkeep
+!backend/storage/logs/.gitkeep
+
+# Uploads
+backend/public/uploads/*
+!backend/public/uploads/.gitkeep
+
+# Production builds
+dist/
+frontend/dist/
+
+# Tests & Cache
+.phpunit.cache/
+backend/.phpunit.cache/
+
+# System and IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+

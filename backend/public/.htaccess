@@ -1,0 +1,22 @@
+# Apache Server Configuration - ETOF SARL Backend
+
+# Interdiction d'accès aux fichiers et répertoires sensibles
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Empêcher l'accès direct aux scripts d'administration ou caches
+    RewriteRule ^(\.git|\.env|config|storage|src|vendor) - [F,L,NC]
+
+    # Rediriger toutes les requêtes d'API vers index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
+

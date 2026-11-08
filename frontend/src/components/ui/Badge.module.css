@@ -1,0 +1,58 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.25rem 0.65rem;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-full);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Statuts métier */
+.available {
+  background-color: var(--badge-available-bg);
+  color: var(--badge-available-color);
+  border: 1px solid var(--color-success-border);
+}
+
+.reserved {
+  background-color: var(--badge-reserved-bg);
+  color: var(--badge-reserved-color);
+  border: 1px solid var(--color-warning-border);
+}
+
+.sold {
+  background-color: var(--badge-sold-bg);
+  color: var(--badge-sold-color);
+  border: 1px solid var(--color-error-border);
+}
+
+.onDemand {
+  background-color: var(--badge-on-demand-bg);
+  color: var(--badge-on-demand-color);
+  border: 1px solid var(--color-border-strong);
+}
+
+.primary {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.accent {
+  background-color: var(--color-accent-bg);
+  color: var(--color-accent-dark);
+  border: 1px solid var(--color-accent-light);
+}
+
+.dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-full);
+  background-color: currentColor;
+}
+
