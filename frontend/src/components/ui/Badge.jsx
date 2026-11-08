@@ -1,38 +1,59 @@
 import React from 'react';
+import Icon from '../common/Icon.jsx';
 import styles from './Badge.module.css';
 
 /**
- * Pastille de statut pour les disponibilités, catégories et étiquettes commerciales.
+ * Pastille/Badge de statut rectangulaire (radius max 2px, majuscules, icône à gauche).
+ * Code couleur strict : vert = disponible, orange = réservé, rouge = indisponible / vendu.
  *
  * @param {{
  *   children: React.ReactNode,
- *   variant?: 'available' | 'reserved' | 'sold' | 'on_demand' | 'primary' | 'accent',
- *   withDot?: boolean,
+ *   variant?: 'available' | 'reserved' | 'sold' | 'unavailable' | 'on_demand' | 'primary' | 'accent',
+ *   showIcon?: boolean,
  *   className?: string
  * }} props
  */
-function Badge({
+export function Badge({
   children,
   variant = 'available',
-  withDot = true,
+  showIcon = true,
   className = '',
   ...restProps
 }) {
-  const variantClass = variant === 'on_demand' ? 'onDemand' : variant;
+  const normalizedVariant =
+    variant === 'unavailable'
+      ? 'sold'
+      : variant === 'on_demand'
+      ? 'onDemand'
+      : variant;
+
+  const iconName =
+    variant === 'available'
+      ? 'check'
+      : variant === 'reserved'
+      ? 'clock'
+      : variant === 'sold' || variant === 'unavailable'
+      ? 'ban'
+      : 'tag';
 
   const badgeClasses = [
     styles.badge,
-    styles[variantClass] || styles.available,
+    styles[normalizedVariant] || styles.available,
     className,
-  ].filter(Boolean).join(' ');
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <span className={badgeClasses} {...restProps}>
-      {withDot && <span className={styles.dot} aria-hidden="true" />}
-      <span>{children}</span>
+      {showIcon && (
+        <span className={styles.iconWrapper} aria-hidden="true">
+          <Icon name={iconName} size={14} />
+        </span>
+      )}
+      <span className={styles.text}>{children}</span>
     </span>
   );
 }
 
 export default Badge;
-

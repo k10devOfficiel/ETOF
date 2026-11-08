@@ -1,70 +1,79 @@
 :root {
-  /* Palette de prestige ETOF SARL */
-  --color-primary: #0B2A4A;
-  /* Bleu profond emblématique */
-  --color-primary-light: #16426E;
-  /* Bleu profond nuancé */
-  --color-primary-dark: #06192E;
-  /* Bleu nuit profond */
-  --color-primary-hover: #0E355D;
+  /* Palette officielle ETOF SARL (Lot 3) */
+  --color-primary: #E8431A;
+  /* Rouge-orangé chaleureux */
+  --color-primary-light: #F2613B;
+  --color-primary-dark: #C6340F;
+  --color-primary-hover: #D03710;
 
-  --color-accent: #14B8C4;
-  /* Turquoise signature */
-  --color-accent-light: #44CAD4;
-  /* Turquoise doux */
-  --color-accent-dark: #0E8E98;
-  /* Turquoise soutenu */
-  --color-accent-hover: #12A5B0;
-  --color-accent-bg: rgba(20, 184, 196, 0.1);
+  --color-secondary: #B72A0B;
+  /* Rouge brique profond */
+  --color-secondary-light: #D43A15;
+  --color-secondary-dark: #911F06;
 
-  /* Couleurs de fond et surfaces */
+  --color-accent: #FFB020;
+  /* Ambre chaud */
+  --color-accent-light: #FFC352;
+  --color-accent-dark: #E0950C;
+  --color-accent-hover: #FFA30A;
+  --color-accent-bg: rgba(255, 176, 32, 0.12);
+
+  /* Couleurs de fond et surfaces (Neutres chaleureux) */
   --color-white: #FFFFFF;
-  --color-bg-body: #F8FAFC;
+  --color-bg-body: #FAF8F5;
+  /* Blanc cassé chaleureux */
   --color-bg-surface: #FFFFFF;
-  --color-bg-surface-alt: #F1F5F9;
+  --color-bg-surface-alt: #F3EFEA;
+  /* Gris doux */
   --color-bg-card: #FFFFFF;
 
-  /* Typographie & textes */
-  --color-text-primary: #0F172A;
-  --color-text-secondary: #334155;
-  --color-text-muted: #64748B;
+  /* Typographie & textes (Noir profond et nuances) */
+  --color-text-primary: #181411;
+  /* Noir profond */
+  --color-text-secondary: #4A4036;
+  --color-text-muted: #7E7266;
   --color-text-inverse: #FFFFFF;
 
   /* Bordures et séparateurs */
-  --color-border: #E2E8F0;
-  --color-border-subtle: #F1F5F9;
-  --color-border-strong: #CBD5E1;
+  --color-border: #E8E2D9;
+  --color-border-subtle: #F3EFEA;
+  --color-border-strong: #D3C9BD;
 
   /* États fonctionnels (WCAG AA conformes) */
-  --color-success: #0D7A48;
-  --color-success-bg: #EAF8F0;
-  --color-success-border: #A6E3C0;
+  --color-success: #15803D;
+  --color-success-bg: #DCFCE7;
+  --color-success-border: #86EFAC;
 
   --color-error: #B91C1C;
-  --color-error-bg: #FEF2F2;
-  --color-error-border: #FECACA;
+  --color-error-bg: #FEE2E2;
+  --color-error-border: #FCA5A5;
 
-  --color-warning: #B45309;
-  --color-warning-bg: #FFFBEB;
-  --color-warning-border: #FDE68A;
+  --color-warning: #C2410C;
+  --color-warning-bg: #FFEDD5;
+  --color-warning-border: #FDBA74;
 
   --color-info: #0369A1;
   --color-info-bg: #F0F9FF;
   --color-info-border: #BAE6FD;
 
-  /* Badges de statuts de véhicules et produits */
-  --badge-available-color: #0D7A48;
-  --badge-available-bg: #EAF8F0;
-  --badge-reserved-color: #B45309;
-  --badge-reserved-bg: #FFFBEB;
+  /* Badges rectangulaires (radius max 2px, code couleur strict) */
+  --radius-badge: 2px;
+  --badge-available-color: #15803D;
+  --badge-available-bg: #DCFCE7;
+  --badge-available-border: #86EFAC;
+  --badge-reserved-color: #C2410C;
+  --badge-reserved-bg: #FFEDD5;
+  --badge-reserved-border: #FDBA74;
   --badge-sold-color: #B91C1C;
-  --badge-sold-bg: #FEF2F2;
-  --badge-on-demand-color: #0B2A4A;
-  --badge-on-demand-bg: #E6EDF5;
+  --badge-sold-bg: #FEE2E2;
+  --badge-sold-border: #FCA5A5;
+  --badge-on-demand-color: #4A4036;
+  --badge-on-demand-bg: #F3EFEA;
+  --badge-on-demand-border: #D3C9BD;
 
-  /* Typographies */
-  --font-family-heading: 'Cinzel', Georgia, 'Times New Roman', serif;
-  --font-family-body: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Typographies : Sora / Bricolage Grotesque (titres) & DM Sans / Manrope (corps) */
+  --font-family-heading: 'Sora', 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-family-body: 'DM Sans', 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* Échelle de tailles de texte */
   --font-size-xs: 0.75rem;
@@ -118,11 +127,13 @@
   --radius-xl: 16px;
   --radius-full: 9999px;
 
-  /* Ombres portées prestige */
-  --shadow-sm: 0 1px 3px 0 rgba(11, 42, 74, 0.06), 0 1px 2px -1px rgba(11, 42, 74, 0.04);
-  --shadow-md: 0 4px 6px -1px rgba(11, 42, 74, 0.08), 0 2px 4px -2px rgba(11, 42, 74, 0.05);
-  --shadow-lg: 0 10px 15px -3px rgba(11, 42, 74, 0.1), 0 4px 6px -4px rgba(11, 42, 74, 0.06);
-  --shadow-xl: 0 20px 25px -5px rgba(11, 42, 74, 0.12), 0 8px 10px -6px rgba(11, 42, 74, 0.05);
+  /* Ombres portées & Effet 3D cartes */
+  --shadow-sm: 0 1px 3px 0 rgba(24, 20, 17, 0.06), 0 1px 2px -1px rgba(24, 20, 17, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(24, 20, 17, 0.08), 0 2px 4px -2px rgba(24, 20, 17, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(24, 20, 17, 0.1), 0 4px 6px -4px rgba(24, 20, 17, 0.06);
+  --shadow-xl: 0 20px 25px -5px rgba(24, 20, 17, 0.12), 0 8px 10px -6px rgba(24, 20, 17, 0.05);
+  --shadow-card-3d: 0 8px 24px -4px rgba(24, 20, 17, 0.08), 0 2px 6px -1px rgba(24, 20, 17, 0.04);
+  --shadow-card-3d-hover: 0 18px 36px -6px rgba(232, 67, 26, 0.18), 0 8px 16px -2px rgba(24, 20, 17, 0.08);
 
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -130,62 +141,72 @@
   --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Accessibilité / Focus Ring WCAG AA & AAA */
-  --focus-ring: 2px solid #0B2A4A;
-  --focus-ring-inverse: 2px solid #44CAD4;
+  --focus-ring: 2px solid #E8431A;
+  --focus-ring-inverse: 2px solid #FFB020;
   --focus-offset: 2px;
 
   /* Largeurs maximales Container */
   --container-max-width: 1280px;
 }
 
-/* Mode sombre de prestige (Navy profond & Turquoise vibrant) */
+/* Mode sombre chaleureux */
 [data-theme="dark"] {
-  --color-primary: #14B8C4;
-  --color-primary-light: #44CAD4;
-  --color-primary-dark: #0E8E98;
-  --color-primary-hover: #12A5B0;
+  --color-primary: #F2613B;
+  --color-primary-light: #FF8566;
+  --color-primary-dark: #C6340F;
+  --color-primary-hover: #E8431A;
 
-  --color-accent: #14B8C4;
-  --color-accent-light: #44CAD4;
-  --color-accent-dark: #0E8E98;
-  --color-accent-hover: #12A5B0;
-  --color-accent-bg: rgba(20, 184, 196, 0.15);
+  --color-secondary: #D43A15;
+  --color-secondary-light: #E85530;
+  --color-secondary-dark: #B72A0B;
+
+  --color-accent: #FFB020;
+  --color-accent-light: #FFC352;
+  --color-accent-dark: #E0950C;
+  --color-accent-hover: #FFA30A;
+  --color-accent-bg: rgba(255, 176, 32, 0.15);
 
   /* Couleurs de fond et surfaces sombres */
-  --color-white: #0F2236;
-  --color-bg-body: #08121D;
-  --color-bg-surface: #0E2033;
-  --color-bg-surface-alt: #142B43;
-  --color-bg-card: #0E2033;
+  --color-white: #1C1815;
+  --color-bg-body: #100D0B;
+  --color-bg-surface: #181411;
+  --color-bg-surface-alt: #221D1A;
+  --color-bg-card: #1A1613;
 
   /* Typographie & textes sombres */
-  --color-text-primary: #F8FAFC;
-  --color-text-secondary: #CBD5E1;
-  --color-text-muted: #94A3B8;
-  --color-text-inverse: #08121D;
+  --color-text-primary: #FBF9F7;
+  --color-text-secondary: #D5C9BD;
+  --color-text-muted: #9E9184;
+  --color-text-inverse: #100D0B;
 
   /* Bordures et séparateurs */
-  --color-border: #1E3B5C;
-  --color-border-subtle: #142B43;
-  --color-border-strong: #274D76;
+  --color-border: #2E2621;
+  --color-border-subtle: #221D1A;
+  --color-border-strong: #3D332D;
 
-  /* Badges de statuts en mode sombre */
-  --badge-available-color: #4ADE80;
-  --badge-available-bg: rgba(74, 222, 128, 0.15);
-  --badge-reserved-color: #FBBF24;
-  --badge-reserved-bg: rgba(251, 191, 36, 0.15);
-  --badge-sold-color: #F87171;
-  --badge-sold-bg: rgba(248, 113, 113, 0.15);
-  --badge-on-demand-color: #38BDF8;
-  --badge-on-demand-bg: rgba(56, 189, 248, 0.15);
+  /* Badges de statuts en mode sombre (radius max 2px, code couleur strict) */
+  --badge-available-color: #86EFAC;
+  --badge-available-bg: rgba(34, 197, 94, 0.15);
+  --badge-available-border: rgba(134, 239, 172, 0.3);
+  --badge-reserved-color: #FDBA74;
+  --badge-reserved-bg: rgba(249, 115, 22, 0.15);
+  --badge-reserved-border: rgba(253, 186, 116, 0.3);
+  --badge-sold-color: #FCA5A5;
+  --badge-sold-bg: rgba(239, 68, 68, 0.15);
+  --badge-sold-border: rgba(252, 165, 165, 0.3);
+  --badge-on-demand-color: #D5C9BD;
+  --badge-on-demand-bg: rgba(213, 201, 189, 0.15);
+  --badge-on-demand-border: rgba(213, 201, 189, 0.3);
 
   /* Ombres portées */
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7);
+  --shadow-card-3d: 0 8px 24px -4px rgba(0, 0, 0, 0.5);
+  --shadow-card-3d-hover: 0 18px 36px -6px rgba(232, 67, 26, 0.3);
 
-  --focus-ring: 2px solid #14B8C4;
+  --focus-ring: 2px solid #FFB020;
 }
 
 /* Points de rupture (Mobile-first) :

@@ -19,7 +19,7 @@ export function BrandLogo({ onClick, className = '' }) {
       </div>
       <div className={styles.textGroup}>
         <span className={styles.companyName}>ETOF SARL</span>
-        <span className={styles.tagline}>Une nouvelle vision</span>
+        <span className={styles.tagline}>Une nouvelle vision du monde des affaires</span>
       </div>
     </Link>
   );
