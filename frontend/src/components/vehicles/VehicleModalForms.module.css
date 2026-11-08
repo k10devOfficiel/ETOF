@@ -1,0 +1,169 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+}
+
+.vehicleSummary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--color-bg-surface-alt, #f8fafc);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+  padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
+  flex-wrap: wrap;
+  gap: var(--space-2, 0.5rem);
+}
+
+.vehicleLabel {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #64748B);
+  display: block;
+}
+
+.vehicleName {
+  font-family: var(--font-family-heading, 'Cinzel', serif);
+  font-size: 1rem;
+  color: var(--color-primary, #0B2A4A);
+}
+
+.vehiclePrice {
+  font-family: var(--font-family-heading, 'Cinzel', serif);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-accent, #14B8C4);
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4, 1rem);
+}
+
+@media (min-width: 600px) {
+  .grid2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 600;
+  color: var(--color-text-primary, #0F172A);
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  padding: 10px 14px;
+  background-color: var(--color-bg-card, #ffffff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-md, 8px);
+  color: var(--color-text-primary, #0F172A);
+  font-family: inherit;
+  font-size: var(--font-size-sm, 0.875rem);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  min-height: 44px;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-accent, #14B8C4);
+  box-shadow: 0 0 0 3px rgba(20, 184, 196, 0.2);
+}
+
+.inputError {
+  border-color: var(--color-error, #B91C1C);
+}
+
+.fieldError {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-error, #B91C1C);
+  font-weight: 500;
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-text-secondary, #334155);
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.checkboxLabel input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-accent, #14B8C4);
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3, 0.75rem);
+  margin-top: var(--space-4, 1rem);
+  padding-top: var(--space-4, 1rem);
+  border-top: 1px solid var(--color-border, #e2e8f0);
+}
+
+.successBox {
+  text-align: center;
+  padding: var(--space-6, 1.5rem) var(--space-4, 1rem);
+}
+
+.successIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full, 9999px);
+  background-color: rgba(20, 184, 196, 0.15);
+  color: var(--color-accent, #14B8C4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  font-weight: bold;
+  margin: 0 auto var(--space-4, 1rem);
+}
+
+.successTitle {
+  font-family: var(--font-family-heading, 'Cinzel', serif);
+  font-size: 1.5rem;
+  color: var(--color-primary, #0B2A4A);
+  margin: 0 0 var(--space-2, 0.5rem);
+}
+
+.successDesc {
+  color: var(--color-text-secondary, #334155);
+  font-size: var(--font-size-sm, 0.875rem);
+  line-height: var(--line-height-relaxed, 1.6);
+  margin: 0 0 var(--space-4, 1rem);
+}
+
+.refBadge {
+  display: inline-block;
+  background-color: var(--color-bg-surface-alt, #f8fafc);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-full, 9999px);
+  padding: 6px 16px;
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-primary, #0B2A4A);
+}
+

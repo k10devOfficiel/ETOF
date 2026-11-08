@@ -18,9 +18,9 @@ final class Config
      */
     private static array $defaults = [
         'APP_ENV' => 'production',
-        'APP_URL' => 'http://localhost:8000',
-        'FRONTEND_URL' => 'http://localhost:5173',
-        'DB_HOST' => '127.0.0.1',
+        'APP_URL' => '',
+        'FRONTEND_URL' => '',
+        'DB_HOST' => 'localhost',
         'DB_PORT' => '3306',
         'DB_NAME' => 'etof_site',
         'DB_USER' => 'root',

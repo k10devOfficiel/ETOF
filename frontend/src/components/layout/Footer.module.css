@@ -70,18 +70,6 @@
   text-transform: uppercase;
   color: var(--color-text-inverse);
   margin: 0 0 var(--space-4) 0;
-  position: relative;
-  padding-bottom: var(--space-2);
-}
-
-.colTitle::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 32px;
-  height: 2px;
-  background-color: var(--color-accent);
 }
 
 .linksList {
@@ -98,7 +86,9 @@
   text-decoration: none;
   font-size: var(--font-size-sm);
   transition: color var(--transition-fast) ease, padding-left var(--transition-fast) ease;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
 }
 
 .linkItem a:hover {
@@ -164,8 +154,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: var(--radius-full);
   background-color: rgba(255, 255, 255, 0.08);
   color: var(--color-text-inverse);
@@ -221,6 +213,10 @@
   color: #9cb1c9;
   text-decoration: none;
   transition: color var(--transition-fast) ease;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-2);
 }
 
 .legalLink:hover {

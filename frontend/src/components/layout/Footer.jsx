@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Container } from '../ui/Container.jsx';
-import logoSrc from '../../assets/logo/logo.svg';
+import { BrandLogo } from '../common/BrandLogo.jsx';
 import styles from './Footer.module.css';
 
 /**
@@ -39,16 +39,7 @@ export function Footer({ settings = {} }) {
         <div className={styles.grid}>
           {/* Colonne Marque & Slogan */}
           <div className={styles.brandCol}>
-            <Link to="/" className={styles.logoLink} aria-label={t('common.siteName')}>
-              <img
-                src={logoSrc}
-                alt={t('common.siteName')}
-                className={styles.logo}
-                width="220"
-                height="50"
-                loading="lazy"
-              />
-            </Link>
+            <BrandLogo />
             <p className={styles.slogan}>{t('layout.slogan')}</p>
             <p className={styles.description}>{t('layout.companySummary')}</p>
           </div>

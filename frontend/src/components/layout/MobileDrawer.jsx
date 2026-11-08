@@ -3,7 +3,8 @@ import { NavLink, Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useOrder } from '../../context/OrderContext.jsx';
 import { Button } from '../ui/Button.jsx';
-import logoSrc from '../../assets/logo/logo.svg';
+import { ThemeToggle } from '../ui/ThemeToggle.jsx';
+import { BrandLogo } from '../common/BrandLogo.jsx';
 import styles from './MobileDrawer.module.css';
 
 /**
@@ -103,19 +104,12 @@ export function MobileDrawer({ isOpen, onClose, triggerRef }) {
         className={`${styles.drawer} ${isOpen ? styles.drawerOpen : ''}`}
         role="dialog"
         aria-modal="true"
+        aria-hidden={!isOpen}
         aria-label={t('nav.menu')}
         tabIndex="-1"
       >
         <div className={styles.drawerHeader}>
-          <Link to="/" onClick={onClose} aria-label={t('common.siteName')}>
-            <img
-              src={logoSrc}
-              alt={t('common.siteName')}
-              className={styles.drawerLogo}
-              width="160"
-              height="38"
-            />
-          </Link>
+          <BrandLogo onClick={onClose} />
           <button
             ref={closeBtnRef}
             type="button"
@@ -180,6 +174,16 @@ export function MobileDrawer({ isOpen, onClose, triggerRef }) {
 
               {activitiesOpen && (
                 <ul id="mobile-activities-list" className={styles.subList}>
+                  <li>
+                    <Link
+                      to="/activites"
+                      className={styles.subLink}
+                      onClick={onClose}
+                      style={{ fontWeight: 600, color: 'var(--color-primary)' }}
+                    >
+                      {t('activities.overview', 'Toutes nos activités')} →
+                    </Link>
+                  </li>
                   <li>
                     <Link
                       to="/activites/ferme"
@@ -267,6 +271,11 @@ export function MobileDrawer({ isOpen, onClose, triggerRef }) {
           </nav>
 
           <div className={styles.ctaWrapper}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>{t('theme.title', 'Thème')}</span>
+              <ThemeToggle />
+            </div>
+
             <div className={styles.langWrapper}>
               <span>{t('layout.language')}</span>
               <div role="group" aria-label={t('layout.languageAriaLabel')}>

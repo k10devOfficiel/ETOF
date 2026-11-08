@@ -57,7 +57,9 @@ export function QuotePage() {
             }
           }
         } catch (err) {
-          console.error('Erreur chargement produit pré-rempli:', err);
+          if (import.meta.env.DEV) {
+            console.error('Erreur chargement produit pré-rempli:', err);
+          }
         }
       };
       loadProduct();
@@ -82,7 +84,9 @@ export function QuotePage() {
             }
           }
         } catch (err) {
-          console.error('Erreur chargement véhicule pré-rempli:', err);
+          if (import.meta.env.DEV) {
+            console.error('Erreur chargement véhicule pré-rempli:', err);
+          }
         }
       };
       loadVehicle();

@@ -32,8 +32,19 @@ function formatPrice(amount) {
  * }} props
  * @returns {JSX.Element | null}
  */
-export function VehicleDetailModal({ vehicle, isOpen, onClose }) {
+export function VehicleDetailModal({ vehicle, isOpen, onClose, onBuy, onRent }) {
   const { t } = useTranslation();
+
+  // Normalisation des specs techniques (Hook appelé inconditionnellement en tête de composant)
+  const specsObject = React.useMemo(() => {
+    if (!vehicle?.specs) return {};
+    if (typeof vehicle.specs === 'object') return vehicle.specs;
+    try {
+      return JSON.parse(vehicle.specs);
+    } catch {
+      return {};
+    }
+  }, [vehicle?.specs]);
 
   if (!vehicle) return null;
 
@@ -50,17 +61,6 @@ export function VehicleDetailModal({ vehicle, isOpen, onClose }) {
       : vehicle.status === 'sold'
       ? 'sold'
       : 'unavailable';
-
-  // Normalisation des specs techniques
-  const specsObject = React.useMemo(() => {
-    if (!vehicle.specs) return {};
-    if (typeof vehicle.specs === 'object') return vehicle.specs;
-    try {
-      return JSON.parse(vehicle.specs);
-    } catch {
-      return {};
-    }
-  }, [vehicle.specs]);
 
   const hasSalePrice =
     vehicle.price_sale !== null &&
@@ -185,15 +185,29 @@ export function VehicleDetailModal({ vehicle, isOpen, onClose }) {
           <div className={styles.actionsRow}>
             {isRentalAllowed && (
               isAvailable ? (
-                <Link
-                  to={`/devis?type=reservation&activity=vehicle&vehicle_id=${vehicle.id}`}
-                  style={{ textDecoration: 'none', flex: 1 }}
-                  onClick={onClose}
-                >
-                  <Button variant="primary" size="lg" fullWidth>
+                onRent ? (
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    fullWidth
+                    onClick={() => {
+                      onClose();
+                      onRent(vehicle);
+                    }}
+                  >
                     {t('vehicles.btnReserveThis')}
                   </Button>
-                </Link>
+                ) : (
+                  <Link
+                    to={`/devis?type=reservation&activity=vehicle&vehicle_id=${vehicle.id}`}
+                    style={{ textDecoration: 'none', flex: 1 }}
+                    onClick={onClose}
+                  >
+                    <Button variant="primary" size="lg" fullWidth>
+                      {t('vehicles.btnReserveThis')}
+                    </Button>
+                  </Link>
+                )
               ) : (
                 <Button
                   variant="primary"
@@ -210,15 +224,29 @@ export function VehicleDetailModal({ vehicle, isOpen, onClose }) {
 
             {isSaleAllowed && (
               isAvailable ? (
-                <Link
-                  to={`/devis?type=purchase&activity=vehicle&vehicle_id=${vehicle.id}`}
-                  style={{ textDecoration: 'none', flex: 1 }}
-                  onClick={onClose}
-                >
-                  <Button variant="outline" size="lg" fullWidth>
+                onBuy ? (
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    fullWidth
+                    onClick={() => {
+                      onClose();
+                      onBuy(vehicle);
+                    }}
+                  >
                     {t('vehicles.btnPurchaseThis')}
                   </Button>
-                </Link>
+                ) : (
+                  <Link
+                    to={`/devis?type=purchase&activity=vehicle&vehicle_id=${vehicle.id}`}
+                    style={{ textDecoration: 'none', flex: 1 }}
+                    onClick={onClose}
+                  >
+                    <Button variant="outline" size="lg" fullWidth>
+                      {t('vehicles.btnPurchaseThis')}
+                    </Button>
+                  </Link>
+                )
               ) : (
                 <Button
                   variant="outline"

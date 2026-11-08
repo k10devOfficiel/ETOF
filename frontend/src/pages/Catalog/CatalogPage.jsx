@@ -24,8 +24,8 @@ export function CatalogPage() {
   const { slug: routeSlug } = useParams();
   const navigate = useNavigate();
 
-  // Lecture des filtres depuis l'URL
-  const currentActivity = searchParams.get('activity') || '';
+  // Lecture des filtres depuis l'URL - Isole strictement par activité (jamais de mélange)
+  const currentActivity = searchParams.get('activity') === 'office' ? 'office' : 'farm';
   const currentCategory = searchParams.get('category') || '';
   const currentSearch = searchParams.get('q') || '';
   const currentAvailable = searchParams.get('available') === '1';
@@ -62,7 +62,9 @@ export function CatalogPage() {
           setCategories(Array.isArray(data) ? data : []);
         }
       } catch (err) {
-        console.error('Erreur chargement catégories:', err);
+        if (import.meta.env.DEV) {
+          console.error('Erreur chargement catégories:', err);
+        }
       }
     };
 
@@ -132,7 +134,9 @@ export function CatalogPage() {
           setIsModalOpen(true);
         }
       } catch (err) {
-        console.error('Produit introuvable via URL slug:', err);
+        if (import.meta.env.DEV) {
+          console.error('Produit introuvable via URL slug:', err);
+        }
       }
     };
 
@@ -253,7 +257,7 @@ export function CatalogPage() {
               />
             </div>
 
-            {/* Filtre par Activité (Ferme, Fournitures) */}
+            {/* Filtre par Activité (Ferme ou Fournitures - catalogue strictement séparé) */}
             <div>
               <select
                 className={styles.select}
@@ -261,7 +265,6 @@ export function CatalogPage() {
                 onChange={handleActivityChange}
                 aria-label={t('catalog.filterActivityAriaLabel')}
               >
-                <option value="">{t('catalog.allActivities')}</option>
                 <option value="farm">{t('activities.farm')}</option>
                 <option value="office">{t('activities.office')}</option>
               </select>

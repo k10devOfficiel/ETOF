@@ -1,0 +1,30 @@
+# Apache Configuration Racine - ETOF SARL
+# Protection globale contre l'exposition de fichiers sensibles, scripts source et bases de données
+
+Options -Indexes -MultiViews
+
+# Interdiction stricte sur les fichiers cachés et extensions sensibles
+<FilesMatch "(^\.|\.(env|env\.example|sql|log|md|json|lock|xml|yml|yaml|bak|config|ps1|sh|map)$)">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Forcer HTTPS en environnement de production
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    RewriteCond %{ENV:APP_ENV} production
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Bloquer l'accès direct aux répertoires de code source, journaux, base de données et configuration
+    RewriteRule ^(\.git|\.env|database|storage|backend/(src|storage|tests|vendor|bin)|frontend/(src|scripts)|composer\.(json|lock)|package(-lock)?\.json) - [F,L,NC]
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+</IfModule>
+

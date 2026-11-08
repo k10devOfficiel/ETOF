@@ -42,10 +42,11 @@ function formatPrice(amount) {
  * }} props
  * @returns {JSX.Element}
  */
-export function VehicleCard({ vehicle, onSelect }) {
+export function VehicleCard({ vehicle, onSelect, onBuy, onRent }) {
   const { t } = useTranslation();
 
   const fullName = `${vehicle.brand} ${vehicle.model}`;
+  const isAvailable = vehicle.status === 'available';
 
   // Détermination de la variante du badge selon le statut
   const badgeVariant =
@@ -66,6 +67,17 @@ export function VehicleCard({ vehicle, onSelect }) {
     vehicle.price_rental_day !== null &&
     vehicle.price_rental_day !== undefined &&
     Number(vehicle.price_rental_day) > 0;
+
+  const showBuyBtn = vehicle.mode === 'sale' || vehicle.mode === 'both';
+  const showRentBtn = vehicle.mode === 'rental' || vehicle.mode === 'both';
+
+  const unavailableExplanation = !isAvailable
+    ? vehicle.status === 'reserved'
+      ? t('vehicles.reservedNotice', 'Actuellement réservé')
+      : vehicle.status === 'sold'
+      ? t('vehicles.soldNotice', 'Ce véhicule est vendu')
+      : t('vehicles.unavailableNotice', 'Actuellement indisponible')
+    : null;
 
   return (
     <article className={styles.card} aria-labelledby={`vehicle-title-${vehicle.id}`}>
@@ -159,17 +171,46 @@ export function VehicleCard({ vehicle, onSelect }) {
           )}
         </div>
 
-        {/* Bouton d'action */}
+        {/* Boutons d'actions Acheter / Louer */}
         <div className={styles.actions}>
+          {showBuyBtn && (
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={!isAvailable}
+              onClick={() => (onBuy ? onBuy(vehicle) : onSelect(vehicle))}
+              title={unavailableExplanation || t('vehicles.buy', 'Acheter')}
+            >
+              {t('vehicles.buy', 'Acheter')}
+            </Button>
+          )}
+
+          {showRentBtn && (
+            <Button
+              variant={showBuyBtn ? 'outline' : 'primary'}
+              size="sm"
+              disabled={!isAvailable}
+              onClick={() => (onRent ? onRent(vehicle) : onSelect(vehicle))}
+              title={unavailableExplanation || t('vehicles.rent', 'Louer')}
+            >
+              {t('vehicles.rent', 'Louer')}
+            </Button>
+          )}
+
           <Button
-            variant="primary"
+            variant="ghost"
             size="sm"
-            fullWidth
             onClick={() => onSelect(vehicle)}
           >
-            {t('vehicles.viewDetails')}
+            {t('vehicles.viewDetails', 'Voir la fiche')}
           </Button>
         </div>
+
+        {!isAvailable && (
+          <p className={styles.statusExplainer} role="note">
+            ℹ️ {unavailableExplanation}
+          </p>
+        )}
       </div>
     </article>
   );

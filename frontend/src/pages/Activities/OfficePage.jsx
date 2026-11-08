@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import ActivityPage from '../../components/activity/ActivityPage.jsx';
+import ActivityProductCatalog from '../../components/catalog/ActivityProductCatalog.jsx';
 
 /**
  * Page dédiée au pôle Fournitures de Bureau d'ETOF SARL.
@@ -118,7 +119,14 @@ export function OfficePage() {
         ],
       }}
       devTopicKey="keyFigures"
-    />
+    >
+      <ActivityProductCatalog
+        activity="office"
+        title={t('office.catalogTitle', 'Fournitures de Bureau & Mobilier')}
+        subtitle={t('office.catalogSubtitle', 'Papeterie, consommables d’impression, mobilier et équipement de travail pour entreprises.')}
+        badge={t('office.catalogBadge', 'Catalogue Fournitures')}
+      />
+    </ActivityPage>
   );
 }
 

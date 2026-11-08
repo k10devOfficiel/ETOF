@@ -170,6 +170,20 @@
 }
 
 .actions {
-  margin-top: var(--space-2);
+  display: flex;
+  gap: var(--space-2, 0.5rem);
+  flex-wrap: wrap;
+  margin-top: var(--space-3);
+}
+
+.actions > button {
+  flex: 1 1 auto;
+}
+
+.statusExplainer {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-warning, #b45309);
+  margin: var(--space-2) 0 0;
+  font-style: italic;
 }
 

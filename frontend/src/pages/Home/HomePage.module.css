@@ -1,0 +1,446 @@
+.heroSection {
+  position: relative;
+  background: linear-gradient(135deg, rgba(4, 120, 87, 0.08) 0%, rgba(15, 23, 42, 0.04) 100%);
+  padding: 4.5rem 0 4rem;
+  border-bottom: 1px solid var(--color-border, #e2e8f0);
+}
+
+.heroContent {
+  max-width: 820px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.heroBadge {
+  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-primary, #047857);
+  background-color: rgba(4, 120, 87, 0.12);
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  margin-bottom: 1.25rem;
+}
+
+.heroTitle {
+  font-size: 2.25rem;
+  line-height: 1.2;
+  font-weight: 900;
+  color: var(--color-text, #0f172a);
+  margin: 0 0 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+@media (min-width: 768px) {
+  .heroTitle {
+    font-size: 3.25rem;
+  }
+}
+
+.heroSubtitle {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: var(--color-text-muted, #475569);
+  margin: 0 0 2rem;
+}
+
+@media (min-width: 768px) {
+  .heroSubtitle {
+    font-size: 1.25rem;
+  }
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
+/* Section Présentation Société */
+.aboutIntroSection {
+  padding: 4rem 0;
+  background: var(--color-background, #ffffff);
+}
+
+.aboutGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  .aboutGrid {
+    grid-template-columns: 1.2fr 0.8fr;
+  }
+}
+
+.aboutText h2 {
+  font-size: 1.875rem;
+  font-weight: 800;
+  color: var(--color-text, #0f172a);
+  margin: 0 0 1rem;
+}
+
+.aboutText p {
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  color: var(--color-text-muted, #475569);
+  margin: 0 0 1.25rem;
+}
+
+.aboutCard {
+  background: var(--color-surface, #f8fafc);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+  padding: 2rem;
+}
+
+.aboutCardTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-text, #0f172a);
+  margin: 0 0 1rem;
+}
+
+.aboutPillList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.aboutPillItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.9375rem;
+  color: var(--color-text, #0f172a);
+}
+
+.aboutPillIcon {
+  width: 20px;
+  height: 20px;
+  color: var(--color-primary, #047857);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Section Les 4 Activités */
+.activitiesSection {
+  padding: 4rem 0;
+  background: var(--color-surface, #f8fafc);
+  border-top: 1px solid var(--color-border, #e2e8f0);
+}
+
+.sectionHeader {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 3rem;
+}
+
+.sectionBadge {
+  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-primary, #047857);
+  background-color: rgba(4, 120, 87, 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  margin-bottom: 0.75rem;
+}
+
+.sectionTitle {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--color-text, #0f172a);
+  margin: 0 0 0.75rem;
+}
+
+.sectionSubtitle {
+  font-size: 1.0625rem;
+  color: var(--color-text-muted, #64748b);
+  margin: 0;
+}
+
+.activitiesGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .activitiesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .activitiesGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.activityCard {
+  background: var(--color-background, #ffffff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.activityCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(0,0,0,0.1));
+  border-color: var(--color-primary, #047857);
+}
+
+.activityIconBox {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md, 8px);
+  background: rgba(4, 120, 87, 0.1);
+  color: var(--color-primary, #047857);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.activityIcon {
+  width: 26px;
+  height: 26px;
+}
+
+.activityTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text, #0f172a);
+  margin: 0 0 0.75rem;
+}
+
+.activityDesc {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--color-text-muted, #64748b);
+  margin: 0 0 1.5rem;
+  flex: 1;
+}
+
+/* Section Produits & Véhicules Phares */
+.previewSection {
+  padding: 4rem 0;
+  background: var(--color-background, #ffffff);
+  border-top: 1px solid var(--color-border, #e2e8f0);
+}
+
+.previewTabHeader {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.previewTabBtn {
+  min-height: 44px;
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  border: 1px solid var(--color-border, #cbd5e1);
+  background: var(--color-surface, #f8fafc);
+  color: var(--color-text, #0f172a);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.previewTabBtn:hover {
+  border-color: var(--color-primary, #047857);
+  color: var(--color-primary, #047857);
+}
+
+.previewTabBtnActive {
+  background: var(--color-primary, #047857);
+  border-color: var(--color-primary, #047857);
+  color: #ffffff;
+}
+
+.previewGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .previewGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .previewGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .previewGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.previewCtaBox {
+  text-align: center;
+  margin-top: 2.5rem;
+}
+
+/* Fuel Highlight Card */
+.fuelHighlightCard {
+  background: var(--color-surface, #f8fafc);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+  padding: 2.5rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  align-items: center;
+}
+
+@media (min-width: 768px) {
+  .fuelHighlightCard {
+    grid-template-columns: 1.3fr 0.7fr;
+  }
+}
+
+.fuelHighlightTitle {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-text, #0f172a);
+  margin: 0 0 1rem;
+}
+
+.fuelHighlightDesc {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--color-text-muted, #64748b);
+  margin: 0 0 1.5rem;
+}
+
+/* Section Pourquoi Nous Choisir */
+.whyUsSection {
+  padding: 4rem 0;
+  background: var(--color-surface, #f8fafc);
+  border-top: 1px solid var(--color-border, #e2e8f0);
+}
+
+.whyUsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .whyUsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .whyUsGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.whyCard {
+  background: var(--color-background, #ffffff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.whyNumber {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: var(--color-primary, #047857);
+  margin-bottom: 0.75rem;
+  line-height: 1;
+}
+
+.whyTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-text, #0f172a);
+  margin: 0 0 0.5rem;
+}
+
+.whyDesc {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--color-text-muted, #64748b);
+  margin: 0;
+}
+
+/* Section Final CTA */
+.finalCtaSection {
+  padding: 4.5rem 0;
+  background: linear-gradient(135deg, #047857 0%, #064e3b 100%);
+  color: #ffffff;
+  text-align: center;
+}
+
+.finalCtaContent {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.finalCtaTitle {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 1rem;
+}
+
+.finalCtaSubtitle {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 2rem;
+}
+
+.finalCtaActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.whatsappBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  padding: 0 1.5rem;
+  border-radius: var(--radius-md, 8px);
+  background-color: #25D366;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.whatsappBtn:hover {
+  background-color: #1eb956;
+  transform: translateY(-1px);
+}
+

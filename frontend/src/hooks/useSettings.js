@@ -28,6 +28,7 @@ export function useSettings() {
     facebook: '',
     instagram: '',
     linkedin: '',
+    opening_hours: '',
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -46,6 +47,7 @@ export function useSettings() {
           facebook: (data.facebook || '').trim(),
           instagram: (data.instagram || '').trim(),
           linkedin: (data.linkedin || '').trim(),
+          opening_hours: (data.opening_hours || '').trim(),
         });
       }
     } catch (err) {

@@ -21,13 +21,13 @@ export function VehiclesPage() {
       subtitle={t('vehicles.subtitle')}
       heroActions={[
         {
-          label: t('vehicles.btnReserve'),
-          to: '/devis?type=reservation&activity=vehicle',
+          label: t('vehicles.btnViewPark', 'Consulter le catalogue véhicules'),
+          to: '/vehicules',
           variant: 'primary',
         },
         {
-          label: t('vehicles.btnPurchase'),
-          to: '/devis?type=purchase&activity=vehicle',
+          label: t('vehicles.btnReserve', 'Réserver une location'),
+          to: '/vehicules?mode=rental',
           variant: 'outline',
         },
       ]}

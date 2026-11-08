@@ -2,10 +2,53 @@ import { client } from './client.js';
 
 /**
  * Service API pour le catalogue public (produits, véhicules, catégories et réglages).
+ * Intègre un cache en mémoire côté client avec durée de validité (TTL) pour accélérer
+ * la navigation et réduire la consommation réseau sur mobile et connexion lente.
  */
 
+const cacheStore = new Map();
+const CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
+
 /**
- * Récupère les paramètres publics de contact et réseaux de l'entreprise.
+ * Exécute un appel GET mis en cache en mémoire.
+ *
+ * @param {string} endpoint
+ * @param {Record<string, any>} [params={}]
+ * @returns {Promise<any>}
+ */
+async function cachedGet(endpoint, params = {}) {
+  const query = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined && v !== null && v !== '') {
+      query.append(k, String(v));
+    }
+  }
+  const queryString = query.toString();
+  const cacheKey = queryString ? `${endpoint}?${queryString}` : endpoint;
+  const now = Date.now();
+
+  if (cacheStore.has(cacheKey)) {
+    const entry = cacheStore.get(cacheKey);
+    if (now - entry.timestamp < CACHE_TTL_MS) {
+      return entry.data;
+    }
+    cacheStore.delete(cacheKey);
+  }
+
+  const data = await client.get(endpoint, { params });
+  cacheStore.set(cacheKey, { data, timestamp: now });
+  return data;
+}
+
+/**
+ * Réinitialise manuellement l'ensemble du cache catalogue côté client.
+ */
+export function clearCatalogCache() {
+  cacheStore.clear();
+}
+
+/**
+ * Récupère les paramètres publics de contact et réseaux de l'entreprise (avec cache).
  *
  * @returns {Promise<{
  *   phone: string,
@@ -14,11 +57,12 @@ import { client } from './client.js';
  *   address: string,
  *   facebook: string,
  *   instagram: string,
- *   linkedin: string
+ *   linkedin: string,
+ *   opening_hours: string
  * }>}
  */
 export function getSettings() {
-  return client.get('/settings');
+  return cachedGet('/settings');
 }
 
 /**
@@ -34,11 +78,11 @@ export function getSettings() {
  * }>>}
  */
 export function getCategories(params = {}) {
-  return client.get('/categories', { params });
+  return cachedGet('/categories', params);
 }
 
 /**
- * Récupère la liste paginée des produits du catalogue.
+ * Récupère la liste paginée des produits du catalogue (avec cache).
  *
  * @param {{
  *   category?: string,
@@ -49,26 +93,7 @@ export function getCategories(params = {}) {
  *   lang?: string
  * }} [params={}]
  * @returns {Promise<{
- *   items: Array<{
- *     id: number,
- *     slug: string,
- *     reference: string | null,
- *     name: string,
- *     description: string | null,
- *     unit: string | null,
- *     price: number | null,
- *     min_quantity: number,
- *     is_orderable: boolean,
- *     is_available: boolean,
- *     image: string | null,
- *     sort_order: number,
- *     category: {
- *       id: number,
- *       slug: string,
- *       name: string,
- *       activity: string
- *     }
- *   }>,
+ *   items: Array<any>,
  *   pagination: {
  *     page: number,
  *     per_page: number,
@@ -78,22 +103,22 @@ export function getCategories(params = {}) {
  * }>}
  */
 export function getProducts(params = {}) {
-  return client.get('/products', { params });
+  return cachedGet('/products', params);
 }
 
 /**
- * Récupère la fiche détaillée d'un produit par son slug unique.
+ * Récupère la fiche détaillée d'un produit par son slug unique (avec cache).
  *
  * @param {string} slug
  * @param {{ lang?: string }} [params={}]
  * @returns {Promise<any>}
  */
 export function getProductBySlug(slug, params = {}) {
-  return client.get(`/products/${encodeURIComponent(slug)}`, { params });
+  return cachedGet(`/products/${encodeURIComponent(slug)}`, params);
 }
 
 /**
- * Récupère la liste paginée des véhicules (vente et location).
+ * Récupère la liste paginée des véhicules (vente et location) (avec cache).
  *
  * @param {{
  *   type?: string,
@@ -105,24 +130,7 @@ export function getProductBySlug(slug, params = {}) {
  *   lang?: string
  * }} [params={}]
  * @returns {Promise<{
- *   items: Array<{
- *     id: number,
- *     slug: string,
- *     brand: string,
- *     model: string,
- *     year: number,
- *     mode: string,
- *     status: string,
- *     price_sale: number | null,
- *     price_rental_day: number | null,
- *     description: string | null,
- *     main_image: string | null,
- *     category: {
- *       id: number,
- *       slug: string,
- *       name: string
- *     }
- *   }>,
+ *   items: Array<any>,
  *   pagination: {
  *     page: number,
  *     per_page: number,
@@ -132,18 +140,18 @@ export function getProductBySlug(slug, params = {}) {
  * }>}
  */
 export function getVehicles(params = {}) {
-  return client.get('/vehicles', { params });
+  return cachedGet('/vehicles', params);
 }
 
 /**
- * Récupère la fiche complète d'un véhicule avec sa galerie photos et caractéristiques techniques (specs).
+ * Récupère la fiche complète d'un véhicule avec sa galerie photos et caractéristiques techniques (avec cache).
  *
  * @param {string} slug
  * @param {{ lang?: string }} [params={}]
  * @returns {Promise<any>}
  */
 export function getVehicleBySlug(slug, params = {}) {
-  return client.get(`/vehicles/${encodeURIComponent(slug)}`, { params });
+  return cachedGet(`/vehicles/${encodeURIComponent(slug)}`, params);
 }
 
 export default {
@@ -153,5 +161,5 @@ export default {
   getProductBySlug,
   getVehicles,
   getVehicleBySlug,
+  clearCatalogCache,
 };
-

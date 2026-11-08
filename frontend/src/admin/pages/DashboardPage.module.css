@@ -1,0 +1,221 @@
+.header {
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-family: var(--font-heading, 'Cinzel', serif);
+  font-size: 1.75rem;
+  color: #0f172a;
+  margin: 0 0 0.5rem 0;
+}
+
+.subtitle {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
+.statCard {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.statHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.statLabel {
+  font-size: 0.825rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+}
+
+.statIcon {
+  width: 28px;
+  height: 28px;
+  padding: 6px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  fill: #c5a059;
+}
+
+.statValue {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.sectionTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.viewAllLink {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #c5a059;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.viewAllLink:hover {
+  color: #a38243;
+  text-decoration: underline;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+/* Tableau des dernières demandes */
+.tableContainer {
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+  margin-bottom: 2.5rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.th {
+  background: #f8fafc;
+  padding: 0.85rem 1rem;
+  font-weight: 600;
+  color: #475569;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.tr {
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+}
+
+.tr:hover {
+  background-color: #f8fafc;
+}
+
+.refCode {
+  font-family: monospace;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.clientName {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.clientContact {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+/* Pastilles de statut */
+.statusBadge {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.statusNew {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
+.statusInProgress {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.statusConfirmed {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.statusRejected {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.statusClosed {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+
+.actionBtn {
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.actionBtn:hover {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+}
+
+.emptyNotice {
+  color: #64748b;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 2.5rem 1rem;
+}

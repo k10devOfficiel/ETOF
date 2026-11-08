@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useId } from 'react';
 import styles from './FormField.module.css';
 
 /**
- * Enveloppe de champ de formulaire reliant le libellé, l'aide et le message d'erreur d'accessibilité.
+ * Enveloppe de champ de formulaire reliant de manière accessible et robuste
+ * le libellé (htmlFor), l'aide et le message d'erreur d'accessibilité (role="alert", aria-live="polite").
  *
  * @param {{
  *   children: React.ReactNode,
@@ -23,27 +24,56 @@ function FormField({
   required = false,
   className = '',
 }) {
-  const helpId = id && help ? `${id}-help` : undefined;
-  const errorId = id && error ? `${id}-error` : undefined;
+  const generatedId = useId();
+  const fieldId = id || generatedId;
+  const helpId = help ? `${fieldId}-help` : undefined;
+  const errorId = error ? `${fieldId}-error` : undefined;
+
+  // Injection accessible des attributs ARIA dans l'élément enfant
+  const enhancedChildren = React.Children.map(children, (child) => {
+    if (!React.isValidElement(child)) {
+      return child;
+    }
+
+    const describedBy = [
+      child.props['aria-describedby'],
+      errorId,
+      !error && helpId ? helpId : undefined,
+    ]
+      .filter(Boolean)
+      .join(' ') || undefined;
+
+    return React.cloneElement(child, {
+      id: child.props.id || fieldId,
+      hasError: Boolean(child.props.hasError || child.props.error || error),
+      'aria-invalid': Boolean(error || child.props.hasError || child.props.error) ? 'true' : 'false',
+      'aria-describedby': describedBy,
+      'aria-required': required ? 'true' : child.props['aria-required'],
+    });
+  });
 
   return (
     <div className={`${styles.field} ${className}`.trim()}>
       {label && (
         <div className={styles.labelWrapper}>
-          <label htmlFor={id} className={styles.label}>
+          <label htmlFor={fieldId} className={styles.label}>
             {label}
-            {required && <span className={styles.required} aria-hidden="true">*</span>}
+            {required && (
+              <span className={styles.required} aria-hidden="true">
+                *
+              </span>
+            )}
           </label>
         </div>
       )}
-      {children}
+      {enhancedChildren}
       {help && !error && (
         <div id={helpId} className={styles.helpText}>
           {help}
         </div>
       )}
       {error && (
-        <div id={errorId} className={styles.errorText} role="alert">
+        <div id={errorId} className={styles.errorText} role="alert" aria-live="polite">
           {error}
         </div>
       )}
@@ -52,4 +82,3 @@ function FormField({
 }
 
 export default FormField;
-

@@ -3,7 +3,7 @@
   top: 0;
   left: 0;
   right: 0;
-  z-index: var(--z-sticky);
+  z-index: 1000;
   background-color: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -208,7 +208,12 @@
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-muted);
-  padding: 4px 10px;
+  padding: 6px 12px;
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border-radius: var(--radius-full);
   cursor: pointer;
   transition: all var(--transition-fast) ease;
@@ -219,7 +224,7 @@
 }
 
 .langBtn:focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 
@@ -235,8 +240,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: var(--radius-full);
   border: 1px solid var(--color-border);
   background-color: #ffffff;

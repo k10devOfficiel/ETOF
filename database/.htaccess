@@ -1,0 +1,3 @@
+# Interdiction absolue d'accès HTTP au répertoire database (schémas SQL, seeds, migrations)
+Require all denied
+

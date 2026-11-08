@@ -26,6 +26,9 @@ frontend/dist/
 # Tests & Cache
 .phpunit.cache/
 backend/.phpunit.cache/
+frontend/playwright-report/
+frontend/test-results/
+test-results/
 
 # System and IDE
 .DS_Store

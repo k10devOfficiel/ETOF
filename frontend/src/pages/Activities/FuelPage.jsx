@@ -1,6 +1,8 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import ActivityPage from '../../components/activity/ActivityPage.jsx';
+import RequestForm from '../../components/forms/RequestForm.jsx';
+import Container from '../../components/ui/Container.jsx';
 
 /**
  * Page dédiée au pôle Transport d'Hydrocarbures d'ETOF SARL.
@@ -115,7 +117,60 @@ export function FuelPage() {
         ],
       }}
       devTopicKey="certifications"
-    />
+    >
+      <section
+        id="devis-hydrocarbures"
+        style={{
+          padding: '3rem 0',
+          backgroundColor: 'var(--color-surface, #f8fafc)',
+          borderTop: '1px solid var(--color-border, #e2e8f0)',
+        }}
+        aria-label={t('fuel.quoteSectionTitle', 'Demande de devis hydrocarbures')}
+      >
+        <Container size="fixed">
+          <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+              <span
+                style={{
+                  display: 'inline-block',
+                  fontSize: '0.8125rem',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  color: 'var(--color-primary, #047857)',
+                  backgroundColor: 'rgba(4, 120, 87, 0.1)',
+                  padding: '0.25rem 0.75rem',
+                  borderRadius: '9999px',
+                  marginBottom: '0.75rem',
+                }}
+              >
+                {t('fuel.quoteSectionBadge', 'Cotation Directe')}
+              </span>
+              <h2
+                style={{
+                  fontSize: '1.875rem',
+                  fontWeight: 800,
+                  color: 'var(--color-text, #0f172a)',
+                  margin: '0 0 0.5rem',
+                }}
+              >
+                {t('fuel.quoteSectionTitle', 'Demandez votre devis transport pétrolier')}
+              </h2>
+              <p
+                style={{
+                  fontSize: '1rem',
+                  color: 'var(--color-text-muted, #64748b)',
+                  margin: 0,
+                }}
+              >
+                {t('fuel.quoteSectionSubtitle', 'Tarification sur-mesure selon volumes, origine, destination et fréquence des livraisons.')}
+              </p>
+            </div>
+            <RequestForm formType="fuel" initialActivity="fuel" />
+          </div>
+        </Container>
+      </section>
+    </ActivityPage>
   );
 }
 

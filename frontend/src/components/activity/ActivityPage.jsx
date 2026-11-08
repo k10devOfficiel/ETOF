@@ -79,6 +79,7 @@ export function ActivityPage({
   advantages,
   cta,
   devTopicKey,
+  children,
 }) {
   return (
     <>
@@ -235,6 +236,9 @@ export function ActivityPage({
           </div>
         </Container>
       </section>
+
+      {/* Section spécifique optionnelle (ex: catalogue dédié ou formulaire devis) */}
+      {children}
 
       {/* Bloc Appel à l'action final */}
       <section className={styles.ctaSection} aria-label={cta.title}>

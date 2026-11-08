@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import ActivityPage from '../../components/activity/ActivityPage.jsx';
+import ActivityProductCatalog from '../../components/catalog/ActivityProductCatalog.jsx';
 
 /**
  * Page dédiée au pôle Ferme et Élevage d'ETOF SARL.
@@ -118,7 +119,14 @@ export function FarmPage() {
         ],
       }}
       devTopicKey="keyFigures"
-    />
+    >
+      <ActivityProductCatalog
+        activity="farm"
+        title={t('farm.catalogTitle', 'Produits de la Ferme et Élevage')}
+        subtitle={t('farm.catalogSubtitle', 'Volailles vivantes, préparées et œufs frais issus d’un élevage soigné.')}
+        badge={t('farm.catalogBadge', 'Catalogue Ferme')}
+      />
+    </ActivityPage>
   );
 }
 

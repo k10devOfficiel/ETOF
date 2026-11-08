@@ -4,8 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { useOrder } from '../../context/OrderContext.jsx';
 import { Container } from '../ui/Container.jsx';
 import { Button } from '../ui/Button.jsx';
+import { ThemeToggle } from '../ui/ThemeToggle.jsx';
+import { BrandLogo } from '../common/BrandLogo.jsx';
 import { MobileDrawer } from './MobileDrawer.jsx';
-import logoSrc from '../../assets/logo/logo.svg';
 import styles from './Header.module.css';
 
 /**
@@ -59,16 +60,8 @@ export function Header({ settings }) {
       <header className={styles.header} role="banner">
         <Container size="xl">
           <div className={styles.inner}>
-            {/* Logo officiel ETOF SARL */}
-            <Link to="/" className={styles.logoLink} aria-label={t('common.siteName')}>
-              <img
-                src={logoSrc}
-                alt={t('common.siteName')}
-                className={styles.logo}
-                width="220"
-                height="48"
-              />
-            </Link>
+            {/* Logo épuré officiel ETOF SARL */}
+            <BrandLogo />
 
             {/* Navigation Desktop */}
             <nav className={styles.navDesktop} aria-label={t('nav.mainNavAriaLabel')}>
@@ -124,6 +117,16 @@ export function Header({ settings }) {
                       className={styles.dropdownMenu}
                       role="menu"
                     >
+                      <li role="none" className={styles.dropdownItem}>
+                        <Link
+                          to="/activites"
+                          role="menuitem"
+                          onClick={() => setDropdownOpen(false)}
+                          style={{ fontWeight: 600, borderBottom: '1px solid var(--color-border)' }}
+                        >
+                          {t('activities.overview', 'Toutes nos activités')} →
+                        </Link>
+                      </li>
                       <li role="none" className={styles.dropdownItem}>
                         <Link
                           to="/activites/ferme"
@@ -219,6 +222,9 @@ export function Header({ settings }) {
                   </span>
                 )}
               </Link>
+
+              {/* Bascule de thème Jour / Nuit / Auto */}
+              <ThemeToggle />
 
               <div
                 className={styles.langSwitcher}

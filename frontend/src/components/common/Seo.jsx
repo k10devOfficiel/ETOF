@@ -32,7 +32,8 @@ export function Seo({
   const currentLang = (i18n.language || 'fr').slice(0, 2).toLowerCase();
 
   const siteUrl = (
-    import.meta.env.VITE_SITE_URL || 'http://localhost:5173'
+    import.meta.env.VITE_SITE_URL ||
+    (typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'https://etof.ci')
   ).replace(/\/$/, '');
 
   const cleanPath = path.startsWith('/') ? path : `/${path}`;

@@ -1,0 +1,17 @@
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--color-bg, #f8fafc);
+  padding: 2rem;
+  gap: 1rem;
+}
+
+.loadingText {
+  color: var(--color-text-muted, #64748b);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+

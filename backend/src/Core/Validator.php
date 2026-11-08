@@ -120,10 +120,14 @@ final class Validator
 
             case 'min':
                 $min = (int) $parameter;
-                if (is_string($value) && mb_strlen($value) < $min) {
-                    $this->addError($field, "Le champ '{$field}' doit contenir au moins {$min} caractères.");
-                } elseif (is_numeric($value) && $value < $min) {
-                    $this->addError($field, "Le champ '{$field}' doit être supérieur ou égal à {$min}.");
+                if (is_int($value) || is_float($value)) {
+                    if ($value < $min) {
+                        $this->addError($field, "Le champ '{$field}' doit être supérieur ou égal à {$min}.");
+                    }
+                } elseif (is_string($value)) {
+                    if (mb_strlen($value) < $min) {
+                        $this->addError($field, "Le champ '{$field}' doit contenir au moins {$min} caractères.");
+                    }
                 } elseif (is_array($value) && count($value) < $min) {
                     $this->addError($field, "Le champ '{$field}' doit contenir au moins {$min} éléments.");
                 }
@@ -131,10 +135,14 @@ final class Validator
 
             case 'max':
                 $max = (int) $parameter;
-                if (is_string($value) && mb_strlen($value) > $max) {
-                    $this->addError($field, "Le champ '{$field}' ne doit pas dépasser {$max} caractères.");
-                } elseif (is_numeric($value) && $value > $max) {
-                    $this->addError($field, "Le champ '{$field}' doit être inférieur ou égal à {$max}.");
+                if (is_int($value) || is_float($value)) {
+                    if ($value > $max) {
+                        $this->addError($field, "Le champ '{$field}' doit être inférieur ou égal à {$max}.");
+                    }
+                } elseif (is_string($value)) {
+                    if (mb_strlen($value) > $max) {
+                        $this->addError($field, "Le champ '{$field}' ne doit pas dépasser {$max} caractères.");
+                    }
                 } elseif (is_array($value) && count($value) > $max) {
                     $this->addError($field, "Le champ '{$field}' ne doit pas dépasser {$max} éléments.");
                 }

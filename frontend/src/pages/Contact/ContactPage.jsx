@@ -51,7 +51,9 @@ export function ContactPage() {
         }
       })
       .catch((error) => {
-        console.warn('Impossible de charger les réglages de contact:', error);
+        if (import.meta.env.DEV) {
+          console.warn('Impossible de charger les réglages de contact:', error);
+        }
       });
 
     return () => {

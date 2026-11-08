@@ -1,0 +1,293 @@
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import Modal from '../ui/Modal.jsx';
+import Button from '../ui/Button.jsx';
+import { client } from '../../api/client.js';
+import styles from './VehicleModalForms.module.css';
+
+/**
+ * Formatage d'un montant monétaire en FCFA.
+ */
+function formatPrice(amount) {
+  if (!amount || isNaN(Number(amount))) return null;
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'decimal',
+    maximumFractionDigits: 0,
+  }).format(Number(amount)) + ' FCFA';
+}
+
+/**
+ * Formulaire modal dédié à l'achat d'un véhicule ETOF SARL.
+ */
+export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
+  const { t, i18n } = useTranslation();
+  const currentLang = (i18n.language || 'fr').slice(0, 2).toLowerCase();
+
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [tradeIn, setTradeIn] = useState(false);
+  const [tradeInDetails, setTradeInDetails] = useState('');
+  const [message, setMessage] = useState('');
+  const [consent, setConsent] = useState(false);
+  const [websiteHoneypot, setWebsiteHoneypot] = useState('');
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [submittedData, setSubmittedData] = useState(null);
+
+  if (!vehicle) return null;
+
+  const vehicleName = `${vehicle.brand} ${vehicle.model} ${vehicle.year ? `(${vehicle.year})` : ''}`;
+  const priceDisplay = formatPrice(vehicle.price_sale) || t('catalog.priceOnDemand');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrors({});
+
+    const newErrors = {};
+    if (!fullName.trim()) newErrors.full_name = t('forms.errors.nameRequired');
+    if (!phone.trim()) newErrors.phone = t('forms.errors.phoneRequired');
+    if (!email.trim()) newErrors.email = t('forms.errors.emailRequired');
+    if (!consent) newErrors.consent = t('forms.errors.consentRequired');
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const payload = {
+        type: 'purchase',
+        activity: 'vehicle',
+        lang: currentLang,
+        vehicle_id: Number(vehicle.id),
+        full_name: fullName.trim(),
+        phone: phone.trim(),
+        email: email.trim(),
+        message: message.trim() || undefined,
+        consent: Boolean(consent),
+        website: websiteHoneypot,
+        details: {
+          payment_method: paymentMethod,
+          trade_in: tradeIn ? 'yes' : 'no',
+          trade_in_details: tradeIn ? tradeInDetails.trim() : '',
+        },
+      };
+
+      const res = await client.post('/requests', payload);
+      setSubmittedData(res.data || res);
+      if (onSuccess) onSuccess(res.data || res);
+    } catch (err) {
+      if (err.fields) {
+        setErrors(err.fields);
+      } else {
+        setErrors({ global: err.message || t('forms.errors.genericServer') });
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResetAndClose = () => {
+    setSubmittedData(null);
+    setErrors({});
+    onClose();
+  };
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={handleResetAndClose}
+      title={t('vehicles.buyModalTitle', { vehicle: vehicleName })}
+      size="md"
+    >
+      {submittedData ? (
+        <div className={styles.successBox} role="status">
+          <div className={styles.successIcon} aria-hidden="true">✓</div>
+          <h3 className={styles.successTitle}>{t('forms.success.title')}</h3>
+          <p className={styles.successDesc}>{t('vehicles.buySuccessMessage')}</p>
+          {submittedData.reference && (
+            <div className={styles.refBadge}>
+              {t('forms.success.reference')} : <strong>{submittedData.reference}</strong>
+            </div>
+          )}
+          <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+            <Button variant="primary" size="md" onClick={handleResetAndClose}>
+              {t('common.close')}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} noValidate className={styles.form}>
+          {/* Récapitulatif Véhicule */}
+          <div className={styles.vehicleSummary}>
+            <div>
+              <span className={styles.vehicleLabel}>{t('vehicles.vehicle')}:</span>
+              <strong className={styles.vehicleName}>{vehicleName}</strong>
+            </div>
+            <div>
+              <span className={styles.vehicleLabel}>{t('vehicles.salePrice')}:</span>
+              <span className={styles.vehiclePrice}>{priceDisplay}</span>
+            </div>
+          </div>
+
+          {errors.global && (
+            <div className={styles.errorMessage} role="alert">
+              {errors.global}
+            </div>
+          )}
+
+          {/* Champ Honeypot invisible */}
+          <div style={{ display: 'none' }} aria-hidden="true">
+            <input
+              type="text"
+              name="website"
+              value={websiteHoneypot}
+              onChange={(e) => setWebsiteHoneypot(e.target.value)}
+              tabIndex="-1"
+              autoComplete="off"
+            />
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label htmlFor="buy-name" className={styles.label}>
+              {t('forms.name')} *
+            </label>
+            <input
+              id="buy-name"
+              type="text"
+              className={`${styles.input} ${errors.full_name ? styles.inputError : ''}`}
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              autoComplete="name"
+              required
+            />
+            {errors.full_name && <span className={styles.fieldError}>{errors.full_name}</span>}
+          </div>
+
+          <div className={styles.grid2}>
+            <div className={styles.fieldGroup}>
+              <label htmlFor="buy-phone" className={styles.label}>
+                {t('forms.phone')} *
+              </label>
+              <input
+                id="buy-phone"
+                type="tel"
+                className={`${styles.input} ${errors.phone ? styles.inputError : ''}`}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                autoComplete="tel"
+                placeholder="+225 07 00 00 00 00"
+                required
+              />
+              {errors.phone && <span className={styles.fieldError}>{errors.phone}</span>}
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <label htmlFor="buy-email" className={styles.label}>
+                {t('forms.email')} *
+              </label>
+              <input
+                id="buy-email"
+                type="email"
+                className={`${styles.input} ${errors.email ? styles.inputError : ''}`}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                placeholder="nom@exemple.ci"
+                required
+              />
+              {errors.email && <span className={styles.fieldError}>{errors.email}</span>}
+            </div>
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label htmlFor="buy-payment" className={styles.label}>
+              {t('vehicles.paymentMethodLabel', 'Mode de paiement envisagé')}
+            </label>
+            <select
+              id="buy-payment"
+              className={styles.select}
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+            >
+              <option value="cash">{t('vehicles.paymentCash', 'Paiement comptant / virement')}</option>
+              <option value="financing">{t('vehicles.paymentFinancing', 'Financement / crédit bancaire')}</option>
+              <option value="leasing">{t('vehicles.paymentLeasing', 'Crédit-bail (LOA / LLD)')}</option>
+            </select>
+          </div>
+
+          {/* Option reprise véhicule */}
+          <div className={styles.checkboxGroup}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={tradeIn}
+                onChange={(e) => setTradeIn(e.target.checked)}
+              />
+              <span>{t('vehicles.tradeInOption', 'Je souhaite faire reprendre mon véhicule actuel')}</span>
+            </label>
+          </div>
+
+          {tradeIn && (
+            <div className={styles.fieldGroup}>
+              <label htmlFor="buy-trade-details" className={styles.label}>
+                {t('vehicles.tradeInDetailsLabel', 'Précisions sur votre véhicule à reprendre (Marque, Modèle, Année, Kilométrage)')}
+              </label>
+              <textarea
+                id="buy-trade-details"
+                className={styles.textarea}
+                rows="2"
+                value={tradeInDetails}
+                onChange={(e) => setTradeInDetails(e.target.value)}
+                placeholder="Ex : Toyota Corolla 2018, 95 000 km, bon état général"
+              />
+            </div>
+          )}
+
+          <div className={styles.fieldGroup}>
+            <label htmlFor="buy-message" className={styles.label}>
+              {t('forms.message')} ({t('common.optional', 'Optionnel')})
+            </label>
+            <textarea
+              id="buy-message"
+              className={styles.textarea}
+              rows="3"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder={t('vehicles.buyMessagePlaceholder', 'Disponibilité pour visite, questions techniques ou essai...')}
+            />
+          </div>
+
+          <div className={styles.checkboxGroup}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={consent}
+                onChange={(e) => setConsent(e.target.checked)}
+                required
+              />
+              <span>{t('forms.consent')} *</span>
+            </label>
+            {errors.consent && <span className={styles.fieldError}>{errors.consent}</span>}
+          </div>
+
+          <div className={styles.actions}>
+            <Button type="button" variant="ghost" size="md" onClick={handleResetAndClose}>
+              {t('common.cancel')}
+            </Button>
+            <Button type="submit" variant="primary" size="md" loading={isSubmitting}>
+              {t('vehicles.submitPurchaseRequest', 'Envoyer ma demande d’achat')}
+            </Button>
+          </div>
+        </form>
+      )}
+    </Modal>
+  );
+}
+
+export default VehicleBuyModal;
+

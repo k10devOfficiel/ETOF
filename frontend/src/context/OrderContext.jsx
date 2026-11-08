@@ -23,7 +23,9 @@ function loadStoredItems() {
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
   } catch (error) {
-    console.warn('Impossible de lire les articles de commande depuis localStorage:', error);
+    if (import.meta.env.DEV) {
+      console.warn('Impossible de lire les articles de commande depuis localStorage:', error);
+    }
     return [];
   }
 }
@@ -40,7 +42,9 @@ function persistItems(items) {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   } catch (error) {
-    console.warn('Impossible de sauvegarder les articles de commande dans localStorage:', error);
+    if (import.meta.env.DEV) {
+      console.warn('Impossible de sauvegarder les articles de commande dans localStorage:', error);
+    }
   }
 }
 
@@ -150,7 +154,9 @@ export function OrderProvider({ children }) {
       try {
         window.localStorage.removeItem(STORAGE_KEY);
       } catch (error) {
-        console.warn('Impossible de nettoyer localStorage:', error);
+        if (import.meta.env.DEV) {
+          console.warn('Impossible de nettoyer localStorage:', error);
+        }
       }
     }
   };

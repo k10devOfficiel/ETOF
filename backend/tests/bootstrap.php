@@ -10,4 +10,3 @@ use App\Core\ErrorHandler;
 // Configuration de l'environnement de test
 Config::load(__DIR__ . '/..');
 ErrorHandler::register(__DIR__ . '/../storage/logs');
-

@@ -126,6 +126,16 @@ final class Response
             header('X-Frame-Options: DENY');
             header('Referrer-Policy: strict-origin-when-cross-origin');
             header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
+            header("Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self';");
+
+            $isHttps = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+                || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower((string) $_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https')
+                || (isset($_SERVER['SERVER_PORT']) && (int) $_SERVER['SERVER_PORT'] === 443)
+                || !Config::isDev();
+
+            if ($isHttps) {
+                header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
+            }
 
             foreach ($this->headers as $name => $value) {
                 header("{$name}: {$value}");

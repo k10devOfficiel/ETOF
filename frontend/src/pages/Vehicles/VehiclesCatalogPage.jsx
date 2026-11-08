@@ -8,6 +8,8 @@ import Alert from '../../components/ui/Alert.jsx';
 import Button from '../../components/ui/Button.jsx';
 import VehicleCard from '../../components/vehicles/VehicleCard.jsx';
 import VehicleDetailModal from '../../components/vehicles/VehicleDetailModal.jsx';
+import VehicleBuyModal from '../../components/vehicles/VehicleBuyModal.jsx';
+import VehicleRentModal from '../../components/vehicles/VehicleRentModal.jsx';
 import { getVehicles, getCategories, getVehicleBySlug } from '../../api/catalog.js';
 import styles from './VehiclesCatalogPage.module.css';
 
@@ -47,6 +49,8 @@ export function VehiclesCatalogPage() {
   // État du véhicule sélectionné pour la fiche détaillée
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [buyVehicle, setBuyVehicle] = useState(null);
+  const [rentVehicle, setRentVehicle] = useState(null);
 
   // Chargement des catégories de véhicules
   useEffect(() => {
@@ -58,7 +62,9 @@ export function VehiclesCatalogPage() {
           setCategories(Array.isArray(data) ? data : []);
         }
       } catch (err) {
-        console.error('Erreur chargement catégories véhicules:', err);
+        if (import.meta.env.DEV) {
+          console.error('Erreur chargement catégories véhicules:', err);
+        }
       }
     };
 
@@ -128,7 +134,9 @@ export function VehiclesCatalogPage() {
           setIsModalOpen(true);
         }
       } catch (err) {
-        console.error('Véhicule introuvable via slug URL:', err);
+        if (import.meta.env.DEV) {
+          console.error('Véhicule introuvable via slug URL:', err);
+        }
       }
     };
 
@@ -357,6 +365,8 @@ export function VehiclesCatalogPage() {
                       key={veh.id}
                       vehicle={veh}
                       onSelect={handleSelectVehicle}
+                      onBuy={(v) => setBuyVehicle(v)}
+                      onRent={(v) => setRentVehicle(v)}
                     />
                   ))}
                 </div>
@@ -379,9 +389,8 @@ export function VehiclesCatalogPage() {
                     <button
                       key={p}
                       type="button"
-                      className={`${styles.pageBtn} ${
-                        p === pagination.page ? styles.activePageBtn : ''
-                      }`}
+                      className={`${styles.pageBtn} ${p === pagination.page ? styles.activePageBtn : ''
+                        }`}
                       onClick={() => handlePageChange(p)}
                       aria-current={p === pagination.page ? 'page' : undefined}
                     >
@@ -410,6 +419,20 @@ export function VehiclesCatalogPage() {
         vehicle={selectedVehicle}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
+      />
+
+      {/* Formulaire modal Achat de véhicule */}
+      <VehicleBuyModal
+        vehicle={buyVehicle}
+        isOpen={Boolean(buyVehicle)}
+        onClose={() => setBuyVehicle(null)}
+      />
+
+      {/* Formulaire modal Location de véhicule */}
+      <VehicleRentModal
+        vehicle={rentVehicle}
+        isOpen={Boolean(rentVehicle)}
+        onClose={() => setRentVehicle(null)}
       />
     </>
   );

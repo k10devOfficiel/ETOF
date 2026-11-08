@@ -25,8 +25,8 @@ final class RequestController
         $ip = $request->getClientIp();
         $body = $request->getBody();
 
-        // 1. Limitation de débit : 5 envois par 10 minutes par empreinte IP
-        if (!RateLimiter::check($ip, 'create_request', 5, 10)) {
+        // 1. Limitation de débit : 30 envois par 10 minutes par empreinte IP
+        if (!RateLimiter::check($ip, 'create_request', 30, 10)) {
             return RateLimiter::createTooManyRequestsResponse(600);
         }
 

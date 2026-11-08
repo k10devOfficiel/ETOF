@@ -82,20 +82,22 @@ final class MailService
         }
 
         $lang = (string) ($requestData['lang'] ?? 'fr');
-        $reference = (string) ($requestData['reference'] ?? '');
+        $rawReference = (string) ($requestData['reference'] ?? '');
         $clientEmail = (string) ($requestData['email'] ?? '');
-        $clientName = (string) ($requestData['full_name'] ?? '');
+        $rawClientName = (string) ($requestData['full_name'] ?? '');
 
         if ($clientEmail === '') {
             return;
         }
 
+        $reference = htmlspecialchars($rawReference, ENT_QUOTES, 'UTF-8');
+        $clientName = htmlspecialchars($rawClientName, ENT_QUOTES, 'UTF-8');
         $isEn = ($lang === 'en');
 
         if ($newStatus === 'confirmed') {
             $subject = $isEn
-                ? "[ETOF SARL] Confirmation of your request {$reference}"
-                : "[ETOF SARL] Confirmation de votre demande {$reference}";
+                ? "[ETOF SARL] Confirmation of your request {$rawReference}"
+                : "[ETOF SARL] Confirmation de votre demande {$rawReference}";
 
             $title = $isEn ? "Request Confirmed" : "Demande Confirmée";
             $message = $isEn
@@ -103,8 +105,8 @@ final class MailService
                 : "Bonjour {$clientName},<br><br>Nous vous informons que votre demande portant la référence <strong>{$reference}</strong> a été <strong>confirmée</strong> par notre équipe commerciale.<br>Un conseiller prendra contact avec vous dans les plus brefs délais pour les modalités pratiques.";
         } else {
             $subject = $isEn
-                ? "[ETOF SARL] Update regarding your request {$reference}"
-                : "[ETOF SARL] Mise à jour concernant votre demande {$reference}";
+                ? "[ETOF SARL] Update regarding your request {$rawReference}"
+                : "[ETOF SARL] Mise à jour concernant votre demande {$rawReference}";
 
             $title = $isEn ? "Status Update" : "Mise à jour de votre demande";
             $message = $isEn
@@ -368,6 +370,16 @@ HTML;
             }
             if ($endDate !== null) {
                 $html .= "<tr><th>" . ($isEn ? "End Date" : "Date de fin") . "</th><td>{$endDate}</td></tr>";
+            }
+            if (!empty($data['details'])) {
+                $details = is_string($data['details']) ? (json_decode($data['details'], true) ?? []) : $data['details'];
+                if (is_array($details)) {
+                    foreach ($details as $k => $v) {
+                        $label = htmlspecialchars((string) $k, ENT_QUOTES, 'UTF-8');
+                        $val = htmlspecialchars(is_array($v) ? json_encode($v) : (string) $v, ENT_QUOTES, 'UTF-8');
+                        $html .= "<tr><th>{$label}</th><td>{$val}</td></tr>";
+                    }
+                }
             }
             $html .= "</table>";
             return ['title' => $title, 'content' => $html];

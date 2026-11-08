@@ -438,8 +438,8 @@
 .disclaimerBox {
   margin-top: var(--space-5);
   padding: var(--space-4);
-  background-color: #f0fdfa;
-  border-left: 4px solid var(--color-accent);
+  background-color: var(--color-bg-surface-alt, #f0fdfa);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   font-size: var(--font-size-xs);
   line-height: var(--line-height-relaxed);

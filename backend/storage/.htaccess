@@ -1,0 +1,3 @@
+# Interdiction absolue d'accès HTTP au répertoire storage (journaux d'erreurs, fichiers de session, caches)
+Require all denied
+

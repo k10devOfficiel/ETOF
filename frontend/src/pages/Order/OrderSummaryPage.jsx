@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Seo from '../../components/common/Seo.jsx';
@@ -33,6 +33,7 @@ function formatPrice(amount) {
  */
 export function OrderSummaryPage() {
   const { t } = useTranslation();
+  const [submittedOrder, setSubmittedOrder] = useState(null);
   const {
     items,
     itemCount,
@@ -65,7 +66,43 @@ export function OrderSummaryPage() {
       </section>
 
       <Container size="xl">
-        {isEmpty ? (
+        {submittedOrder ? (
+          /* Confirmation officielle de commande envoyée avec succès */
+          <div className={styles.emptyCard} role="status" aria-live="polite">
+            <div className={styles.emptyIconWrapper} aria-hidden="true">
+              <svg className={styles.emptyIcon} viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
+              </svg>
+            </div>
+            <h2 className={styles.emptyTitle}>{t('forms.success.title')}</h2>
+            {submittedOrder.reference && (
+              <div style={{ margin: '1.25rem 0' }}>
+                <span
+                  style={{
+                    display: 'inline-block',
+                    backgroundColor: '#0b2a4a',
+                    color: '#ffffff',
+                    padding: '0.5rem 1.25rem',
+                    borderRadius: '9999px',
+                    fontWeight: 700,
+                    fontSize: '1.25rem',
+                    letterSpacing: '0.05em',
+                  }}
+                >
+                  {submittedOrder.reference}
+                </span>
+              </div>
+            )}
+            <p className={styles.emptyDesc}>{t('forms.success.message')}</p>
+            <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+              <Link to="/catalogue" style={{ textDecoration: 'none' }}>
+                <Button variant="primary" size="lg">
+                  {t('order.browseCatalog')}
+                </Button>
+              </Link>
+            </div>
+          </div>
+        ) : isEmpty ? (
           /* État vide du récapitulatif */
           <div className={styles.emptyCard} role="status">
             <div className={styles.emptyIconWrapper} aria-hidden="true">
@@ -299,7 +336,9 @@ export function OrderSummaryPage() {
                 formType="order"
                 initialActivity="general"
                 items={items}
-                onSuccess={() => {
+                onSuccess={(res) => {
+                  // Mémoriser la commande soumise pour afficher l'écran de confirmation avec référence
+                  setSubmittedOrder(res);
                   // Vidage immédiat du récapitulatif dans OrderContext et localStorage
                   clearOrder();
                 }}

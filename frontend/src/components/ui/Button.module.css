@@ -41,6 +41,15 @@
   min-height: 3rem;
 }
 
+@media (max-width: 768px) {
+  .sm,
+  .md,
+  .lg {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
 /* Variantes */
 .primary {
   background-color: var(--color-primary);

@@ -5,6 +5,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import './i18n/index.js';
 import './styles/global.css';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
+import { ThemeProvider } from './context/ThemeContext.jsx';
 import { OrderProvider } from './context/OrderContext.jsx';
 import App from './App.jsx';
 
@@ -15,11 +16,13 @@ if (rootElement) {
     <React.StrictMode>
       <HelmetProvider>
         <ErrorBoundary>
-          <BrowserRouter>
-            <OrderProvider>
-              <App />
-            </OrderProvider>
-          </BrowserRouter>
+          <ThemeProvider>
+            <BrowserRouter>
+              <OrderProvider>
+                <App />
+              </OrderProvider>
+            </BrowserRouter>
+          </ThemeProvider>
         </ErrorBoundary>
       </HelmetProvider>
     </React.StrictMode>

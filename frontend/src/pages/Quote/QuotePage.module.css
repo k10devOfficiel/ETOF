@@ -143,18 +143,6 @@
   font-weight: 700;
   color: var(--color-primary);
   margin: 0;
-  position: relative;
-  padding-bottom: var(--space-2);
-}
-
-.sidebarTitle::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 32px;
-  height: 2px;
-  background-color: var(--color-accent);
 }
 
 .sidebarText {

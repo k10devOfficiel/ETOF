@@ -2,11 +2,53 @@
 
 declare(strict_types=1);
 
+// Prise en charge des fichiers statiques avec le serveur interne PHP (CLI server)
+if (php_sapi_name() === 'cli-server') {
+    $uriPath = (string) parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
+
+    // Bloquer strictement toute tentative de path traversal ou d'accès aux fichiers sensibles
+    if (
+        str_contains($uriPath, '..') ||
+        str_contains($uriPath, '.env') ||
+        str_contains($uriPath, 'database') ||
+        str_contains($uriPath, 'storage') ||
+        str_contains($uriPath, 'vendor') ||
+        str_contains($uriPath, '.git')
+    ) {
+        http_response_code(403);
+        header('Content-Type: application/json; charset=UTF-8');
+        header('X-Content-Type-Options: nosniff');
+        echo json_encode([
+            'success' => false,
+            'data' => null,
+            'error' => [
+                'code' => 'FORBIDDEN',
+                'message' => 'Accès refusé au fichier demandé.',
+            ],
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+
+    $targetFile = __DIR__ . $uriPath;
+    $realTarget = realpath($targetFile);
+    $publicDir = realpath(__DIR__);
+
+    // Ne servir en statique que les fichiers existants strictement situés dans backend/public (hors PHP et dotfiles)
+    if ($realTarget !== false && $publicDir !== false && str_starts_with($realTarget, $publicDir)) {
+        $basename = basename($realTarget);
+        if ($basename[0] !== '.' && !str_ends_with(strtolower($realTarget), '.php') && !is_dir($realTarget)) {
+            return false;
+        }
+    }
+}
+
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\Controllers\AdminAuthController;
 use App\Controllers\AdminProductController;
+use App\Controllers\AdminProfileController;
 use App\Controllers\AdminRequestController;
+use App\Controllers\AdminSettingsController;
 use App\Controllers\AdminVehicleController;
 use App\Controllers\CategoryController;
 use App\Controllers\ProductController;
@@ -33,6 +75,20 @@ Config::load(__DIR__ . '/..');
 // Initialisation de la requête HTTP entrante
 $request = Request::fromGlobals();
 
+// Blocage strict de tout accès aux fichiers ou répertoires sensibles (.env, database, storage, vendor, .git)
+$requestPath = $request->getPath();
+if (
+    str_starts_with($requestPath, '/.env') ||
+    str_starts_with($requestPath, '/database') ||
+    str_starts_with($requestPath, '/storage') ||
+    str_starts_with($requestPath, '/vendor') ||
+    str_starts_with($requestPath, '/.git') ||
+    str_contains($requestPath, '..')
+) {
+    Response::error('FORBIDDEN', 'Accès interdit.', 403)->send();
+    exit;
+}
+
 // Contrôle de la taille maximale du corps JSON (200 Ko)
 if ($request->isPayloadTooLarge()) {
     Response::error(
@@ -43,23 +99,21 @@ if ($request->isPayloadTooLarge()) {
     exit;
 }
 
-// Gestion des en-têtes CORS (actif uniquement si APP_ENV vaut dev, restreint à FRONTEND_URL)
-if (Config::isDev()) {
-    $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-    $frontendUrl = (string) Config::get('FRONTEND_URL', 'http://localhost:5173');
+// Gestion des en-têtes CORS (restreint strictement à FRONTEND_URL configuré)
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+$frontendUrl = (string) Config::get('FRONTEND_URL', '');
 
-    if ($origin === $frontendUrl || $origin === rtrim($frontendUrl, '/')) {
-        header("Access-Control-Allow-Origin: {$origin}");
-        header('Access-Control-Allow-Credentials: true');
-        header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
-        header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Accept-Language, X-CSRF-Token');
-    }
+if ($frontendUrl !== '' && ($origin === $frontendUrl || $origin === rtrim($frontendUrl, '/'))) {
+    header("Access-Control-Allow-Origin: {$origin}");
+    header('Access-Control-Allow-Credentials: true');
+    header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Accept-Language, X-CSRF-Token');
+}
 
-    // Réponse immédiate pour les requêtes de pré-vol HTTP OPTIONS
-    if ($request->getMethod() === 'OPTIONS') {
-        http_response_code(204);
-        exit;
-    }
+// Réponse immédiate pour les requêtes de pré-vol HTTP OPTIONS
+if ($request->getMethod() === 'OPTIONS') {
+    http_response_code(204);
+    exit;
 }
 
 // Initialisation du routeur
@@ -140,6 +194,13 @@ $router->get('/api/admin/requests/export', [AdminRequestController::class, 'expo
 $router->get('/api/admin/requests', [AdminRequestController::class, 'index'], [AdminAuthMiddleware::class]);
 $router->get('/api/admin/requests/{id}', [AdminRequestController::class, 'show'], [AdminAuthMiddleware::class]);
 $router->patch('/api/admin/requests/{id}', [AdminRequestController::class, 'update'], [AdminAuthMiddleware::class, CsrfMiddleware::class]);
+
+// Routes d'administration - Réglages institutionnels
+$router->get('/api/admin/settings', [AdminSettingsController::class, 'index'], [AdminAuthMiddleware::class]);
+$router->put('/api/admin/settings', [AdminSettingsController::class, 'update'], [AdminAuthMiddleware::class, CsrfMiddleware::class]);
+
+// Routes d'administration - Profil administrateur et sécurité
+$router->put('/api/admin/profile/password', [AdminProfileController::class, 'updatePassword'], [AdminAuthMiddleware::class, CsrfMiddleware::class]);
 
 // Routes de test techniques (disponibles en environnement de développement)
 if (Config::isDev()) {
