@@ -268,4 +268,89 @@ final class RequestCreationTest extends TestCase
         $stmt->execute();
         $this->assertSame(0, (int) $stmt->fetchColumn());
     }
+
+    public function testRejectOverlappingVehicleReservation(): void
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->query("SELECT id FROM vehicles WHERE is_active = 1 AND status = 'available' LIMIT 1");
+        $vehicle = $stmt->fetch();
+        $this->assertNotFalse($vehicle, "Un véhicule disponible doit être présent.");
+        $vId = (int) $vehicle['id'];
+
+        $startDate = date('Y-m-d', strtotime('+40 days'));
+        $endDate = date('Y-m-d', strtotime('+45 days'));
+
+        // Créer une première réservation et la passer à 'confirmed'
+        $first = RequestService::createRequest([
+            'type' => 'reservation',
+            'activity' => 'vehicle',
+            'lang' => 'fr',
+            'full_name' => 'Premier Client Confirmé',
+            'email' => 'client1@example.ci',
+            'phone' => '+225 07 00 00 00 01',
+            'vehicle_id' => $vId,
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'consent' => true,
+        ], '10.0.0.91');
+
+        $upStmt = $pdo->prepare("UPDATE requests SET status = 'confirmed' WHERE reference = :ref");
+        $upStmt->execute([':ref' => $first['reference']]);
+
+        // Tenter une deuxième réservation qui chevauche la première (+42 à +48)
+        $overlapStart = date('Y-m-d', strtotime('+42 days'));
+        $overlapEnd = date('Y-m-d', strtotime('+48 days'));
+
+        $this->expectException(ValidationException::class);
+        RequestService::createRequest([
+            'type' => 'reservation',
+            'activity' => 'vehicle',
+            'lang' => 'fr',
+            'full_name' => 'Deuxième Client Conflit',
+            'email' => 'client2@example.ci',
+            'phone' => '+225 07 00 00 00 02',
+            'vehicle_id' => $vId,
+            'start_date' => $overlapStart,
+            'end_date' => $overlapEnd,
+            'consent' => true,
+        ], '10.0.0.92');
+    }
+
+    public function testCreateVehiclePurchaseWithCity(): void
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->query("SELECT id FROM vehicles WHERE is_active = 1 AND status = 'available' LIMIT 1");
+        $vehicle = $stmt->fetch();
+        $this->assertNotFalse($vehicle);
+        $vId = (int) $vehicle['id'];
+
+        $payload = [
+            'type' => 'purchase',
+            'activity' => 'vehicle',
+            'lang' => 'fr',
+            'full_name' => 'Acheteur VIP',
+            'email' => 'vip@example.ci',
+            'phone' => '+225 07 88 99 00 11',
+            'vehicle_id' => $vId,
+            'consent' => true,
+            'details' => [
+                'city' => 'Yamoussoukro',
+                'payment_method' => 'cash',
+                'trade_in' => 'yes',
+                'trade_in_details' => 'Toyota RAV4 2019',
+            ],
+        ];
+
+        $result = RequestService::createRequest($payload, '10.0.0.95');
+        $this->assertNotEmpty($result['reference']);
+
+        $stmt = $pdo->prepare("SELECT details FROM requests WHERE reference = :ref");
+        $stmt->execute([':ref' => $result['reference']]);
+        $row = $stmt->fetch();
+
+        $details = json_decode((string) $row['details'], true);
+        $this->assertSame('Yamoussoukro', $details['city']);
+        $this->assertSame('cash', $details['payment_method']);
+        $this->assertSame('yes', $details['trade_in']);
+    }
 }

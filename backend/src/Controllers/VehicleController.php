@@ -80,7 +80,7 @@ final class VehicleController
 
         // Récupération paginée avec sous-requête pour la photo principale
         $sql = "SELECT v.id, v.slug, v.brand, v.model, v.year, v.mode, 
-                       v.price_sale, v.price_rental_day, v.status, 
+                       v.price_sale, v.price_rental_day, v.status, v.specs,
                        v.description_fr, v.description_en, v.created_at,
                        c.id AS category_id, c.slug AS category_slug, 
                        c.name_fr AS category_name_fr, c.name_en AS category_name_en,
@@ -227,6 +227,14 @@ final class VehicleController
             ? (string) $row['category_name_en']
             : (string) $row['category_name_fr'];
 
+        $specs = [];
+        if (!empty($row['specs'])) {
+            $decoded = json_decode((string) $row['specs'], true);
+            if (is_array($decoded)) {
+                $specs = $decoded;
+            }
+        }
+
         return [
             'id' => (int) $row['id'],
             'slug' => (string) $row['slug'],
@@ -237,6 +245,7 @@ final class VehicleController
             'status' => (string) $row['status'],
             'price_sale' => $row['price_sale'] !== null ? (int) $row['price_sale'] : null,
             'price_rental_day' => $row['price_rental_day'] !== null ? (int) $row['price_rental_day'] : null,
+            'specs' => $specs,
             'description' => $description !== '' ? $description : null,
             'main_image' => $row['main_image'] !== null ? (string) $row['main_image'] : null,
             'category' => [

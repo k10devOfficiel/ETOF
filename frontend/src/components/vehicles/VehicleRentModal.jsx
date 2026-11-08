@@ -28,8 +28,10 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [city, setCity] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [usageZone, setUsageZone] = useState('abidjan');
   const [pickupLocation, setPickupLocation] = useState('abidjan_headquarters');
   const [withDriver, setWithDriver] = useState(false);
   const [hasValidLicense, setHasValidLicense] = useState(false);
@@ -44,7 +46,34 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
   if (!vehicle) return null;
 
   const vehicleName = `${vehicle.brand} ${vehicle.model} ${vehicle.year ? `(${vehicle.year})` : ''}`;
-  const priceDisplay = formatPrice(vehicle.price_rental_day) || t('catalog.priceOnDemand');
+  const specs = vehicle.specs || {};
+
+  const dayRate = vehicle.price_rental_day ? Number(vehicle.price_rental_day) : null;
+  const weekRate = specs.price_rental_week ? Number(specs.price_rental_week) : (dayRate ? Math.round(dayRate * 6) : null);
+  const monthRate = specs.price_rental_month ? Number(specs.price_rental_month) : (dayRate ? Math.round(dayRate * 22) : null);
+
+  const daysCount = (() => {
+    if (!startDate || !endDate) return 0;
+    const s = new Date(startDate);
+    const e = new Date(endDate);
+    const diff = Math.round((e - s) / (1000 * 60 * 60 * 24));
+    return diff > 0 ? diff : 0;
+  })();
+
+  const estimatedTotal = (() => {
+    if (!daysCount || !dayRate) return null;
+    if (daysCount >= 30 && monthRate) {
+      const months = Math.floor(daysCount / 30);
+      const remDays = daysCount % 30;
+      return (months * monthRate) + (remDays * dayRate);
+    }
+    if (daysCount >= 7 && weekRate) {
+      const weeks = Math.floor(daysCount / 7);
+      const remDays = daysCount % 7;
+      return (weeks * weekRate) + (remDays * dayRate);
+    }
+    return daysCount * dayRate;
+  })();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -88,6 +117,10 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
         consent: Boolean(consent),
         website: websiteHoneypot,
         details: {
+          city: city.trim(),
+          usage_zone: usageZone,
+          days_count: daysCount,
+          estimated_cost: estimatedTotal,
           pickup_location: pickupLocation,
           with_driver: withDriver ? 'yes' : 'no',
           has_valid_license: hasValidLicense ? 'yes' : 'no',
@@ -139,7 +172,7 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
         </div>
       ) : (
         <form onSubmit={handleSubmit} noValidate className={styles.form}>
-          {/* Récapitulatif Véhicule */}
+          {/* Récapitulatif Véhicule & Grille des Tarifs */}
           <div className={styles.vehicleSummary}>
             <div>
               <span className={styles.vehicleLabel}>{t('vehicles.vehicle')}:</span>
@@ -147,7 +180,54 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
             </div>
             <div>
               <span className={styles.vehicleLabel}>{t('vehicles.rentalPerDay')}:</span>
-              <span className={styles.vehiclePrice}>{priceDisplay}</span>
+              <span className={styles.vehiclePrice}>{formatPrice(dayRate) || t('catalog.priceOnDemand')}</span>
+            </div>
+          </div>
+
+          {/* Grille des tarifs Jour / Semaine / Mois */}
+          <div className={styles.ratesGrid}>
+            <div className={styles.rateCard}>
+              <div className={styles.ratePeriod}>{t('vehicles.rentalPerDay', 'Par jour')}</div>
+              <div className={styles.rateAmount}>{formatPrice(dayRate) || t('catalog.priceOnDemand')}</div>
+            </div>
+            <div className={styles.rateCard}>
+              <div className={styles.ratePeriod}>{t('vehicles.rentalPerWeek', 'Par semaine')}</div>
+              <div className={styles.rateAmount}>{formatPrice(weekRate) || t('catalog.priceOnDemand')}</div>
+            </div>
+            <div className={styles.rateCard}>
+              <div className={styles.ratePeriod}>{t('vehicles.rentalPerMonth', 'Par mois')}</div>
+              <div className={styles.rateAmount}>{formatPrice(monthRate) || t('catalog.priceOnDemand')}</div>
+            </div>
+          </div>
+
+          {/* Caractéristiques techniques du véhicule */}
+          <div className={styles.specsBox}>
+            <div className={styles.specsTitle}>{t('vehicles.technicalSpecs', 'Caractéristiques techniques')}</div>
+            <div className={styles.specsGrid}>
+              <div className={styles.specItem}>
+                <span className={styles.specLabel}>{t('vehicles.specKeys.year', 'Année modèle')}</span>
+                <span className={styles.specValue}>{vehicle.year || t('common.notSpecified', 'N/C')}</span>
+              </div>
+              <div className={styles.specItem}>
+                <span className={styles.specLabel}>{t('vehicles.specKeys.fuel', 'Carburant')}</span>
+                <span className={styles.specValue}>{specs.fuel || specs.fuel_type || t('common.notSpecified', 'N/C')}</span>
+              </div>
+              <div className={styles.specItem}>
+                <span className={styles.specLabel}>{t('vehicles.specKeys.transmission', 'Boîte de vitesses')}</span>
+                <span className={styles.specValue}>{specs.transmission || t('common.notSpecified', 'N/C')}</span>
+              </div>
+              <div className={styles.specItem}>
+                <span className={styles.specLabel}>{t('vehicles.specKeys.seats', 'Nombre de places')}</span>
+                <span className={styles.specValue}>{specs.seats ? `${specs.seats} places` : t('common.notSpecified', 'N/C')}</span>
+              </div>
+              <div className={styles.specItem}>
+                <span className={styles.specLabel}>{t('vehicles.specKeys.air_conditioning', 'Climatisation')}</span>
+                <span className={styles.specValue}>{specs.air_conditioning !== false ? t('common.yes', 'Oui') : t('common.no', 'Non')}</span>
+              </div>
+              <div className={styles.specItem}>
+                <span className={styles.specLabel}>{t('vehicles.specKeys.color', 'Couleur')}</span>
+                <span className={styles.specValue}>{specs.color || t('common.notSpecified', 'N/C')}</span>
+              </div>
             </div>
           </div>
 
@@ -169,6 +249,7 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
             />
           </div>
 
+          {/* Sélection des dates avec calcul dynamique */}
           <div className={styles.grid2}>
             <div className={styles.fieldGroup}>
               <label htmlFor="rent-start" className={styles.label}>
@@ -200,6 +281,57 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
                 required
               />
               {errors.end_date && <span className={styles.fieldError}>{Array.isArray(errors.end_date) ? errors.end_date.join(' ') : errors.end_date}</span>}
+            </div>
+          </div>
+
+          {/* Calcul automatique du nombre de jours et estimation du prix */}
+          {daysCount > 0 && (
+            <div className={styles.estimateBox} role="status">
+              <div>
+                <span className={styles.estimateLabel}>{t('vehicles.estimatedDuration', 'Durée')} : </span>
+                <strong className={styles.estimateDays}>{t('vehicles.daysCount', { count: daysCount })}</strong>
+              </div>
+              {estimatedTotal && (
+                <div>
+                  <span className={styles.estimateLabel}>{t('vehicles.estimatedCost', 'Estimation')} : </span>
+                  <span className={styles.estimateTotal}>{formatPrice(estimatedTotal)}</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Zone d'utilisation et Lieu de prise en charge */}
+          <div className={styles.grid2}>
+            <div className={styles.fieldGroup}>
+              <label htmlFor="rent-zone" className={styles.label}>
+                {t('vehicles.usageZoneLabel', 'Zone d’utilisation prévue')}
+              </label>
+              <select
+                id="rent-zone"
+                className={styles.select}
+                value={usageZone}
+                onChange={(e) => setUsageZone(e.target.value)}
+              >
+                <option value="abidjan">{t('vehicles.usageZoneAbidjan', 'Grand Abidjan uniquement')}</option>
+                <option value="national">{t('vehicles.usageZoneNational', 'Intérieur du pays (Côte d’Ivoire)')}</option>
+                <option value="subregion">{t('vehicles.usageZoneSubregion', 'Sous-région (CEDEAO)')}</option>
+              </select>
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <label htmlFor="rent-location" className={styles.label}>
+                {t('vehicles.pickupLocationLabel', 'Lieu de prise en charge')}
+              </label>
+              <select
+                id="rent-location"
+                className={styles.select}
+                value={pickupLocation}
+                onChange={(e) => setPickupLocation(e.target.value)}
+              >
+                <option value="abidjan_headquarters">{t('vehicles.locHeadquarters', 'Siège ETOF SARL (Cocody Angré Oscars)')}</option>
+                <option value="abidjan_airport">{t('vehicles.locAirport', 'Aéroport International Félix-Houphouët-Boigny')}</option>
+                <option value="delivery_address">{t('vehicles.locDelivery', 'Livraison à domicile ou au bureau (sur devis)')}</option>
+              </select>
             </div>
           </div>
 
@@ -253,6 +385,21 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
               />
               {errors.email && <span className={styles.fieldError}>{errors.email}</span>}
             </div>
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label htmlFor="rent-city" className={styles.label}>
+              {t('vehicles.cityLabel', 'Ville de résidence')}
+            </label>
+            <input
+              id="rent-city"
+              type="text"
+              className={styles.input}
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              autoComplete="address-level2"
+              placeholder={t('vehicles.cityPlaceholder', 'Ex : Abidjan, Bouaké, San-Pédro...')}
+            />
           </div>
 
           <div className={styles.fieldGroup}>

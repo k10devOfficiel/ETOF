@@ -26,6 +26,7 @@ export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [city, setCity] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [tradeIn, setTradeIn] = useState(false);
   const [tradeInDetails, setTradeInDetails] = useState('');
@@ -41,6 +42,7 @@ export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
 
   const vehicleName = `${vehicle.brand} ${vehicle.model} ${vehicle.year ? `(${vehicle.year})` : ''}`;
   const priceDisplay = formatPrice(vehicle.price_sale) || t('catalog.priceOnDemand');
+  const specs = vehicle.specs || {};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -71,6 +73,7 @@ export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
         consent: Boolean(consent),
         website: websiteHoneypot,
         details: {
+          city: city.trim(),
           payment_method: paymentMethod,
           trade_in: tradeIn ? 'yes' : 'no',
           trade_in_details: tradeIn ? tradeInDetails.trim() : '',
@@ -132,6 +135,47 @@ export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
               <span className={styles.vehicleLabel}>{t('vehicles.salePrice')}:</span>
               <span className={styles.vehiclePrice}>{priceDisplay}</span>
             </div>
+          </div>
+
+          {/* Caractéristiques techniques du véhicule */}
+          <div className={styles.specsBox}>
+            <div className={styles.specsTitle}>{t('vehicles.technicalSpecs', 'Caractéristiques techniques')}</div>
+            <div className={styles.specsGrid}>
+              <div className={styles.specItem}>
+                <span className={styles.specLabel}>{t('vehicles.specKeys.year', 'Année modèle')}</span>
+                <span className={styles.specValue}>{vehicle.year || t('common.notSpecified', 'N/C')}</span>
+              </div>
+              <div className={styles.specItem}>
+                <span className={styles.specLabel}>{t('vehicles.specKeys.mileage', 'Kilométrage')}</span>
+                <span className={styles.specValue}>
+                  {specs.mileage ? `${Number(specs.mileage).toLocaleString('fr-FR')} km` : t('common.notSpecified', 'N/C')}
+                </span>
+              </div>
+              <div className={styles.specItem}>
+                <span className={styles.specLabel}>{t('vehicles.specKeys.fuel', 'Carburant')}</span>
+                <span className={styles.specValue}>{specs.fuel || specs.fuel_type || t('common.notSpecified', 'N/C')}</span>
+              </div>
+              <div className={styles.specItem}>
+                <span className={styles.specLabel}>{t('vehicles.specKeys.transmission', 'Boîte de vitesses')}</span>
+                <span className={styles.specValue}>{specs.transmission || t('common.notSpecified', 'N/C')}</span>
+              </div>
+              <div className={styles.specItem}>
+                <span className={styles.specLabel}>{t('vehicles.specKeys.seats', 'Nombre de places')}</span>
+                <span className={styles.specValue}>{specs.seats ? `${specs.seats} places` : t('common.notSpecified', 'N/C')}</span>
+              </div>
+              <div className={styles.specItem}>
+                <span className={styles.specLabel}>{t('vehicles.specKeys.color', 'Couleur')}</span>
+                <span className={styles.specValue}>{specs.color || t('common.notSpecified', 'N/C')}</span>
+              </div>
+            </div>
+            {(specs.options || specs.features) && (
+              <div style={{ marginTop: '8px', fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
+                <strong>{t('vehicles.optionsAndEquipment', 'Équipements & Options')} : </strong>
+                {Array.isArray(specs.options || specs.features)
+                  ? (specs.options || specs.features).join(', ')
+                  : String(specs.options || specs.features)}
+              </div>
+            )}
           </div>
 
           {errors.global && (
@@ -202,6 +246,21 @@ export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
               />
               {errors.email && <span className={styles.fieldError}>{errors.email}</span>}
             </div>
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label htmlFor="buy-city" className={styles.label}>
+              {t('vehicles.cityLabel', 'Ville de résidence')}
+            </label>
+            <input
+              id="buy-city"
+              type="text"
+              className={styles.input}
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              autoComplete="address-level2"
+              placeholder={t('vehicles.cityPlaceholder', 'Ex : Abidjan, Bouaké, San-Pédro...')}
+            />
           </div>
 
           <div className={styles.fieldGroup}>

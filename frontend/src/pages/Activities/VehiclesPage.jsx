@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import ActivityPage from '../../components/activity/ActivityPage.jsx';
+import ActivityVehiclesCatalog from '../../components/catalog/ActivityVehiclesCatalog.jsx';
 
 /**
  * Page dédiée au pôle Vente et Location de Véhicules d'ETOF SARL.
@@ -117,7 +118,9 @@ export function VehiclesPage() {
         ],
       }}
       devTopicKey="keyFigures"
-    />
+    >
+      <ActivityVehiclesCatalog />
+    </ActivityPage>
   );
 }
 

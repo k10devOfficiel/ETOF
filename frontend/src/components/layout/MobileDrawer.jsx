@@ -141,16 +141,6 @@ export function MobileDrawer({ isOpen, onClose, triggerRef }) {
               {t('nav.home')}
             </NavLink>
 
-            <NavLink
-              to="/a-propos"
-              className={({ isActive }) =>
-                `${styles.navLink} ${isActive ? styles.activeNavLink : ''}`
-              }
-              onClick={onClose}
-            >
-              {t('nav.about')}
-            </NavLink>
-
             <div>
               <button
                 type="button"
@@ -232,6 +222,16 @@ export function MobileDrawer({ isOpen, onClose, triggerRef }) {
               onClick={onClose}
             >
               {t('nav.catalog')}
+            </NavLink>
+
+            <NavLink
+              to="/a-propos"
+              className={({ isActive }) =>
+                `${styles.navLink} ${isActive ? styles.activeNavLink : ''}`
+              }
+              onClick={onClose}
+            >
+              {t('nav.about')}
             </NavLink>
 
             <NavLink

@@ -179,27 +179,31 @@ final class RequestService
                         $errors['end_date'] = ["La date de fin doit être postérieure à la date de début."];
                     }
 
-                    // Contrôle d'absence de chevauchement sur une période déjà confirmée
+                    // Contrôle d'absence de chevauchement sur une période déjà confirmée ou véhicule réservé
                     if (empty($errors['start_date']) && empty($errors['end_date'])) {
-                        $overlapStmt = $pdo->prepare(
-                            "SELECT id, start_date, end_date FROM requests 
-                             WHERE vehicle_id = :vId 
-                               AND status = 'confirmed'
-                               AND start_date IS NOT NULL 
-                               AND end_date IS NOT NULL
-                               AND NOT (end_date < :startDate OR start_date > :endDate)
-                             LIMIT 1"
-                        );
-                        $overlapStmt->bindValue(':vId', (int) $vehicleId, PDO::PARAM_INT);
-                        $overlapStmt->bindValue(':startDate', $startDate, PDO::PARAM_STR);
-                        $overlapStmt->bindValue(':endDate', $endDate, PDO::PARAM_STR);
-                        $overlapStmt->execute();
-                        $overlap = $overlapStmt->fetch();
+                        if ((string) $vehicle['status'] === 'reserved') {
+                            $errors['start_date'] = ["Ce véhicule est actuellement marqué comme réservé."];
+                        } else {
+                            $overlapStmt = $pdo->prepare(
+                                "SELECT id, start_date, end_date FROM requests 
+                                 WHERE vehicle_id = :vId 
+                                   AND status = 'confirmed'
+                                   AND start_date IS NOT NULL 
+                                   AND end_date IS NOT NULL
+                                   AND NOT (end_date < :startDate OR start_date > :endDate)
+                                 LIMIT 1"
+                            );
+                            $overlapStmt->bindValue(':vId', (int) $vehicleId, PDO::PARAM_INT);
+                            $overlapStmt->bindValue(':startDate', $startDate, PDO::PARAM_STR);
+                            $overlapStmt->bindValue(':endDate', $endDate, PDO::PARAM_STR);
+                            $overlapStmt->execute();
+                            $overlap = $overlapStmt->fetch();
 
-                        if ($overlap !== false) {
-                            $errors['start_date'] = [
-                                sprintf("Ce véhicule est déjà réservé sur la période demandée (du %s au %s).", $overlap['start_date'], $overlap['end_date'])
-                            ];
+                            if ($overlap !== false) {
+                                $errors['start_date'] = [
+                                    sprintf("Ce véhicule est déjà réservé sur la période demandée (du %s au %s).", $overlap['start_date'], $overlap['end_date'])
+                                ];
+                            }
                         }
                     }
                 }
@@ -210,15 +214,20 @@ final class RequestService
         $details = $data['details'] ?? null;
         if ($type === 'purchase' && is_array($details)) {
             $details = [
+                'city' => (string) ($details['city'] ?? ''),
                 'payment_method' => (string) ($details['payment_method'] ?? 'cash'),
                 'trade_in' => !empty($details['trade_in']) ? 'yes' : 'no',
                 'trade_in_details' => (string) ($details['trade_in_details'] ?? ''),
             ];
         } elseif ($type === 'reservation' && is_array($details)) {
             $details = [
+                'city' => (string) ($details['city'] ?? ''),
+                'usage_zone' => (string) ($details['usage_zone'] ?? 'Abidjan'),
                 'pickup_location' => (string) ($details['pickup_location'] ?? 'Abidjan'),
                 'with_driver' => !empty($details['with_driver']) ? 'yes' : 'no',
                 'has_valid_license' => !empty($details['has_valid_license']) ? 'yes' : 'no',
+                'days_count' => isset($details['days_count']) ? (int) $details['days_count'] : null,
+                'estimated_cost' => isset($details['estimated_cost']) ? (int) $details['estimated_cost'] : null,
             ];
         } elseif ($activity === 'fuel' && is_array($details)) {
             // Assainissement des informations de transport

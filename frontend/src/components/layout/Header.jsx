@@ -77,16 +77,6 @@ export function Header({ settings }) {
                     {t('nav.home')}
                   </NavLink>
                 </li>
-                <li>
-                  <NavLink
-                    to="/a-propos"
-                    className={({ isActive }) =>
-                      `${styles.navLink} ${isActive ? styles.activeLink : ''}`
-                    }
-                  >
-                    {t('nav.about')}
-                  </NavLink>
-                </li>
 
                 {/* Dropdown 4 activités */}
                 <li className={styles.dropdownWrapper} ref={dropdownRef}>
@@ -179,12 +169,12 @@ export function Header({ settings }) {
                 </li>
                 <li>
                   <NavLink
-                    to="/devis"
+                    to="/a-propos"
                     className={({ isActive }) =>
                       `${styles.navLink} ${isActive ? styles.activeLink : ''}`
                     }
                   >
-                    {t('nav.quote')}
+                    {t('nav.about')}
                   </NavLink>
                 </li>
                 <li>

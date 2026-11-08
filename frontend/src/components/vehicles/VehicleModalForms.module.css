@@ -167,3 +167,104 @@
   color: var(--color-primary, #0B2A4A);
 }
 
+.specsBox {
+  background-color: var(--color-bg-surface-alt, #f8fafc);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-md, 8px);
+  padding: var(--space-3, 0.75rem);
+}
+
+.specsTitle {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  color: var(--color-text-muted, #64748B);
+  margin-bottom: var(--space-2, 0.5rem);
+}
+
+.specsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2, 0.5rem);
+}
+
+@media (min-width: 600px) {
+  .specsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.specItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.specLabel {
+  font-size: 0.7rem;
+  color: var(--color-text-muted, #64748B);
+}
+
+.specValue {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #0F172A);
+}
+
+.ratesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2, 0.5rem);
+  margin-top: var(--space-2, 0.5rem);
+}
+
+.rateCard {
+  background-color: var(--color-bg-card, #ffffff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-sm, 6px);
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.ratePeriod {
+  font-size: 0.7rem;
+  color: var(--color-text-muted, #64748B);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.rateAmount {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-primary, #0B2A4A);
+  margin-top: 2px;
+}
+
+.estimateBox {
+  background-color: rgba(20, 184, 196, 0.08);
+  border: 1px solid rgba(20, 184, 196, 0.3);
+  border-radius: var(--radius-md, 8px);
+  padding: var(--space-3, 0.75rem);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2, 0.5rem);
+}
+
+.estimateLabel {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary, #334155);
+}
+
+.estimateDays {
+  font-weight: 600;
+  color: var(--color-primary, #0B2A4A);
+}
+
+.estimateTotal {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-accent, #14B8C4);
+}
+

@@ -1,0 +1,108 @@
+.section {
+  padding: var(--space-12, 3rem) 0;
+  background-color: var(--color-bg-surface-alt, #F8FAFC);
+  border-top: 1px solid var(--color-border, #E2E8F0);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: var(--space-8, 2rem);
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background-color: rgba(20, 184, 196, 0.12);
+  color: var(--color-accent, #14B8C4);
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-full, 9999px);
+  margin-bottom: var(--space-2, 0.5rem);
+}
+
+.title {
+  font-family: var(--font-family-heading, 'Cinzel', serif);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  color: var(--color-primary, #0B2A4A);
+  margin-bottom: var(--space-2, 0.5rem);
+}
+
+.subtitle {
+  color: var(--color-text-secondary, #334155);
+  font-size: var(--font-size-base, 1rem);
+  line-height: var(--line-height-relaxed, 1.6);
+}
+
+.filterBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4, 1rem);
+  background-color: var(--color-bg-card, #FFFFFF);
+  border: 1px solid var(--color-border, #E2E8F0);
+  border-radius: var(--radius-lg, 12px);
+  padding: var(--space-4, 1rem);
+  margin-bottom: var(--space-8, 2rem);
+}
+
+.modeTabs {
+  display: flex;
+  gap: var(--space-2, 0.5rem);
+  flex-wrap: wrap;
+}
+
+.tabBtn {
+  padding: 8px 16px;
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 600;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--color-border, #E2E8F0);
+  background-color: transparent;
+  color: var(--color-text-secondary, #334155);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 44px;
+}
+
+.tabBtn:hover {
+  background-color: var(--color-bg-surface-alt, #F8FAFC);
+  color: var(--color-text-primary, #0F172A);
+}
+
+.tabBtnActive {
+  background-color: var(--color-primary, #0B2A4A);
+  color: #FFFFFF;
+  border-color: var(--color-primary, #0B2A4A);
+}
+
+.tabBtnActive:hover {
+  background-color: var(--color-primary-dark, #06182B);
+  color: #FFFFFF;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-6, 1.5rem);
+  margin-bottom: var(--space-8, 2rem);
+}
+
+.footerActions {
+  text-align: center;
+  margin-top: var(--space-8, 2rem);
+}
+
+.stateBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-12, 3rem);
+  text-align: center;
+}
