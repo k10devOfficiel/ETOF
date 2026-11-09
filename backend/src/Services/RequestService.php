@@ -340,6 +340,7 @@ final class RequestService
         MailService::sendRequestEmails($emailPayload, $processedItems, $vehicleData);
 
         return [
+            'id' => $requestId,
             'reference' => $reference,
             'type' => $type,
             'created_at' => date('c'),

@@ -116,7 +116,6 @@ export function FuelPage() {
           },
         ],
       }}
-      devTopicKey="certifications"
     >
       <section
         id="devis-hydrocarbures"

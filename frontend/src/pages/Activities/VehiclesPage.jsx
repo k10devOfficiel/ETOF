@@ -117,7 +117,6 @@ export function VehiclesPage() {
           },
         ],
       }}
-      devTopicKey="keyFigures"
     >
       <ActivityVehiclesCatalog />
     </ActivityPage>

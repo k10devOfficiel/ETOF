@@ -86,23 +86,42 @@ export function DashboardPage() {
   useEffect(() => {
     loadDashboardData();
 
-    // Actualisation silencieuse périodique toutes les 15 secondes
+    // Actualisation silencieuse périodique toutes les 3,5 secondes
     const interval = setInterval(() => {
-      loadDashboardData(true);
-    }, 15000);
+      if (document.visibilityState === 'visible') {
+        loadDashboardData(true);
+      }
+    }, 3500);
 
-    // Écoute des événements temps réel émis lors d'une nouvelle demande
-    const handleNewRequest = () => {
+    // Écoute des événements temps réel émis lors d'une soumission ou annulation
+    const handleSync = () => {
       loadDashboardData(true);
     };
 
-    window.addEventListener('etof:new-request-received', handleNewRequest);
-    window.addEventListener('etof:new-request-submitted', handleNewRequest);
+    window.addEventListener('etof:new-request-received', handleSync);
+    window.addEventListener('etof:new-request-submitted', handleSync);
+    window.addEventListener('etof:request-cancelled', handleSync);
+
+    let bc = null;
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        bc = new BroadcastChannel('etof_orders_sync');
+        bc.onmessage = () => {
+          loadDashboardData(true);
+        };
+      } catch {}
+    }
 
     return () => {
       clearInterval(interval);
-      window.removeEventListener('etof:new-request-received', handleNewRequest);
-      window.removeEventListener('etof:new-request-submitted', handleNewRequest);
+      window.removeEventListener('etof:new-request-received', handleSync);
+      window.removeEventListener('etof:new-request-submitted', handleSync);
+      window.removeEventListener('etof:request-cancelled', handleSync);
+      if (bc) {
+        try {
+          bc.close();
+        } catch {}
+      }
     };
   }, [loadDashboardData]);
 

@@ -53,6 +53,7 @@ final class RequestController
             RateLimiter::hit($ip, 'create_request');
 
             return Response::success([
+                'id' => $result['id'] ?? null,
                 'reference' => $result['reference'],
                 'message' => 'Votre demande a été enregistrée avec succès sous la référence ' . $result['reference'] . '.',
                 'created_at' => $result['created_at'],
@@ -61,6 +62,73 @@ final class RequestController
             return Response::error('VALIDATION_FAILED', $e->getMessage(), 422, $e->getFields());
         } catch (Throwable $e) {
             return Response::error('REQUEST_PROCESSING_ERROR', $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Annule et supprime une commande côté client (POST /api/requests/cancel).
+     * Supprime aussitôt la commande de la base (visible côté admin)
+     * tout en permettant au frontend de conserver le panier garni.
+     */
+    public function cancel(Request $request): Response
+    {
+        $body = $request->getBody();
+        $reference = trim((string) ($body['reference'] ?? ''));
+        $id = !empty($body['id']) ? (int) $body['id'] : null;
+
+        if ($reference === '' && $id === null) {
+            return Response::error('MISSING_IDENTIFIER', 'Référence ou ID de commande manquant.', 422);
+        }
+
+        \App\Services\SessionService::start();
+        $currentUserId = !empty($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null;
+
+        $pdo = \App\Core\Database::getConnection();
+
+        if ($id !== null) {
+            $stmt = $pdo->prepare("SELECT id, reference, user_id FROM requests WHERE id = :id LIMIT 1");
+            $stmt->bindValue(':id', $id, \PDO::PARAM_INT);
+        } else {
+            $stmt = $pdo->prepare("SELECT id, reference, user_id FROM requests WHERE reference = :ref LIMIT 1");
+            $stmt->bindValue(':ref', $reference, \PDO::PARAM_STR);
+        }
+        $stmt->execute();
+        $req = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        if (!$req) {
+            return Response::error('NOT_FOUND', 'Commande introuvable ou déjà annulée.', 404);
+        }
+
+        // Contrôle de propriété si utilisateur connecté
+        if ($currentUserId !== null && $req['user_id'] !== null && (int) $req['user_id'] !== $currentUserId) {
+            return Response::error('FORBIDDEN', 'Vous n’êtes pas autorisé à modifier cette commande.', 403);
+        }
+
+        $targetId = (int) $req['id'];
+        $targetRef = (string) $req['reference'];
+
+        $pdo->beginTransaction();
+        try {
+            // Suppression des items associés
+            $delItems = $pdo->prepare("DELETE FROM request_items WHERE request_id = :rid");
+            $delItems->bindValue(':rid', $targetId, \PDO::PARAM_INT);
+            $delItems->execute();
+
+            // Suppression de la demande
+            $delReq = $pdo->prepare("DELETE FROM requests WHERE id = :rid");
+            $delReq->bindValue(':rid', $targetId, \PDO::PARAM_INT);
+            $delReq->execute();
+
+            $pdo->commit();
+
+            return Response::success([
+                'deleted' => true,
+                'reference' => $targetRef,
+                'message' => "La commande {$targetRef} a été annulée et supprimée avec succès.",
+            ]);
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            return Response::error('CANCEL_ERROR', 'Impossible de supprimer la commande : ' . $e->getMessage(), 500);
         }
     }
 }

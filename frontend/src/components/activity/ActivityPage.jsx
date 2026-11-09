@@ -77,7 +77,6 @@ export function ActivityPage({
   services,
   advantages,
   cta,
-  devTopicKey,
   children,
 }) {
   return (

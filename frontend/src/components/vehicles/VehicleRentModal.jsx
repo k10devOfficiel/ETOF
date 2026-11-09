@@ -172,13 +172,18 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
     onClose();
   };
 
-  const clientOrVehicleName = (fullName.trim() || (user ? displayName(user, currentLang) : '') || vehicleName);
+  const clientName = fullName.trim() || (user ? displayName(user, currentLang) : '');
+  const modalTitle = clientName
+    ? t('vehicles.rentModalTitle', { name: clientName, defaultValue: `Réservation de véhicule – ${clientName}` })
+    : vehicleName
+    ? `${t('vehicles.rentModalTitleDefault', 'Réservation de véhicule')} – ${vehicleName}`
+    : t('vehicles.rentModalTitleDefault', 'Réservation de véhicule');
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleResetAndClose}
-      title={t('vehicles.rentModalTitle', { name: clientOrVehicleName, vehicle: vehicleName })}
+      title={modalTitle}
       size="md"
     >
       {submittedData ? (

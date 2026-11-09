@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Seo from '../../components/common/Seo.jsx';
 import { useOrder } from '../../context/OrderContext.jsx';
+import { useUserAuth } from '../../context/UserAuthContext.jsx';
+import { useToast } from '../../context/ToastContext.jsx';
 import { Container } from '../../components/ui/Container.jsx';
 import Button from '../../components/ui/Button.jsx';
 import { RequestForm } from '../../components/forms/RequestForm.jsx';
+import { cancelRequest } from '../../api/requests.js';
 import styles from './OrderSummaryPage.module.css';
 
 /**
@@ -23,17 +26,32 @@ function formatPrice(amount) {
 
 /**
  * Page de récapitulatif de commande multi-produits.
- * Permet de modifier les quantités selon les minimums d'achat, de supprimer des articles,
- * d'afficher le total financier indicatif avec la mention de confirmation obligatoire par ETOF SARL,
- * et d'envoyer la commande via le moteur RequestForm.
- *
- * Inclut également le point d'extension architectural pour le paiement en ligne futur.
+ * Après soumission, le panier reste conservé avec tous ses articles et affiche
+ * la mention « Votre commande a été envoyée » avec sa référence et la possibilité
+ * de modifier ou d'annuler/supprimer la commande en base immédiatement côté admin.
  *
  * @returns {JSX.Element}
  */
 export function OrderSummaryPage() {
-  const { t } = useTranslation();
-  const [submittedOrder, setSubmittedOrder] = useState(null);
+  const { t, i18n } = useTranslation();
+  const { user } = useUserAuth();
+  const { notifySuccess, notifyError } = useToast();
+  const formSectionRef = useRef(null);
+
+  const storageKey = user ? `etof_submitted_order_${user.id}` : 'etof_submitted_order_guest';
+
+  const [submittedOrder, setSubmittedOrder] = useState(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
   const {
     items,
     itemCount,
@@ -45,6 +63,74 @@ export function OrderSummaryPage() {
     removeItem,
     clearOrder,
   } = useOrder();
+
+  // Synchronisation du localStorage lorsque la commande soumise change
+  useEffect(() => {
+    if (submittedOrder) {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(submittedOrder));
+      } catch {
+        // Ignorer les erreurs éventuelles de quota localStorage
+      }
+    } else {
+      localStorage.removeItem(storageKey);
+    }
+  }, [submittedOrder, storageKey]);
+
+  // Diffuse les événements en temps réel vers l'Admin sans rechargement
+  const broadcastSync = (type, detail) => {
+    try {
+      window.dispatchEvent(new CustomEvent('etof:new-request-submitted', { detail }));
+      window.dispatchEvent(new CustomEvent('etof:request-cancelled', { detail }));
+      if (typeof BroadcastChannel !== 'undefined') {
+        const bc = new BroadcastChannel('etof_orders_sync');
+        bc.postMessage({ type, detail });
+        bc.close();
+      }
+    } catch {
+      // Ignorer si indisponible
+    }
+  };
+
+  // Annulation et suppression de la commande envoyée
+  const handleCancelOrder = async () => {
+    if (!submittedOrder) return;
+
+    const confirmCancel = window.confirm(
+      t('order.cancelConfirmQuestion', 'Êtes-vous certain de vouloir supprimer cette commande ? Vos articles resteront dans votre panier.')
+    );
+    if (!confirmCancel) return;
+
+    setIsCancelling(true);
+    try {
+      await cancelRequest({
+        id: submittedOrder.id,
+        reference: submittedOrder.reference,
+      });
+
+      broadcastSync('order_deleted', { reference: submittedOrder.reference, id: submittedOrder.id });
+
+      const oldRef = submittedOrder.reference;
+      setSubmittedOrder(null);
+      setIsEditing(false);
+
+      notifySuccess(
+        t('order.orderCancelledNotice', 'La commande a bien été supprimée. Vos articles sont toujours dans votre panier.')
+      );
+    } catch (err) {
+      notifyError(err.message || 'Impossible de supprimer la commande.');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  // Clic sur "Modifier ma commande"
+  const handleStartEditing = () => {
+    setIsEditing(true);
+    if (formSectionRef.current) {
+      formSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   return (
     <main className={styles.page}>
@@ -66,43 +152,62 @@ export function OrderSummaryPage() {
       </section>
 
       <Container size="xl">
-        {submittedOrder ? (
-          /* Confirmation officielle de commande envoyée avec succès */
-          <div className={styles.emptyCard} role="status" aria-live="polite">
-            <div className={styles.emptyIconWrapper} aria-hidden="true">
-              <svg className={styles.emptyIcon} viewBox="0 0 24 24" fill="currentColor">
-                <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-              </svg>
-            </div>
-            <h2 className={styles.emptyTitle}>{t('forms.success.title')}</h2>
-            {submittedOrder.reference && (
-              <div style={{ margin: '1.25rem 0' }}>
-                <span
-                  style={{
-                    display: 'inline-block',
-                    backgroundColor: '#0b2a4a',
-                    color: '#ffffff',
-                    padding: '0.5rem 1.25rem',
-                    borderRadius: '9999px',
-                    fontWeight: 700,
-                    fontSize: '1.25rem',
-                    letterSpacing: '0.05em',
-                  }}
-                >
-                  {submittedOrder.reference}
-                </span>
+        {/* BANDEAU OFFICIEL QUAND UNE COMMANDE EST ENVOYÉE (PANIER PERSISTANT) */}
+        {submittedOrder && (
+          <section className={styles.submittedOrderBanner} role="status" aria-live="polite">
+            <div className={styles.bannerContent}>
+              <div className={styles.bannerIconWrapper} aria-hidden="true">
+                <i className="fa-solid fa-circle-check" />
               </div>
-            )}
-            <p className={styles.emptyDesc}>{t('forms.success.message')}</p>
-            <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-              <Link to="/catalogue" style={{ textDecoration: 'none' }}>
-                <Button variant="primary" size="lg">
-                  {t('order.browseCatalog')}
-                </Button>
-              </Link>
+              <div>
+                <h2 className={styles.bannerTitle}>
+                  {t('order.orderSentBannerTitle', 'Votre commande a été envoyée avec succès')}
+                </h2>
+                <p className={styles.bannerSubtitle}>
+                  {t('order.orderSentBannerSubtitle', 'Nos équipes traitent votre demande en priorité. Vos articles restent mémorisés dans votre panier ci-dessous.')}
+                </p>
+                <div className={styles.bannerMeta}>
+                  <span>{t('order.orderReferenceLabel', 'Réf. officielle')} :</span>
+                  <span className={styles.refBadge}>{submittedOrder.reference}</span>
+                  {submittedOrder.created_at && (
+                    <span className={styles.dateBadge}>
+                      • {new Date(submittedOrder.created_at).toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'fr-FR', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-        ) : isEmpty ? (
+
+            <div className={styles.bannerActions}>
+              <button
+                type="button"
+                className={styles.btnModify}
+                onClick={handleStartEditing}
+              >
+                <i className="fa-solid fa-pen-to-square" aria-hidden="true" />
+                <span>{t('order.btnModifyOrder', 'Modifier ma commande')}</span>
+              </button>
+
+              <button
+                type="button"
+                className={styles.btnCancel}
+                onClick={handleCancelOrder}
+                disabled={isCancelling}
+              >
+                <i className="fa-solid fa-trash-can" aria-hidden="true" />
+                <span>{isCancelling ? t('common.loading', 'Suppression...') : t('order.btnCancelOrder', 'Supprimer la commande')}</span>
+              </button>
+            </div>
+          </section>
+        )}
+
+        {isEmpty ? (
           /* État vide du récapitulatif */
           <div className={styles.emptyCard} role="status">
             <div className={styles.emptyIconWrapper} aria-hidden="true">
@@ -302,18 +407,6 @@ export function OrderSummaryPage() {
                     <p style={{ margin: 0 }}>{t('order.confirmationDisclaimer')}</p>
                   </div>
 
-                  {/* ========================================================================= */}
-                  {/* POINT D'EXTENSION : MODULE DE PAIEMENT EN LIGNE (FUTUR)                   */}
-                  {/* Réservé pour intégration d'agrégateurs de paiement électronique :         */}
-                  {/* Orange Money Côte d'Ivoire, MTN Mobile Money, Wave, CinetPay ou Stripe.  */}
-                  {/*                                                                           */}
-                  {/* Workflow prévu :                                                         */}
-                  {/* 1. L'utilisateur valide les articles et confirme son panier.             */}
-                  {/* 2. Au lieu de la simple réservation de commande sans frais, appel vers    */}
-                  {/*    l'endpoint POST /api/payment/checkout avec { items, amount, currency } */}
-                  {/* 3. Ouverture du widget sécurisé ou redirection vers la passerelle.        */}
-                  {/* 4. Validation par webhook asynchrone côté serveur et émission de facture. */}
-                  {/* ========================================================================= */}
                   <div className={styles.futurePaymentNotice}>
                     <small>
                       ℹ️ {t('order.paymentNotice')}
@@ -323,13 +416,21 @@ export function OrderSummaryPage() {
               </aside>
             </div>
 
-            {/* Section formulaire de finalisation de commande (P3.10) */}
-            <section className={styles.orderFormSection} aria-labelledby="order-form-heading">
+            {/* Section formulaire de finalisation ou modification de commande */}
+            <section
+              ref={formSectionRef}
+              className={styles.orderFormSection}
+              aria-labelledby="order-form-heading"
+            >
               <h2 id="order-form-heading" className={styles.orderFormTitle}>
-                {t('order.formTitle')}
+                {isEditing
+                  ? t('order.formTitleEdit', 'Mettre à jour vos coordonnées ou votre message')
+                  : t('order.formTitle')}
               </h2>
               <p className={styles.orderFormSubtitle}>
-                {t('order.formSubtitle')}
+                {isEditing
+                  ? t('order.formSubtitleEdit', 'Vous pouvez réajuster vos informations et renvoyer la mise à jour aux équipes ETOF SARL.')
+                  : t('order.formSubtitle')}
               </p>
 
               <RequestForm
@@ -337,10 +438,12 @@ export function OrderSummaryPage() {
                 initialActivity="general"
                 items={items}
                 onSuccess={(res) => {
-                  // Mémoriser la commande soumise pour afficher l'écran de confirmation avec référence
+                  // Mémoriser la commande soumise pour afficher le bandeau officiel
                   setSubmittedOrder(res);
-                  // Vidage immédiat du récapitulatif dans OrderContext et localStorage
-                  clearOrder();
+                  setIsEditing(false);
+                  broadcastSync('new_order_submitted', res);
+                  // NE PAS VIDER LE PANIER : les articles restent visibles et modifiables !
+                  window.scrollTo({ top: 120, behavior: 'smooth' });
                 }}
               />
             </section>
@@ -352,4 +455,3 @@ export function OrderSummaryPage() {
 }
 
 export default OrderSummaryPage;
-

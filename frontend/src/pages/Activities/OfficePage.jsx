@@ -118,7 +118,6 @@ export function OfficePage() {
           },
         ],
       }}
-      devTopicKey="keyFigures"
     >
       <ActivityProductCatalog
         activity="office"

@@ -176,6 +176,7 @@ $router->get('/api/auth/requests', [UserAuthController::class, 'requests'], [Use
 
 // Route de soumission des demandes clients (protégée : HTTP 401 si aucune session client active)
 $router->post('/api/requests', [RequestController::class, 'store'], [UserAuthMiddleware::class]);
+$router->post('/api/requests/cancel', [RequestController::class, 'cancel'], [UserAuthMiddleware::class]);
 
 // Routes d'authentification administrateur et sécurité de session
 $router->get('/api/admin/csrf', [AdminAuthController::class, 'csrf']);

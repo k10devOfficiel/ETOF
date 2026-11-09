@@ -198,13 +198,6 @@ i18n
             teamDesc: 'Une gouvernance guidée par l’écoute client, la réactivité et le professionnalisme de nos équipes locales.',
             certificationsTitle: 'Conformité & Agréments',
             certificationsDesc: 'Chacune de nos activités opère dans le respect strict des réglementations en vigueur en République de Côte d’Ivoire.',
-            devPlaceholder: '[À COMPLÉTER PAR ETOF SARL]',
-            placeholders: {
-              historyMilestones: '[À COMPLÉTER PAR ETOF SARL : Jalons chronologiques détaillés et dates clés d’expansion]',
-              keyFigures: '[À COMPLÉTER PAR ETOF SARL : Chiffres clés vérifiés (superficie ferme, taille de la flotte, volumes transportés)]',
-              teamGovernance: '[À COMPLÉTER PAR ETOF SARL : Présentation de l’équipe dirigeante et mot officiel de la Direction]',
-              certifications: '[À COMPLÉTER PAR ETOF SARL : Agréments ministériels transport hydrocarbures, normes sanitaires élevage et certifications]',
-            },
           },
           catalog: {
             metaTitle: 'Catalogue Produits – ETOF SARL',
@@ -367,7 +360,6 @@ i18n
             adv4Desc: 'Conditions avantageuses pour commandes groupées, maquis, restaurants et hôtels.',
             ctaTitle: 'Prêt à passer commande ?',
             ctaSubtitle: 'Commandez directement nos volailles et œufs ou demandez un tarif préférentiel pour vos volumes réguliers.',
-            devNotice: 'superficie des installations et volume exact du cheptel à compléter [À COMPLÉTER PAR ETOF SARL]',
           },
           vehicles: {
             metaTitle: 'Vente & Location de Véhicules – ETOF SARL',
@@ -579,7 +571,6 @@ i18n
             adv4Desc: 'Équipe réactive pour vous assister et remplacer le véhicule en cas d’imprévu.',
             ctaTitle: 'Trouvez le véhicule qui correspond à votre mission',
             ctaSubtitle: 'Réservez en ligne pour une location ou adressez-nous votre demande d’achat détaillée.',
-            devNotice: 'taille exacte de la flotte automobile à compléter [À COMPLÉTER PAR ETOF SARL]',
           },
           office: {
             metaTitle: 'Fournitures de Bureau & Consommables – ETOF SARL',
@@ -621,7 +612,6 @@ i18n
             adv4Desc: 'Conformité administrative totale pour vos services financiers et comptables.',
             ctaTitle: 'Besoin d’équiper vos bureaux ou de renouveler vos stocks ?',
             ctaSubtitle: 'Commandez en ligne ou demandez une cotation sur mesure pour vos besoins en fournitures.',
-            devNotice: 'nombre exact de références et marques distribuées à compléter [À COMPLÉTER PAR ETOF SARL]',
           },
           fuel: {
             metaTitle: 'Transport d’Hydrocarbures – ETOF SARL',
@@ -637,7 +627,7 @@ i18n
             presentationP1: 'Le transport d’hydrocarbures exige une vigilance permanente, des chauffeurs formés aux matières dangereuses et le respect scrupuleux des normes de sécurité routière et industrielle.',
             presentationP2: 'ETOF SARL opère avec méthode pour acheminer vos produits pétroliers depuis les centres d’approvisionnement vers vos stations-services, dépôts privés ou chantiers industriels en Côte d’Ivoire.',
             sideTitle: 'Zone d’intervention',
-            sideText: 'Acheminement sur Abidjan et les principaux corridors routiers nationaux en République de Côte d’Ivoire [À COMPLÉTER selon cahier des charges].',
+            sideText: 'Acheminement sur Abidjan et les principaux corridors routiers nationaux en République de Côte d’Ivoire selon votre cahier des charges.',
             servicesTitle: 'Nos prestations de transport pétrolier',
             servicesSubtitle: 'Des services d’acheminement sécurisés adaptés à vos contraintes de chaîne logistique.',
             itemBulkTitle: 'Transport de carburants en citerne',
@@ -664,7 +654,6 @@ i18n
             adv4Desc: 'Conformité avec les règles de transport de matières dangereuses en Côte d’Ivoire.',
             ctaTitle: 'Vous avez un projet d’approvisionnement en hydrocarbures ?',
             ctaSubtitle: 'Contactez notre cellule spécialisée pour obtenir un devis personnalisé selon vos volumes et trajets.',
-            devNotice: 'capacité de flotte et agréments spécifiques à compléter [À COMPLÉTER PAR ETOF SARL]',
           },
           forms: {
             pageMetaTitle: 'Demandes & Devis – ETOF SARL',
@@ -787,6 +776,13 @@ i18n
             formTitle: 'Vos coordonnées pour la commande',
             formSubtitle: 'Renseignez vos coordonnées pour recevoir votre proforma et convenir des modalités de livraison.',
             emptyOrderError: 'Votre récapitulatif de commande ne contient aucun article.',
+            orderSentBannerTitle: 'Votre commande a été envoyée avec succès',
+            orderSentBannerSubtitle: 'Nos équipes traitent votre demande en priorité. Vos articles restent mémorisés dans votre panier ci-dessous.',
+            orderReferenceLabel: 'Réf. officielle',
+            btnModifyOrder: 'Modifier ma commande',
+            btnCancelOrder: 'Supprimer la commande',
+            cancelConfirmQuestion: 'Êtes-vous certain de vouloir supprimer cette commande ? Vos articles resteront dans votre panier.',
+            orderCancelledNotice: 'La commande a bien été supprimée. Vos articles sont toujours dans votre panier.',
           },
           contact: {
             metaTitle: 'Contactez ETOF SARL – Siège Social Abidjan Cocody',
@@ -1245,13 +1241,6 @@ i18n
             teamDesc: 'Corporate governance centered on attentive customer listening, agility, and local team professionalism.',
             certificationsTitle: 'Compliance & Permits',
             certificationsDesc: 'Every division operates under rigorous compliance with the regulatory frameworks in force in the Republic of Côte d’Ivoire.',
-            devPlaceholder: '[TO BE COMPLETED BY ETOF SARL]',
-            placeholders: {
-              historyMilestones: '[TO BE COMPLETED BY ETOF SARL: Detailed chronological milestones and expansion dates]',
-              keyFigures: '[TO BE COMPLETED BY ETOF SARL: Verified key indicators (farm acreage, fleet size, haulage volume)]',
-              teamGovernance: '[TO BE COMPLETED BY ETOF SARL: Leadership team presentation and executive statement]',
-              certifications: '[TO BE COMPLETED BY ETOF SARL: Fuel haulage ministerial permits, veterinary standards, and quality certifications]',
-            },
           },
           catalog: {
             metaTitle: 'Product Catalog – ETOF SARL',
@@ -1413,7 +1402,6 @@ i18n
             adv4Desc: 'Competitive conditions for group orders, restaurants, hotels, and food service.',
             ctaTitle: 'Ready to place an order?',
             ctaSubtitle: 'Order poultry and eggs directly or request a wholesale quotation for regular supplies.',
-            devNotice: 'farm acreage and exact livestock capacity to be completed [TO BE COMPLETED BY ETOF SARL]',
           },
           vehicles: {
             metaTitle: 'Vehicle Sales & Rentals – ETOF SARL',
@@ -1624,7 +1612,6 @@ i18n
             adv4Desc: 'Responsive team ready to assist and provide immediate replacement if needed.',
             ctaTitle: 'Find the ideal vehicle for your mission',
             ctaSubtitle: 'Book online for rental or submit your detailed purchase inquiry today.',
-            devNotice: 'exact fleet size to be completed [TO BE COMPLETED BY ETOF SARL]',
           },
           office: {
             metaTitle: 'Office Supplies & Stationery – ETOF SARL',
@@ -1666,7 +1653,6 @@ i18n
             adv4Desc: 'Full administrative compliance for corporate financial and auditing requirements.',
             ctaTitle: 'Need to equip your offices or replenish supplies?',
             ctaSubtitle: 'Order online or request a custom quotation tailored to your volume requirements.',
-            devNotice: 'exact catalog size and distributed brands to be completed [TO BE COMPLETED BY ETOF SARL]',
           },
           fuel: {
             metaTitle: 'Bulk Fuel Haulage – ETOF SARL',
@@ -1682,7 +1668,7 @@ i18n
             presentationP1: 'Fuel haulage demands constant vigilance, drivers trained in hazardous materials handling, and strict adherence to road and industrial safety standards.',
             presentationP2: 'ETOF SARL operates methodically to transport petroleum products from distribution terminals to fuel stations, private depots, and industrial sites across Côte d’Ivoire.',
             sideTitle: 'Operational Coverage',
-            sideText: 'Haulage throughout Abidjan and primary national road corridors in Côte d’Ivoire [TO BE COMPLETED per client specs].',
+            sideText: 'Haulage throughout Abidjan and primary national road corridors in Côte d’Ivoire per your specifications.',
             servicesTitle: 'Our fuel haulage services',
             servicesSubtitle: 'Secure transportation solutions tailored to supply chain requirements.',
             itemBulkTitle: 'Tanker Fuel Haulage',
@@ -1709,7 +1695,6 @@ i18n
             adv4Desc: 'Full compliance with national dangerous goods transportation frameworks.',
             ctaTitle: 'Planning a petroleum supply logistics project?',
             ctaSubtitle: 'Contact our specialized logistics team for a customized quote tailored to your volumes and routes.',
-            devNotice: 'fleet capacity and specific permits to be completed [TO BE COMPLETED BY ETOF SARL]',
           },
           forms: {
             pageMetaTitle: 'Requests & Quotations – ETOF SARL',
@@ -1832,6 +1817,13 @@ i18n
             formTitle: 'Your contact details for this order',
             formSubtitle: 'Provide your contact details to receive your proforma invoice and arrange delivery terms.',
             emptyOrderError: 'Your order summary does not contain any item.',
+            orderSentBannerTitle: 'Your order has been sent successfully',
+            orderSentBannerSubtitle: 'Our team is processing your request. Your selected items remain saved in your cart below.',
+            orderReferenceLabel: 'Official Ref.',
+            btnModifyOrder: 'Modify my order',
+            btnCancelOrder: 'Delete order',
+            cancelConfirmQuestion: 'Are you sure you want to delete this order? Your items will remain in your cart.',
+            orderCancelledNotice: 'Order deleted successfully. Your items remain in your cart.',
           },
           contact: {
             metaTitle: 'Contact ETOF SARL – Corporate Office Abidjan Cocody',

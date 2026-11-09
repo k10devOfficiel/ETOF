@@ -503,3 +503,129 @@
   line-height: var(--line-height-relaxed);
 }
 
+/* Bandeau officiel de commande envoyée (panier persistant) */
+.submittedOrderBanner {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 1px solid #a7f3d0;
+  border-left: 6px solid #059669;
+  border-radius: var(--radius-lg);
+  padding: var(--space-5) var(--space-6);
+  margin-bottom: var(--space-8);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .submittedOrderBanner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.bannerContent {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.bannerIconWrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: #d1fae5;
+  color: #059669;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.bannerTitle {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #065f46;
+  margin: 0 0 var(--space-1);
+}
+
+.bannerSubtitle {
+  font-size: 0.88rem;
+  color: #047857;
+  margin: 0 0 var(--space-2);
+  line-height: 1.4;
+}
+
+.bannerMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 0.82rem;
+}
+
+.refBadge {
+  background-color: #0b2a4a;
+  color: #ffffff;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  font-size: 0.85rem;
+}
+
+.dateBadge {
+  color: #047857;
+  font-weight: 500;
+}
+
+.bannerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.btnModify {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background-color: #ffffff;
+  color: #0b2a4a;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btnModify:hover {
+  background-color: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.btnCancel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background-color: #ffffff;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btnCancel:hover {
+  background-color: #fef2f2;
+  border-color: #f87171;
+}
+

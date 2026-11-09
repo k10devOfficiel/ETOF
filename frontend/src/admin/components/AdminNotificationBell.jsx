@@ -138,24 +138,46 @@ export function AdminNotificationBell() {
     }
   }, []);
 
-  // Polling périodique automatique toutes les 8 secondes
+  // Polling périodique automatique toutes les 3,5 secondes
   useEffect(() => {
     fetchLatest();
-    const interval = setInterval(fetchLatest, 8000);
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchLatest();
+      }
+    }, 3500);
     return () => clearInterval(interval);
   }, [fetchLatest]);
 
-  // Écoute de l'événement global de soumission pour actualisation instantanée
+  // Écoute des événements de soumission et d'annulation pour actualisation instantanée
   useEffect(() => {
-    const handleManualSubmit = () => {
+    const handleSync = () => {
       fetchLatest();
     };
 
-    window.addEventListener('etof:new-request-submitted', handleManualSubmit);
-    window.addEventListener('etof:refresh-requests', handleManualSubmit);
+    window.addEventListener('etof:new-request-submitted', handleSync);
+    window.addEventListener('etof:request-cancelled', handleSync);
+    window.addEventListener('etof:refresh-requests', handleSync);
+
+    let bc = null;
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        bc = new BroadcastChannel('etof_orders_sync');
+        bc.onmessage = () => {
+          fetchLatest();
+        };
+      } catch {}
+    }
+
     return () => {
-      window.removeEventListener('etof:new-request-submitted', handleManualSubmit);
-      window.removeEventListener('etof:refresh-requests', handleManualSubmit);
+      window.removeEventListener('etof:new-request-submitted', handleSync);
+      window.removeEventListener('etof:request-cancelled', handleSync);
+      window.removeEventListener('etof:refresh-requests', handleSync);
+      if (bc) {
+        try {
+          bc.close();
+        } catch {}
+      }
     };
   }, [fetchLatest]);
 

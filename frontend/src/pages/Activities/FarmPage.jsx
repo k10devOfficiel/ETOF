@@ -118,7 +118,6 @@ export function FarmPage() {
           },
         ],
       }}
-      devTopicKey="keyFigures"
     >
       <ActivityProductCatalog
         activity="farm"

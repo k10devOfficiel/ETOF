@@ -125,13 +125,18 @@ export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
     onClose();
   };
 
-  const clientOrVehicleName = (fullName.trim() || (user ? displayName(user, currentLang) : '') || vehicleName);
+  const clientName = fullName.trim() || (user ? displayName(user, currentLang) : '');
+  const modalTitle = clientName
+    ? t('vehicles.buyModalTitle', { name: clientName, defaultValue: `Demande d’achat – ${clientName}` })
+    : vehicleName
+    ? `${t('vehicles.buyModalTitleDefault', 'Demande d’achat')} – ${vehicleName}`
+    : t('vehicles.buyModalTitleDefault', 'Demande d’achat');
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleResetAndClose}
-      title={t('vehicles.buyModalTitle', { name: clientOrVehicleName, vehicle: vehicleName })}
+      title={modalTitle}
       size="md"
     >
       {submittedData ? (

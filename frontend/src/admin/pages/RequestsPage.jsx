@@ -114,23 +114,44 @@ export function RequestsPage() {
   useEffect(() => {
     loadRequests();
 
-    // Actualisation silencieuse toutes les 15 secondes
+    // Actualisation silencieuse quasi temps réel (toutes les 3,5 secondes)
     const interval = setInterval(() => {
-      loadRequests(true);
-    }, 15000);
+      if (document.visibilityState === 'visible') {
+        loadRequests(true);
+      }
+    }, 3500);
 
-    // Écoute des événements temps réel
-    const handleNewRequest = () => {
+    // Écoute des événements temps réel (même onglet et cross-onglets)
+    const handleSyncEvent = () => {
       loadRequests(true);
     };
 
-    window.addEventListener('etof:new-request-received', handleNewRequest);
-    window.addEventListener('etof:new-request-submitted', handleNewRequest);
+    window.addEventListener('etof:new-request-received', handleSyncEvent);
+    window.addEventListener('etof:new-request-submitted', handleSyncEvent);
+    window.addEventListener('etof:request-cancelled', handleSyncEvent);
+
+    let bc = null;
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        bc = new BroadcastChannel('etof_orders_sync');
+        bc.onmessage = () => {
+          loadRequests(true);
+        };
+      } catch {
+        // Ignorer si indisponible
+      }
+    }
 
     return () => {
       clearInterval(interval);
-      window.removeEventListener('etof:new-request-received', handleNewRequest);
-      window.removeEventListener('etof:new-request-submitted', handleNewRequest);
+      window.removeEventListener('etof:new-request-received', handleSyncEvent);
+      window.removeEventListener('etof:new-request-submitted', handleSyncEvent);
+      window.removeEventListener('etof:request-cancelled', handleSyncEvent);
+      if (bc) {
+        try {
+          bc.close();
+        } catch {}
+      }
     };
   }, [loadRequests]);
 

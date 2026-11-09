@@ -85,8 +85,19 @@ export function sendOrder(data) {
   });
 }
 
+/**
+ * Annule et supprime une commande du client (côté base de données et admin).
+ *
+ * @param {{ id?: number, reference?: string }} payload
+ * @returns {Promise<{ deleted: boolean, reference: string, message: string }>}
+ */
+export function cancelRequest(payload) {
+  return client.post('/requests/cancel', payload);
+}
+
 export default {
   submitRequest,
+  cancelRequest,
   sendContact,
   sendQuote,
   sendReservation,
