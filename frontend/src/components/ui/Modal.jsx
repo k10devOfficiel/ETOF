@@ -11,7 +11,7 @@ import styles from './Modal.module.css';
  *   title: React.ReactNode,
  *   children: React.ReactNode,
  *   footer?: React.ReactNode,
- *   size?: 'sm' | 'md' | 'lg',
+ *   size?: 'sm' | 'md' | 'lg' | 'xl' | 'xxl',
  *   className?: string
  * }} props
  */

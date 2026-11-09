@@ -39,6 +39,14 @@
   max-width: 48rem;
 }
 
+.xl {
+  max-width: 68rem;
+}
+
+.xxl {
+  max-width: 80rem;
+}
+
 .header {
   padding: var(--space-5) var(--space-6);
   border-bottom: 1px solid var(--color-border);

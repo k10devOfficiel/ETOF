@@ -129,6 +129,15 @@ export function VehicleGallery({ images = [], mainImage = null, vehicleName }) {
     return map;
   }, [normalizedImages]);
 
+  // Catégories effectivement présentes
+  const availableCategories = useMemo(() => {
+    const cats = new Set();
+    normalizedImages.forEach((img) => {
+      if (img.category) cats.add(img.category);
+    });
+    return cats;
+  }, [normalizedImages]);
+
   // Transition fluide lors du changement d'image
   const changeImageSmoothly = (newIndex) => {
     if (newIndex === activeIndex || newIndex < 0 || newIndex >= total) return;
@@ -218,40 +227,67 @@ export function VehicleGallery({ images = [], mainImage = null, vehicleName }) {
           }
         }}
       >
-        {/* BARRE DE CAPSULES D'ANGLES FLOTTANTE (EXTÉRIEUR / INTÉRIEUR / AUTRES) */}
-        <div className={styles.angleTabsCapsule} role="tablist" aria-label="Angles de vue">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'exterior'}
-            className={`${styles.angleTabBtn} ${activeTab === 'exterior' ? styles.angleTabActive : ''}`}
-            onClick={() => handleTabClick('exterior')}
-          >
-            <i className={`fa-solid fa-car ${styles.angleTabIcon}`} aria-hidden="true" />
-            <span>{t('vehicles.tabExterior', 'Extérieur')}</span>
-          </button>
+        {/* BARRE SUPÉRIEURE FLOTTANTE : CAPSULES D'ANGLES + COMPTEUR ET PLEIN ÉCRAN */}
+        <div className={styles.topBarOverlay}>
+          {/* Capsules d'angles de vue */}
+          <div className={styles.angleTabsCapsule} role="tablist" aria-label="Angles de vue">
+            {(availableCategories.has('exterior') || availableCategories.size === 0) && (
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === 'exterior'}
+                className={`${styles.angleTabBtn} ${activeTab === 'exterior' ? styles.angleTabActive : ''}`}
+                onClick={() => handleTabClick('exterior')}
+              >
+                <i className={`fa-solid fa-car ${styles.angleTabIcon}`} aria-hidden="true" />
+                <span>{t('vehicles.tabExterior', 'Extérieur')}</span>
+              </button>
+            )}
 
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'interior'}
-            className={`${styles.angleTabBtn} ${activeTab === 'interior' ? styles.angleTabActive : ''}`}
-            onClick={() => handleTabClick('interior')}
-          >
-            <i className={`fa-solid fa-chair ${styles.angleTabIcon}`} aria-hidden="true" />
-            <span>{t('vehicles.tabInterior', 'Intérieur')}</span>
-          </button>
+            {availableCategories.has('interior') && (
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === 'interior'}
+                className={`${styles.angleTabBtn} ${activeTab === 'interior' ? styles.angleTabActive : ''}`}
+                onClick={() => handleTabClick('interior')}
+              >
+                <i className={`fa-solid fa-chair ${styles.angleTabIcon}`} aria-hidden="true" />
+                <span>{t('vehicles.tabInterior', 'Intérieur')}</span>
+              </button>
+            )}
 
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'others'}
-            className={`${styles.angleTabBtn} ${activeTab === 'others' ? styles.angleTabActive : ''}`}
-            onClick={() => handleTabClick('others')}
-          >
-            <i className={`fa-solid fa-camera ${styles.angleTabIcon}`} aria-hidden="true" />
-            <span>{t('vehicles.tabOthers', 'Autres')}</span>
-          </button>
+            {availableCategories.has('others') && (
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === 'others'}
+                className={`${styles.angleTabBtn} ${activeTab === 'others' ? styles.angleTabActive : ''}`}
+                onClick={() => handleTabClick('others')}
+              >
+                <i className={`fa-solid fa-camera ${styles.angleTabIcon}`} aria-hidden="true" />
+                <span>{t('vehicles.tabOthers', 'Autres')}</span>
+              </button>
+            )}
+          </div>
+
+          {/* Outils d'affichage en haut à droite (Compteur + Plein écran) */}
+          <div className={styles.topToolsPill}>
+            {total > 1 && (
+              <span className={styles.counterText} aria-hidden="true">
+                {activeIndex + 1} / {total}
+              </span>
+            )}
+            <button
+              type="button"
+              className={styles.fullscreenBtn}
+              onClick={() => setIsLightboxOpen(true)}
+              title={t('vehicles.fullscreen', 'Plein écran')}
+              aria-label={t('vehicles.fullscreen', 'Plein écran')}
+            >
+              <i className="fa-solid fa-expand" aria-hidden="true" />
+            </button>
+          </div>
         </div>
 
         {/* GRANDE PHOTO PRINCIPALE AVEC TRANSITION FLUIDE */}
@@ -259,8 +295,8 @@ export function VehicleGallery({ images = [], mainImage = null, vehicleName }) {
           src={currentItem.url}
           alt={currentItem.alt}
           className={`${styles.mainImage} ${isFading ? styles.mainImageFading : ''}`}
-          width="600"
-          height="400"
+          width="700"
+          height="450"
           loading="eager"
         />
 
@@ -284,23 +320,8 @@ export function VehicleGallery({ images = [], mainImage = null, vehicleName }) {
             >
               <i className={`fa-solid fa-chevron-right ${styles.navIcon}`} aria-hidden="true" />
             </button>
-
-            <span className={styles.counterBadge} aria-hidden="true">
-              {activeIndex + 1} / {total}
-            </span>
           </>
         )}
-
-        {/* BOUTON PLEIN ÉCRAN */}
-        <button
-          type="button"
-          className={styles.fullscreenBtn}
-          onClick={() => setIsLightboxOpen(true)}
-          title={t('vehicles.fullscreen', 'Plein écran')}
-          aria-label={t('vehicles.fullscreen', 'Plein écran')}
-        >
-          <i className="fa-solid fa-expand" aria-hidden="true" />
-        </button>
       </div>
 
       {/* RANGÉE DES MINIATURES INTERACTIVES */}

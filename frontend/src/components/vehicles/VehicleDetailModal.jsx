@@ -120,11 +120,11 @@ export function VehicleDetailModal({ vehicle, isOpen, onClose, onBuy, onRent }) 
       isOpen={isOpen}
       onClose={onClose}
       title={fullName}
-      size="lg"
+      size="xl"
     >
       <div className={styles.grid}>
         {/* Colonne Galerie Multi-Angles */}
-        <div>
+        <div className={styles.galleryCol}>
           <VehicleGallery
             images={galleryImages}
             mainImage={activeVehicle.main_image}

@@ -9,14 +9,21 @@
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 10;
-  background: #f8fafc;
+  min-height: 320px;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
   border-radius: var(--radius-xl);
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1px solid var(--color-border);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 16px rgba(11, 42, 74, 0.06);
+}
+
+@media (min-width: 640px) {
+  .mainWrapper {
+    min-height: 360px;
+  }
 }
 
 /* Image principale avec transition fluide de fondu et zoom doux */
@@ -27,7 +34,7 @@
   display: block;
   opacity: 1;
   transform: scale(1);
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1), transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: opacity, transform;
 }
 
@@ -52,38 +59,49 @@
   fill: currentColor;
 }
 
-/* Barre de capsules / onglets d'angles flottante (Inspirée des captures Spoticar / Car Avenue) */
-.angleTabsCapsule {
+/* Barre supérieure flottante : Capsules à gauche + Outils à droite sans chevauchement */
+.topBarOverlay {
   position: absolute;
   top: 14px;
   left: 14px;
+  right: 14px;
   z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  pointer-events: none;
+}
+
+/* Barre de capsules / onglets d'angles flottante (Inspirée des captures Spoticar / Car Avenue) */
+.angleTabsCapsule {
+  pointer-events: auto;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  background: rgba(255, 255, 255, 0.92);
+  gap: 3px;
+  background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  padding: 4px;
+  padding: 3px;
   border-radius: 9999px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 14px rgba(11, 42, 74, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.85);
 }
 
 .angleTabBtn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
+  padding: 6px 13px;
   border: none;
   background: transparent;
   color: #1e3a8a;
   font-family: var(--font-family-body, 'Archivo', sans-serif);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 600;
   border-radius: 9999px;
   cursor: pointer;
-  transition: all 0.22s ease-in-out;
+  transition: all 0.2s ease-in-out;
   white-space: nowrap;
 }
 
@@ -100,7 +118,51 @@
 }
 
 .angleTabIcon {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
+}
+
+/* Outils d'affichage en haut à droite (Compteur + Plein écran) */
+.topToolsPill {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 4px 6px 4px 12px;
+  border-radius: 9999px;
+  box-shadow: 0 4px 14px rgba(11, 42, 74, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+}
+
+.counterText {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0b2a4a;
+  letter-spacing: 0.04em;
+  font-family: var(--font-family-body, 'Archivo', sans-serif);
+}
+
+.fullscreenBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #0b2a4a;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+}
+
+.fullscreenBtn:hover {
+  background: #004de6;
+  color: #ffffff;
+  transform: scale(1.08);
 }
 
 /* Boutons de navigation circulaires bleus (Inspirés des captures) */
@@ -109,8 +171,8 @@
   top: 50%;
   transform: translateY(-50%);
   z-index: 4;
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   background-color: #004de6;
   color: #ffffff;
@@ -147,48 +209,6 @@
   color: #ffffff;
 }
 
-/* Bouton Plein écran / Zoom */
-.fullscreenBtn {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  z-index: 4;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.9);
-  color: #0b2a4a;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
-}
-
-.fullscreenBtn:hover {
-  background: #ffffff;
-  transform: scale(1.06);
-  color: #004de6;
-}
-
-/* Indicateur de compteur de photos */
-.counterBadge {
-  position: absolute;
-  bottom: 12px;
-  left: 14px;
-  z-index: 4;
-  padding: 3px 10px;
-  background-color: rgba(15, 23, 42, 0.75);
-  color: #ffffff;
-  font-size: 0.75rem;
-  font-weight: 700;
-  border-radius: 9999px;
-  backdrop-filter: blur(4px);
-  letter-spacing: 0.03em;
-}
-
 /* Rangée des miniatures avec flèches de défilement */
 .thumbnailsContainer {
   position: relative;
@@ -196,6 +216,7 @@
   align-items: center;
   gap: var(--space-2);
   width: 100%;
+  padding-top: var(--space-1);
 }
 
 .thumbnailsTrack {
@@ -209,7 +230,7 @@
 }
 
 .thumbnailsTrack::-webkit-scrollbar {
-  height: 4px;
+  height: 5px;
 }
 
 .thumbnailsTrack::-webkit-scrollbar-thumb {
@@ -218,29 +239,56 @@
 }
 
 .thumbnailBtn {
-  width: 76px;
-  height: 54px;
+  width: 84px;
+  height: 58px;
   flex-shrink: 0;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 2px solid transparent;
   padding: 0;
   overflow: hidden;
   background: #f1f5f9;
   cursor: pointer;
   transition: all 0.2s ease;
-  opacity: 0.65;
+  opacity: 0.72;
 }
 
 .thumbnailBtn:hover {
   opacity: 1;
   border-color: #93c5fd;
+  transform: translateY(-1px);
 }
 
 .thumbnailActive {
   border-color: #004de6;
   opacity: 1;
   box-shadow: 0 0 0 2px rgba(0, 77, 230, 0.35);
-  transform: scale(1.02);
+  transform: translateY(-1px) scale(1.02);
+}
+
+@media (max-width: 600px) {
+  .angleTabBtn {
+    padding: 4px 8px;
+    font-size: 0.74rem;
+    gap: 4px;
+  }
+
+  .navBtn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .navPrev {
+    left: 8px;
+  }
+
+  .navNext {
+    right: 8px;
+  }
+
+  .thumbnailBtn {
+    width: 68px;
+    height: 48px;
+  }
 }
 
 .thumbnailImage {

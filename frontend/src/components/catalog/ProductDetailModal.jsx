@@ -101,7 +101,7 @@ export function ProductDetailModal({ product, isOpen, onClose }) {
       isOpen={isOpen}
       onClose={onClose}
       title={product.name}
-      size="lg"
+      size="xl"
     >
       <div className={styles.grid}>
         {/* Colonne Galerie multi-angles */}
