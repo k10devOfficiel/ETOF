@@ -352,3 +352,4 @@ final class UserAuthController
         ]);
     }
 }
+

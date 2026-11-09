@@ -182,5 +182,7 @@ export const client = {
   delete: (endpoint, options = {}) => apiFetch(endpoint, { ...options, method: 'DELETE' }),
 };
 
+export const apiClient = client;
+
 export default client;
 

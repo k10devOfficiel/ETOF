@@ -41,3 +41,4 @@ SET @sqlStmt = IF(@colExists = 0,
 PREPARE stmt FROM @sqlStmt;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
+

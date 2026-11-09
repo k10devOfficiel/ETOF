@@ -49,3 +49,4 @@ export function displayName(user, lang = 'fr') {
 }
 
 export default displayName;
+
