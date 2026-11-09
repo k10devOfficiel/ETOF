@@ -20,7 +20,6 @@ export function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
   const handleLogout = async () => {
     await logout();
@@ -101,12 +100,35 @@ export function AdminLayout() {
     year: 'numeric',
   }).format(new Date());
 
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`${ADMIN_PATH}/demandes?q=${encodeURIComponent(searchQuery.trim())}`);
+  // Détermination dynamique du titre et du fil d'Ariane de la page active
+  const searchParams = new URLSearchParams(location.search);
+  const currentActivity = searchParams.get('activity');
+  const path = location.pathname;
+
+  let pageInfo = { title: 'Administration', icon: 'fa-solid fa-shield-halved', category: 'ETOF SARL' };
+  if (path === ADMIN_PATH || path === `${ADMIN_PATH}/`) {
+    pageInfo = { title: 'Tableau de bord', icon: 'fa-solid fa-gauge-high', category: 'Vue d’ensemble' };
+  } else if (path.startsWith(`${ADMIN_PATH}/demandes`)) {
+    if (currentActivity === 'fuel') {
+      pageInfo = { title: 'Transport d’Hydrocarbures', icon: 'fa-solid fa-gas-pump', category: 'Demandes & Cotations' };
+    } else {
+      pageInfo = { title: 'Demandes & Devis', icon: 'fa-solid fa-file-invoice', category: 'Gestion commerciale' };
     }
-  };
+  } else if (path.startsWith(`${ADMIN_PATH}/vehicules`)) {
+    pageInfo = { title: 'Vente & Location de Véhicules', icon: 'fa-solid fa-car', category: 'Catalogue & Flotte' };
+  } else if (path.startsWith(`${ADMIN_PATH}/produits`)) {
+    if (currentActivity === 'farm') {
+      pageInfo = { title: 'Ferme & Élevage de Volailles', icon: 'fa-solid fa-feather-pointed', category: 'Catalogue Produits' };
+    } else if (currentActivity === 'office') {
+      pageInfo = { title: 'Fournitures de Bureau', icon: 'fa-solid fa-briefcase', category: 'Catalogue Produits' };
+    } else {
+      pageInfo = { title: 'Catalogue des Produits', icon: 'fa-solid fa-box-open', category: 'Catalogue' };
+    }
+  } else if (path.startsWith(`${ADMIN_PATH}/reglages`)) {
+    pageInfo = { title: 'Réglages du site', icon: 'fa-solid fa-sliders', category: 'Configuration' };
+  } else if (path.startsWith(`${ADMIN_PATH}/mon-compte`)) {
+    pageInfo = { title: 'Mon compte administrateur', icon: 'fa-solid fa-user-gear', category: 'Sécurité' };
+  }
 
   return (
     <div className={styles.layoutRoot}>
@@ -206,18 +228,18 @@ export function AdminLayout() {
               <i className="fa-solid fa-bars" aria-hidden="true" style={{ fontSize: '18px' }} />
             </button>
 
-            <form onSubmit={handleSearchSubmit} className={styles.searchBar}>
-              <i className={`fa-solid fa-magnifying-glass ${styles.searchIcon}`} aria-hidden="true" />
-              <input
-                type="text"
-                className={styles.searchInput}
-                placeholder="Rechercher une demande, un client..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                aria-label="Recherche rapide"
-              />
-              <span className={styles.searchShortcut}>⌘ /</span>
-            </form>
+            {/* Titre et Fil d'Ariane de la page active */}
+            <div className={styles.headerTitleBox}>
+              <div className={styles.breadcrumb}>
+                <span>Administration</span>
+                <span className={styles.breadcrumbSeparator}>/</span>
+                <span className={styles.breadcrumbCategory}>{pageInfo.category}</span>
+              </div>
+              <h1 className={styles.pageHeading}>
+                <i className={`${pageInfo.icon} ${styles.headingIcon}`} aria-hidden="true" />
+                <span>{pageInfo.title}</span>
+              </h1>
+            </div>
           </div>
 
           <div className={styles.topBarRight}>
