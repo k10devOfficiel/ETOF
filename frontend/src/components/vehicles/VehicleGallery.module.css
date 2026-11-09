@@ -9,21 +9,31 @@
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 10;
-  background-color: #0f172a;
+  background: #f8fafc;
   border-radius: var(--radius-xl);
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1px solid var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
+/* Image principale avec transition fluide de fondu et zoom doux */
 .mainImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: opacity 0.2s ease-in-out;
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, transform;
+}
+
+.mainImageFading {
+  opacity: 0.15;
+  transform: scale(0.985);
 }
 
 .placeholder {
@@ -42,30 +52,81 @@
   fill: currentColor;
 }
 
-/* Boutons Précédent / Suivant sur l'image principale */
+/* Barre de capsules / onglets d'angles flottante (Inspirée des captures Spoticar / Car Avenue) */
+.angleTabsCapsule {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 4px;
+  border-radius: 9999px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.angleTabBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: none;
+  background: transparent;
+  color: #1e3a8a;
+  font-family: var(--font-family-body, 'Archivo', sans-serif);
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.22s ease-in-out;
+  white-space: nowrap;
+}
+
+.angleTabBtn:hover:not(.angleTabActive) {
+  background: rgba(30, 58, 138, 0.08);
+  color: #0b2a4a;
+}
+
+.angleTabActive {
+  background-color: #004de6;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 77, 230, 0.35);
+}
+
+.angleTabIcon {
+  font-size: 0.85rem;
+}
+
+/* Boutons de navigation circulaires bleus (Inspirés des captures) */
 .navBtn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 2;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-full);
-  background-color: rgba(11, 42, 74, 0.75);
+  z-index: 4;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: #004de6;
   color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid #ffffff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  backdrop-filter: blur(4px);
-  transition: background-color var(--transition-fast) ease, transform var(--transition-fast) ease;
+  box-shadow: 0 4px 12px rgba(0, 77, 230, 0.35);
+  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .navBtn:hover:not(:disabled) {
-  background-color: var(--color-accent);
-  color: var(--color-primary);
+  background-color: #0037a8;
   transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 6px 16px rgba(0, 77, 230, 0.45);
 }
 
 .navBtn:disabled {
@@ -73,75 +134,113 @@
   cursor: not-allowed;
 }
 
-.navBtn:focus-visible {
-  outline: 3px solid var(--color-accent);
-  outline-offset: 2px;
-}
-
 .navPrev {
-  left: var(--space-3);
+  left: 14px;
 }
 
 .navNext {
-  right: var(--space-3);
+  right: 14px;
 }
 
 .navIcon {
-  width: 20px;
-  height: 20px;
-  fill: currentColor;
-}
-
-.imageCounter {
-  position: absolute;
-  bottom: var(--space-3);
-  right: var(--space-3);
-  padding: 3px 10px;
-  background-color: rgba(0, 0, 0, 0.65);
+  font-size: 1rem;
   color: #ffffff;
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  border-radius: var(--radius-full);
-  backdrop-filter: blur(4px);
 }
 
-/* Rangée des miniatures */
+/* Bouton Plein écran / Zoom */
+.fullscreenBtn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  z-index: 4;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.9);
+  color: #0b2a4a;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.fullscreenBtn:hover {
+  background: #ffffff;
+  transform: scale(1.06);
+  color: #004de6;
+}
+
+/* Indicateur de compteur de photos */
+.counterBadge {
+  position: absolute;
+  bottom: 12px;
+  left: 14px;
+  z-index: 4;
+  padding: 3px 10px;
+  background-color: rgba(15, 23, 42, 0.75);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 9999px;
+  backdrop-filter: blur(4px);
+  letter-spacing: 0.03em;
+}
+
+/* Rangée des miniatures avec flèches de défilement */
+.thumbnailsContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+}
+
 .thumbnailsTrack {
   display: flex;
   gap: var(--space-2);
   overflow-x: auto;
-  padding: var(--space-1) 0;
+  padding: 4px 2px;
+  scroll-behavior: smooth;
   scrollbar-width: thin;
+  width: 100%;
+}
+
+.thumbnailsTrack::-webkit-scrollbar {
+  height: 4px;
+}
+
+.thumbnailsTrack::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
 }
 
 .thumbnailBtn {
-  width: 72px;
-  height: 52px;
+  width: 76px;
+  height: 54px;
   flex-shrink: 0;
-  border-radius: var(--radius-md);
+  border-radius: 6px;
   border: 2px solid transparent;
   padding: 0;
   overflow: hidden;
   background: #f1f5f9;
   cursor: pointer;
-  transition: border-color var(--transition-fast) ease, opacity var(--transition-fast) ease;
+  transition: all 0.2s ease;
   opacity: 0.65;
 }
 
 .thumbnailBtn:hover {
   opacity: 1;
-}
-
-.thumbnailBtn:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-  opacity: 1;
+  border-color: #93c5fd;
 }
 
 .thumbnailActive {
-  border-color: var(--color-accent);
+  border-color: #004de6;
   opacity: 1;
-  box-shadow: 0 0 0 2px rgba(20, 184, 196, 0.4);
+  box-shadow: 0 0 0 2px rgba(0, 77, 230, 0.35);
+  transform: scale(1.02);
 }
 
 .thumbnailImage {
@@ -151,3 +250,66 @@
   display: block;
 }
 
+/* Lightbox Modal Plein écran */
+.lightboxOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  animation: fadeIn 0.25s ease;
+}
+
+.lightboxImageWrapper {
+  position: relative;
+  max-width: 90vw;
+  max-height: 85vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightboxImage {
+  max-width: 100%;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  transition: opacity 0.25s ease;
+}
+
+.lightboxCloseBtn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: #ffffff;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  z-index: 10000;
+}
+
+.lightboxCloseBtn:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

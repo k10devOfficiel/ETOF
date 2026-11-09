@@ -45,6 +45,8 @@ export function HomePage() {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [buyVehicle, setBuyVehicle] = useState(null);
   const [rentVehicle, setRentVehicle] = useState(null);
+  const [buyQuantity, setBuyQuantity] = useState(1);
+  const [rentQuantity, setRentQuantity] = useState(1);
 
   // Chargement des produits et véhicules phares (3 à 4 éléments)
   useEffect(() => {
@@ -342,8 +344,14 @@ export function HomePage() {
                         key={veh.id}
                         vehicle={veh}
                         onSelect={(v) => setSelectedVehicle(v)}
-                        onBuy={(v) => setBuyVehicle(v)}
-                        onRent={(v) => setRentVehicle(v)}
+                        onBuy={(v, q = 1) => {
+                          setBuyQuantity(q);
+                          setBuyVehicle(v);
+                        }}
+                        onRent={(v, q = 1) => {
+                          setRentQuantity(q);
+                          setRentVehicle(v);
+                        }}
                       />
                     ))}
                   </div>
@@ -486,12 +494,14 @@ export function HomePage() {
         vehicle={selectedVehicle}
         isOpen={Boolean(selectedVehicle)}
         onClose={() => setSelectedVehicle(null)}
-        onBuy={(v) => {
+        onBuy={(v, q = 1) => {
           setSelectedVehicle(null);
+          setBuyQuantity(q);
           setBuyVehicle(v);
         }}
-        onRent={(v) => {
+        onRent={(v, q = 1) => {
           setSelectedVehicle(null);
+          setRentQuantity(q);
           setRentVehicle(v);
         }}
       />
@@ -500,6 +510,7 @@ export function HomePage() {
       <VehicleBuyModal
         vehicle={buyVehicle}
         isOpen={Boolean(buyVehicle)}
+        initialQuantity={buyQuantity}
         onClose={() => setBuyVehicle(null)}
       />
 
@@ -507,6 +518,7 @@ export function HomePage() {
       <VehicleRentModal
         vehicle={rentVehicle}
         isOpen={Boolean(rentVehicle)}
+        initialQuantity={rentQuantity}
         onClose={() => setRentVehicle(null)}
       />
     </>

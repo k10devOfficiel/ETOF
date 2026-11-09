@@ -20,9 +20,10 @@ function formatPrice(amount) {
 }
 
 /**
- * Formulaire modal dédié à la location d'un véhicule ETOF SARL avec contrôle de dates et de permis.
+ * Formulaire modal dédié à la location d'un véhicule ETOF SARL avec contrôle de dates,
+ * gestion de quantité de véhicules et vérification de permis.
  */
-export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
+export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess, initialQuantity = 1 }) {
   const { t, i18n } = useTranslation();
   const { user } = useUserAuth();
   const { notifyRentalSent, notifyError } = useToast();
@@ -30,6 +31,7 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
 
   const todayStr = new Date().toISOString().split('T')[0];
 
+  const [quantity, setQuantity] = useState(initialQuantity || 1);
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -49,6 +51,12 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
   const [submittedData, setSubmittedData] = useState(null);
 
   useEffect(() => {
+    if (isOpen) {
+      setQuantity(initialQuantity || 1);
+    }
+  }, [isOpen, initialQuantity]);
+
+  useEffect(() => {
     if (user) {
       if (!fullName) setFullName(displayName(user, currentLang));
       if (!email && user.email) setEmail(user.email);
@@ -58,7 +66,7 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
 
   if (!vehicle) return null;
 
-  const vehicleName = `${vehicle.brand} ${vehicle.model} ${vehicle.year ? `(${vehicle.year})` : ''}`;
+  const vehicleName = `${vehicle.brand} ${vehicle.model} ${vehicle.year ? `(${vehicle.year})` : ''}`.trim();
   const specs = vehicle.specs || {};
 
   const dayRate = vehicle.price_rental_day ? Number(vehicle.price_rental_day) : null;
@@ -73,7 +81,7 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
     return diff > 0 ? diff : 0;
   })();
 
-  const estimatedTotal = (() => {
+  const estimatedUnitTotal = (() => {
     if (!daysCount || !dayRate) return null;
     if (daysCount >= 30 && monthRate) {
       const months = Math.floor(daysCount / 30);
@@ -87,6 +95,8 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
     }
     return daysCount * dayRate;
   })();
+
+  const estimatedTotal = estimatedUnitTotal ? estimatedUnitTotal * quantity : null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -137,6 +147,7 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
           city: city.trim(),
           usage_zone: usageZone,
           days_count: daysCount,
+          quantity: Number(quantity),
           estimated_cost: estimatedTotal,
           pickup_location: pickupLocation,
           with_driver: withDriver ? 'yes' : 'no',
@@ -147,10 +158,17 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
       const res = await client.post('/requests', payload);
       const data = res.data || res;
       setSubmittedData(data);
-      notifyRentalSent(userEffName, vehicleName, startDate, endDate, data.reference || '');
+      notifyRentalSent(userEffName, `${quantity > 1 ? `${quantity}x ` : ''}${vehicleName}`, startDate, endDate, data.reference || '');
 
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('etof:new-request-submitted', { detail: data }));
+        if (typeof BroadcastChannel !== 'undefined') {
+          try {
+            const bc = new BroadcastChannel('etof_orders_sync');
+            bc.postMessage({ type: 'new_rental_submitted', detail: data });
+            bc.close();
+          } catch {}
+        }
       }
 
       if (onSuccess) onSuccess(data);
@@ -232,6 +250,50 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
             </div>
           </div>
 
+          {/* Sélecteur de quantité pour les véhicules */}
+          <div className={styles.quantitySection}>
+            <div className={styles.quantityLabelGroup}>
+              <span className={styles.quantityTitle}>
+                <i className="fa-solid fa-car" style={{ marginRight: '6px' }} />
+                {t('vehicles.quantityLabel', 'Quantité de véhicules')}
+              </span>
+              <span className={styles.quantitySubtitle}>
+                {t('vehicles.quantityHelper', 'Nombre d’unités souhaitées pour la mission')}
+              </span>
+            </div>
+            <div className={styles.quantityPicker}>
+              <button
+                type="button"
+                className={styles.quantityBtn}
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                disabled={quantity <= 1}
+                aria-label="Diminuer la quantité"
+              >
+                -
+              </button>
+              <input
+                type="number"
+                min="1"
+                max="50"
+                className={styles.quantityInput}
+                value={quantity}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value, 10);
+                  if (!isNaN(val) && val >= 1) setQuantity(val);
+                }}
+                aria-label="Quantité de véhicules"
+              />
+              <button
+                type="button"
+                className={styles.quantityBtn}
+                onClick={() => setQuantity((q) => q + 1)}
+                aria-label="Augmenter la quantité"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
           {/* Caractéristiques techniques du véhicule */}
           <div className={styles.specsBox}>
             <div className={styles.specsTitle}>{t('vehicles.technicalSpecs', 'Caractéristiques techniques')}</div>
@@ -249,34 +311,87 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
                 <span className={styles.specValue}>{specs.transmission || t('common.notSpecified', 'N/C')}</span>
               </div>
               <div className={styles.specItem}>
-                <span className={styles.specLabel}>{t('vehicles.specKeys.seats', 'Nombre de places')}</span>
-                <span className={styles.specValue}>{specs.seats ? `${specs.seats} places` : t('common.notSpecified', 'N/C')}</span>
-              </div>
-              <div className={styles.specItem}>
-                <span className={styles.specLabel}>{t('vehicles.specKeys.air_conditioning', 'Climatisation')}</span>
-                <span className={styles.specValue}>{specs.air_conditioning !== false ? t('common.yes', 'Oui') : t('common.no', 'Non')}</span>
-              </div>
-              <div className={styles.specItem}>
-                <span className={styles.specLabel}>{t('vehicles.specKeys.color', 'Couleur')}</span>
-                <span className={styles.specValue}>{specs.color || t('common.notSpecified', 'N/C')}</span>
+                <span className={styles.specLabel}>{t('vehicles.specKeys.seats', 'Places assises')}</span>
+                <span className={styles.specValue}>{specs.seats || t('common.notSpecified', 'N/C')}</span>
               </div>
             </div>
           </div>
 
-          {errors.global && (
-            <div className={styles.errorMessage} role="alert">
-              {errors.global}
+          {/* Coordonnées Client */}
+          <div className={styles.grid2}>
+            <div className={styles.fieldGroup}>
+              <label htmlFor="rent-fullname" className={styles.label}>
+                {t('forms.fullName', 'Nom et Prénoms')} *
+              </label>
+              <input
+                id="rent-fullname"
+                type="text"
+                className={`${styles.input} ${errors.full_name ? styles.inputError : ''}`}
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Ex : Koffi Kouassi"
+                required
+              />
+              {errors.full_name && <span className={styles.fieldError}>{Array.isArray(errors.full_name) ? errors.full_name.join(' ') : errors.full_name}</span>}
             </div>
-          )}
 
-          {/* Champ Honeypot invisible */}
+            <div className={styles.fieldGroup}>
+              <label htmlFor="rent-phone" className={styles.label}>
+                {t('forms.phone', 'Numéro de téléphone')} *
+              </label>
+              <input
+                id="rent-phone"
+                type="tel"
+                className={`${styles.input} ${errors.phone ? styles.inputError : ''}`}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Ex : +225 07 00 00 00 00"
+                required
+              />
+              {errors.phone && <span className={styles.fieldError}>{Array.isArray(errors.phone) ? errors.phone.join(' ') : errors.phone}</span>}
+            </div>
+          </div>
+
+          <div className={styles.grid2}>
+            <div className={styles.fieldGroup}>
+              <label htmlFor="rent-email" className={styles.label}>
+                {t('forms.email', 'Adresse email')} *
+              </label>
+              <input
+                id="rent-email"
+                type="email"
+                className={`${styles.input} ${errors.email ? styles.inputError : ''}`}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Ex : contact@entreprise.ci"
+                required
+              />
+              {errors.email && <span className={styles.fieldError}>{Array.isArray(errors.email) ? errors.email.join(' ') : errors.email}</span>}
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <label htmlFor="rent-city" className={styles.label}>
+                {t('forms.city', 'Ville ou Commune')}
+              </label>
+              <input
+                id="rent-city"
+                type="text"
+                className={styles.input}
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="Ex : Abidjan - Cocody"
+              />
+            </div>
+          </div>
+
+          {/* Champ piège antispam invisible */}
           <div style={{ display: 'none' }} aria-hidden="true">
             <input
               type="text"
               name="website"
               value={websiteHoneypot}
               onChange={(e) => setWebsiteHoneypot(e.target.value)}
-              tabIndex="-1"
+              tabIndex={-1}
               autoComplete="off"
             />
           </div>
@@ -316,12 +431,17 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
             </div>
           </div>
 
-          {/* Calcul automatique du nombre de jours et estimation du prix */}
+          {/* Calcul automatique du nombre de jours et estimation du prix avec quantité */}
           {daysCount > 0 && (
             <div className={styles.estimateBox} role="status">
               <div>
                 <span className={styles.estimateLabel}>{t('vehicles.estimatedDuration', 'Durée')} : </span>
                 <strong className={styles.estimateDays}>{t('vehicles.daysCount', { count: daysCount })}</strong>
+                {quantity > 1 && (
+                  <span style={{ marginLeft: '8px', color: '#0b2a4a', fontWeight: 600 }}>
+                    ({quantity} véhicules)
+                  </span>
+                )}
               </div>
               {estimatedTotal && (
                 <div>
@@ -351,164 +471,108 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
             </div>
 
             <div className={styles.fieldGroup}>
-              <label htmlFor="rent-location" className={styles.label}>
+              <label htmlFor="rent-pickup" className={styles.label}>
                 {t('vehicles.pickupLocationLabel', 'Lieu de prise en charge')}
               </label>
-              <select
-                id="rent-location"
-                className={styles.select}
+              <input
+                id="rent-pickup"
+                type="text"
+                className={styles.input}
                 value={pickupLocation}
                 onChange={(e) => setPickupLocation(e.target.value)}
-              >
-                <option value="abidjan_headquarters">{t('vehicles.locHeadquarters', 'Siège ETOF SARL (Cocody Angré Oscars)')}</option>
-                <option value="abidjan_airport">{t('vehicles.locAirport', 'Aéroport International Félix-Houphouët-Boigny')}</option>
-                <option value="delivery_address">{t('vehicles.locDelivery', 'Livraison à domicile ou au bureau (sur devis)')}</option>
-              </select>
-            </div>
-          </div>
-
-          <div className={styles.fieldGroup}>
-            <label htmlFor="rent-name" className={styles.label}>
-              {t('forms.name')} *
-            </label>
-            <input
-              id="rent-name"
-              type="text"
-              className={`${styles.input} ${errors.full_name ? styles.inputError : ''}`}
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              autoComplete="name"
-              required
-            />
-            {errors.full_name && <span className={styles.fieldError}>{errors.full_name}</span>}
-          </div>
-
-          <div className={styles.grid2}>
-            <div className={styles.fieldGroup}>
-              <label htmlFor="rent-phone" className={styles.label}>
-                {t('forms.phone')} *
-              </label>
-              <input
-                id="rent-phone"
-                type="tel"
-                className={`${styles.input} ${errors.phone ? styles.inputError : ''}`}
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                autoComplete="tel"
-                placeholder="+225 07 00 00 00 00"
-                required
+                placeholder={t('vehicles.pickupLocationPlaceholder', 'Ex : Siège ETOF Cocody ou Aéroport FHB')}
               />
-              {errors.phone && <span className={styles.fieldError}>{errors.phone}</span>}
-            </div>
-
-            <div className={styles.fieldGroup}>
-              <label htmlFor="rent-email" className={styles.label}>
-                {t('forms.email')} *
-              </label>
-              <input
-                id="rent-email"
-                type="email"
-                className={`${styles.input} ${errors.email ? styles.inputError : ''}`}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-                placeholder="nom@exemple.ci"
-                required
-              />
-              {errors.email && <span className={styles.fieldError}>{errors.email}</span>}
             </div>
           </div>
 
-          <div className={styles.fieldGroup}>
-            <label htmlFor="rent-city" className={styles.label}>
-              {t('vehicles.cityLabel', 'Ville de résidence')}
-            </label>
-            <input
-              id="rent-city"
-              type="text"
-              className={styles.input}
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              autoComplete="address-level2"
-              placeholder={t('vehicles.cityPlaceholder', 'Ex : Abidjan, Bouaké, San-Pédro...')}
-            />
-          </div>
-
-          <div className={styles.fieldGroup}>
-            <label htmlFor="rent-location" className={styles.label}>
-              {t('vehicles.pickupLocationLabel', 'Lieu de prise en charge')}
-            </label>
-            <select
-              id="rent-location"
-              className={styles.select}
-              value={pickupLocation}
-              onChange={(e) => setPickupLocation(e.target.value)}
-            >
-              <option value="abidjan_headquarters">{t('vehicles.locHeadquarters', 'Siège ETOF SARL (Cocody Angré Oscars)')}</option>
-              <option value="abidjan_airport">{t('vehicles.locAirport', 'Aéroport International Félix-Houphouët-Boigny')}</option>
-              <option value="delivery_address">{t('vehicles.locDelivery', 'Livraison à domicile ou au bureau (sur devis)')}</option>
-            </select>
-          </div>
-
-          <div className={styles.checkboxGroup}>
+          {/* Option Chauffeur professionnel & Permis de conduire */}
+          <div className={styles.checkboxBlock}>
             <label className={styles.checkboxLabel}>
               <input
                 type="checkbox"
+                className={styles.checkbox}
                 checked={withDriver}
                 onChange={(e) => setWithDriver(e.target.checked)}
               />
-              <span>{t('vehicles.withDriverOption', 'Option avec chauffeur professionnel')}</span>
+              <span>{t('vehicles.withDriverLabel', 'Mise à disposition d’un chauffeur professionnel ETOF SARL')}</span>
             </label>
+
+            {!withDriver && (
+              <div style={{ marginTop: '0.75rem', paddingLeft: '1.75rem' }}>
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    className={styles.checkbox}
+                    checked={hasValidLicense}
+                    onChange={(e) => setHasValidLicense(e.target.checked)}
+                  />
+                  <span>{t('vehicles.driverLicenseCheckbox', 'Le conducteur dispose d’un permis de conduire valide depuis plus de 2 ans')} *</span>
+                </label>
+                {errors.license && <span className={styles.fieldError}>{errors.license}</span>}
+              </div>
+            )}
           </div>
 
-          {!withDriver && (
-            <div className={styles.checkboxGroup}>
-              <label className={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={hasValidLicense}
-                  onChange={(e) => setHasValidLicense(e.target.checked)}
-                  required
-                />
-                <span>{t('vehicles.validLicenseCheckbox', 'Oui, je certifie posséder un permis de conduire valide')} *</span>
-              </label>
-              {errors.license && <span className={styles.fieldError}>{errors.license}</span>}
-            </div>
-          )}
-
+          {/* Précisions ou Message */}
           <div className={styles.fieldGroup}>
             <label htmlFor="rent-message" className={styles.label}>
-              {t('forms.message')} ({t('common.optional', 'Optionnel')})
+              {t('forms.message', 'Précisions supplémentaires (facultatif)')}
             </label>
             <textarea
               id="rent-message"
               className={styles.textarea}
-              rows="2"
+              rows={3}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder={t('vehicles.rentMessagePlaceholder', 'Besoins particuliers, itinéraire envisagé...')}
+              placeholder="Ex : Besoins particuliers, horaires de mise à disposition..."
             />
           </div>
 
-          <div className={styles.checkboxGroup}>
+          {/* Consentement RGPD / Confidentialité */}
+          <div className={styles.fieldGroup}>
             <label className={styles.checkboxLabel}>
               <input
                 type="checkbox"
+                className={styles.checkbox}
                 checked={consent}
                 onChange={(e) => setConsent(e.target.checked)}
                 required
               />
-              <span>{t('forms.consent')} *</span>
+              <span className={styles.consentText}>
+                {t('forms.consentPrefix', 'J’accepte que mes données soient traitées par ETOF SARL conformément aux ')}
+                <a href="/mentions-legales" target="_blank" rel="noopener noreferrer" className={styles.consentLink}>
+                  {t('forms.privacyPolicy', 'conditions générales')}
+                </a>.
+              </span>
             </label>
-            {errors.consent && <span className={styles.fieldError}>{errors.consent}</span>}
+            {errors.consent && <span className={styles.fieldError}>{Array.isArray(errors.consent) ? errors.consent.join(' ') : errors.consent}</span>}
           </div>
 
-          <div className={styles.actions}>
-            <Button type="button" variant="ghost" size="md" onClick={handleResetAndClose}>
-              {t('common.cancel')}
-            </Button>
-            <Button type="submit" variant="primary" size="md" loading={isSubmitting}>
-              {t('vehicles.submitRentalRequest', 'Confirmer ma réservation')}
+          {/* Note sur la réservation préalable */}
+          <div className={styles.disclaimerBox}>
+            <i className={`fa-solid fa-circle-info ${styles.disclaimerIcon}`} aria-hidden="true" />
+            <p className={styles.disclaimerText}>
+              {t('vehicles.reservationNotice', 'Note : Toute demande transmise fait l’objet d’une vérification préalable de disponibilité par les équipes d’ETOF SARL.')}
+            </p>
+          </div>
+
+          {/* Bouton de confirmation */}
+          <div style={{ marginTop: '1rem' }}>
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              fullWidth
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <span className={styles.spinner} aria-hidden="true" />
+                  {t('forms.submitting', 'Traitement en cours...')}
+                </>
+              ) : (
+                t('vehicles.submitRentalRequest', 'Confirmer ma réservation')
+              )}
             </Button>
           </div>
         </form>
@@ -518,4 +582,3 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
 }
 
 export default VehicleRentModal;
-

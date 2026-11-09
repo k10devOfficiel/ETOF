@@ -51,6 +51,8 @@ export function VehiclesCatalogPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [buyVehicle, setBuyVehicle] = useState(null);
   const [rentVehicle, setRentVehicle] = useState(null);
+  const [buyQuantity, setBuyQuantity] = useState(1);
+  const [rentQuantity, setRentQuantity] = useState(1);
 
   // Chargement des catégories de véhicules
   useEffect(() => {
@@ -364,8 +366,14 @@ export function VehiclesCatalogPage() {
                       key={veh.id}
                       vehicle={veh}
                       onSelect={handleSelectVehicle}
-                      onBuy={(v) => setBuyVehicle(v)}
-                      onRent={(v) => setRentVehicle(v)}
+                      onBuy={(v, q = 1) => {
+                        setBuyVehicle(v);
+                        setBuyQuantity(q);
+                      }}
+                      onRent={(v, q = 1) => {
+                        setRentVehicle(v);
+                        setRentQuantity(q);
+                      }}
                     />
                   ))}
                 </div>
@@ -418,12 +426,23 @@ export function VehiclesCatalogPage() {
         vehicle={selectedVehicle}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
+        onRent={(v, q) => {
+          setIsModalOpen(false);
+          setRentQuantity(q || 1);
+          setRentVehicle(v);
+        }}
+        onBuy={(v, q) => {
+          setIsModalOpen(false);
+          setBuyQuantity(q || 1);
+          setBuyVehicle(v);
+        }}
       />
 
       {/* Formulaire modal Achat de véhicule */}
       <VehicleBuyModal
         vehicle={buyVehicle}
         isOpen={Boolean(buyVehicle)}
+        initialQuantity={buyQuantity}
         onClose={() => setBuyVehicle(null)}
       />
 
@@ -431,6 +450,7 @@ export function VehiclesCatalogPage() {
       <VehicleRentModal
         vehicle={rentVehicle}
         isOpen={Boolean(rentVehicle)}
+        initialQuantity={rentQuantity}
         onClose={() => setRentVehicle(null)}
       />
     </>

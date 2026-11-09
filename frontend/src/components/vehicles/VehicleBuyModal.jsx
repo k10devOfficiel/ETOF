@@ -20,14 +20,16 @@ function formatPrice(amount) {
 }
 
 /**
- * Formulaire modal dédié à l'achat d'un véhicule ETOF SARL.
+ * Formulaire modal dédié à la demande d'achat de véhicule avec gestion de quantité,
+ * options de financement et reprise de véhicule.
  */
-export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
+export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess, initialQuantity = 1 }) {
   const { t, i18n } = useTranslation();
   const { user } = useUserAuth();
   const { notifyBuySent, notifyError } = useToast();
   const currentLang = (i18n.language || 'fr').slice(0, 2).toLowerCase();
 
+  const [quantity, setQuantity] = useState(initialQuantity || 1);
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -44,6 +46,12 @@ export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
   const [submittedData, setSubmittedData] = useState(null);
 
   useEffect(() => {
+    if (isOpen) {
+      setQuantity(initialQuantity || 1);
+    }
+  }, [isOpen, initialQuantity]);
+
+  useEffect(() => {
     if (user) {
       if (!fullName) setFullName(displayName(user, currentLang));
       if (!email && user.email) setEmail(user.email);
@@ -53,8 +61,10 @@ export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
 
   if (!vehicle) return null;
 
-  const vehicleName = `${vehicle.brand} ${vehicle.model} ${vehicle.year ? `(${vehicle.year})` : ''}`;
-  const priceDisplay = formatPrice(vehicle.price_sale) || t('catalog.priceOnDemand');
+  const vehicleName = `${vehicle.brand} ${vehicle.model} ${vehicle.year ? `(${vehicle.year})` : ''}`.trim();
+  const unitPrice = vehicle.price_sale ? Number(vehicle.price_sale) : null;
+  const totalPrice = unitPrice ? unitPrice * quantity : null;
+  const priceDisplay = formatPrice(totalPrice) || t('catalog.priceOnDemand');
   const specs = vehicle.specs || {};
 
   const handleSubmit = async (e) => {
@@ -91,19 +101,29 @@ export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
         website: websiteHoneypot,
         details: {
           city: city.trim(),
+          quantity: Number(quantity),
+          unit_price: unitPrice,
+          total_price: totalPrice,
           payment_method: paymentMethod,
           trade_in: tradeIn ? 'yes' : 'no',
-          trade_in_details: tradeIn ? tradeInDetails.trim() : '',
+          trade_in_details: tradeIn ? tradeInDetails.trim() : undefined,
         },
       };
 
       const res = await client.post('/requests', payload);
       const data = res.data || res;
       setSubmittedData(data);
-      notifyBuySent(userEffName, vehicleName, data.reference || '');
+      notifyBuySent(userEffName, `${quantity > 1 ? `${quantity}x ` : ''}${vehicleName}`, data.reference || '');
 
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('etof:new-request-submitted', { detail: data }));
+        if (typeof BroadcastChannel !== 'undefined') {
+          try {
+            const bc = new BroadcastChannel('etof_orders_sync');
+            bc.postMessage({ type: 'new_purchase_submitted', detail: data });
+            bc.close();
+          } catch {}
+        }
       }
 
       if (onSuccess) onSuccess(data);
@@ -157,15 +177,61 @@ export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
         </div>
       ) : (
         <form onSubmit={handleSubmit} noValidate className={styles.form}>
-          {/* Récapitulatif Véhicule */}
+          {/* Récapitulatif Véhicule & Prix */}
           <div className={styles.vehicleSummary}>
             <div>
               <span className={styles.vehicleLabel}>{t('vehicles.vehicle')}:</span>
               <strong className={styles.vehicleName}>{vehicleName}</strong>
             </div>
             <div>
-              <span className={styles.vehicleLabel}>{t('vehicles.salePrice')}:</span>
+              <span className={styles.vehicleLabel}>
+                {quantity > 1 ? `${t('vehicles.salePrice')} (${quantity} unités)` : t('vehicles.salePrice')}:
+              </span>
               <span className={styles.vehiclePrice}>{priceDisplay}</span>
+            </div>
+          </div>
+
+          {/* Sélecteur de quantité pour l'achat de véhicules */}
+          <div className={styles.quantitySection}>
+            <div className={styles.quantityLabelGroup}>
+              <span className={styles.quantityTitle}>
+                <i className="fa-solid fa-car" style={{ marginRight: '6px' }} />
+                {t('vehicles.quantityLabel', 'Quantité de véhicules')}
+              </span>
+              <span className={styles.quantitySubtitle}>
+                {t('vehicles.quantityHelper', 'Nombre d’unités souhaitées à l’achat')}
+              </span>
+            </div>
+            <div className={styles.quantityPicker}>
+              <button
+                type="button"
+                className={styles.quantityBtn}
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                disabled={quantity <= 1}
+                aria-label="Diminuer la quantité"
+              >
+                -
+              </button>
+              <input
+                type="number"
+                min="1"
+                max="50"
+                className={styles.quantityInput}
+                value={quantity}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value, 10);
+                  if (!isNaN(val) && val >= 1) setQuantity(val);
+                }}
+                aria-label="Quantité de véhicules"
+              />
+              <button
+                type="button"
+                className={styles.quantityBtn}
+                onClick={() => setQuantity((q) => q + 1)}
+                aria-label="Augmenter la quantité"
+              >
+                +
+              </button>
             </div>
           </div>
 
@@ -191,63 +257,30 @@ export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
                 <span className={styles.specLabel}>{t('vehicles.specKeys.transmission', 'Boîte de vitesses')}</span>
                 <span className={styles.specValue}>{specs.transmission || t('common.notSpecified', 'N/C')}</span>
               </div>
-              <div className={styles.specItem}>
-                <span className={styles.specLabel}>{t('vehicles.specKeys.seats', 'Nombre de places')}</span>
-                <span className={styles.specValue}>{specs.seats ? `${specs.seats} places` : t('common.notSpecified', 'N/C')}</span>
-              </div>
-              <div className={styles.specItem}>
-                <span className={styles.specLabel}>{t('vehicles.specKeys.color', 'Couleur')}</span>
-                <span className={styles.specValue}>{specs.color || t('common.notSpecified', 'N/C')}</span>
-              </div>
             </div>
-            {(specs.options || specs.features) && (
-              <div style={{ marginTop: '8px', fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
-                <strong>{t('vehicles.optionsAndEquipment', 'Équipements & Options')} : </strong>
-                {Array.isArray(specs.options || specs.features)
-                  ? (specs.options || specs.features).join(', ')
-                  : String(specs.options || specs.features)}
-              </div>
-            )}
           </div>
 
-          {errors.global && (
-            <div className={styles.errorMessage} role="alert">
-              {errors.global}
-            </div>
-          )}
-
-          {/* Champ Honeypot invisible */}
-          <div style={{ display: 'none' }} aria-hidden="true">
-            <input
-              type="text"
-              name="website"
-              value={websiteHoneypot}
-              onChange={(e) => setWebsiteHoneypot(e.target.value)}
-              tabIndex="-1"
-              autoComplete="off"
-            />
-          </div>
-
-          <div className={styles.fieldGroup}>
-            <label htmlFor="buy-name" className={styles.label}>
-              {t('forms.name')} *
-            </label>
-            <input
-              id="buy-name"
-              type="text"
-              className={`${styles.input} ${errors.full_name ? styles.inputError : ''}`}
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              autoComplete="name"
-              required
-            />
-            {errors.full_name && <span className={styles.fieldError}>{errors.full_name}</span>}
-          </div>
-
+          {/* Coordonnées Client */}
           <div className={styles.grid2}>
             <div className={styles.fieldGroup}>
+              <label htmlFor="buy-fullname" className={styles.label}>
+                {t('forms.fullName', 'Nom et Prénoms')} *
+              </label>
+              <input
+                id="buy-fullname"
+                type="text"
+                className={`${styles.input} ${errors.full_name ? styles.inputError : ''}`}
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Ex : Koffi Kouassi"
+                required
+              />
+              {errors.full_name && <span className={styles.fieldError}>{Array.isArray(errors.full_name) ? errors.full_name.join(' ') : errors.full_name}</span>}
+            </div>
+
+            <div className={styles.fieldGroup}>
               <label htmlFor="buy-phone" className={styles.label}>
-                {t('forms.phone')} *
+                {t('forms.phone', 'Numéro de téléphone')} *
               </label>
               <input
                 id="buy-phone"
@@ -255,16 +288,17 @@ export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
                 className={`${styles.input} ${errors.phone ? styles.inputError : ''}`}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                autoComplete="tel"
-                placeholder="+225 07 00 00 00 00"
+                placeholder="Ex : +225 07 00 00 00 00"
                 required
               />
-              {errors.phone && <span className={styles.fieldError}>{errors.phone}</span>}
+              {errors.phone && <span className={styles.fieldError}>{Array.isArray(errors.phone) ? errors.phone.join(' ') : errors.phone}</span>}
             </div>
+          </div>
 
+          <div className={styles.grid2}>
             <div className={styles.fieldGroup}>
               <label htmlFor="buy-email" className={styles.label}>
-                {t('forms.email')} *
+                {t('forms.email', 'Adresse email')} *
               </label>
               <input
                 id="buy-email"
@@ -272,106 +306,137 @@ export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
                 className={`${styles.input} ${errors.email ? styles.inputError : ''}`}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-                placeholder="nom@exemple.ci"
+                placeholder="Ex : contact@entreprise.ci"
                 required
               />
-              {errors.email && <span className={styles.fieldError}>{errors.email}</span>}
+              {errors.email && <span className={styles.fieldError}>{Array.isArray(errors.email) ? errors.email.join(' ') : errors.email}</span>}
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <label htmlFor="buy-city" className={styles.label}>
+                {t('forms.city', 'Ville ou Commune')}
+              </label>
+              <input
+                id="buy-city"
+                type="text"
+                className={styles.input}
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="Ex : Abidjan - Cocody"
+              />
             </div>
           </div>
 
+          {/* Mode de financement */}
           <div className={styles.fieldGroup}>
-            <label htmlFor="buy-city" className={styles.label}>
-              {t('vehicles.cityLabel', 'Ville de résidence')}
-            </label>
-            <input
-              id="buy-city"
-              type="text"
-              className={styles.input}
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              autoComplete="address-level2"
-              placeholder={t('vehicles.cityPlaceholder', 'Ex : Abidjan, Bouaké, San-Pédro...')}
-            />
-          </div>
-
-          <div className={styles.fieldGroup}>
-            <label htmlFor="buy-payment" className={styles.label}>
+            <label htmlFor="buy-payment-method" className={styles.label}>
               {t('vehicles.paymentMethodLabel', 'Mode de paiement envisagé')}
             </label>
             <select
-              id="buy-payment"
+              id="buy-payment-method"
               className={styles.select}
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value)}
             >
-              <option value="cash">{t('vehicles.paymentCash', 'Paiement comptant / virement')}</option>
-              <option value="financing">{t('vehicles.paymentFinancing', 'Financement / crédit bancaire')}</option>
-              <option value="leasing">{t('vehicles.paymentLeasing', 'Crédit-bail (LOA / LLD)')}</option>
+              <option value="cash">{t('vehicles.paymentMethodCash', 'Comptant (chèque de banque / virement)')}</option>
+              <option value="financing">{t('vehicles.paymentMethodFinancing', 'Financement bancaire / Crédit auto')}</option>
+              <option value="leasing">{t('vehicles.paymentMethodLeasing', 'Leasing / Location avec option d’achat (LOA)')}</option>
             </select>
           </div>
 
-          {/* Option reprise véhicule */}
-          <div className={styles.checkboxGroup}>
+          {/* Option Reprise d'un ancien véhicule */}
+          <div className={styles.checkboxBlock}>
             <label className={styles.checkboxLabel}>
               <input
                 type="checkbox"
+                className={styles.checkbox}
                 checked={tradeIn}
                 onChange={(e) => setTradeIn(e.target.checked)}
               />
-              <span>{t('vehicles.tradeInOption', 'Je souhaite faire reprendre mon véhicule actuel')}</span>
+              <span>{t('vehicles.tradeInLabel', 'Je souhaite faire reprendre mon ancien véhicule')}</span>
             </label>
+
+            {tradeIn && (
+              <div style={{ marginTop: '0.75rem' }}>
+                <label htmlFor="buy-tradein-details" className={styles.label}>
+                  {t('vehicles.tradeInDetailsLabel', 'Détails du véhicule de reprise')}
+                </label>
+                <input
+                  id="buy-tradein-details"
+                  type="text"
+                  className={styles.input}
+                  value={tradeInDetails}
+                  onChange={(e) => setTradeInDetails(e.target.value)}
+                  placeholder={t('vehicles.tradeInDetailsPlaceholder', 'Marque, modèle, année, kilométrage approximatif...')}
+                />
+              </div>
+            )}
           </div>
 
-          {tradeIn && (
-            <div className={styles.fieldGroup}>
-              <label htmlFor="buy-trade-details" className={styles.label}>
-                {t('vehicles.tradeInDetailsLabel', 'Précisions sur votre véhicule à reprendre (Marque, Modèle, Année, Kilométrage)')}
-              </label>
-              <textarea
-                id="buy-trade-details"
-                className={styles.textarea}
-                rows="2"
-                value={tradeInDetails}
-                onChange={(e) => setTradeInDetails(e.target.value)}
-                placeholder="Ex : Toyota Corolla 2018, 95 000 km, bon état général"
-              />
-            </div>
-          )}
-
+          {/* Précisions ou Message */}
           <div className={styles.fieldGroup}>
             <label htmlFor="buy-message" className={styles.label}>
-              {t('forms.message')} ({t('common.optional', 'Optionnel')})
+              {t('forms.message', 'Précisions supplémentaires (facultatif)')}
             </label>
             <textarea
               id="buy-message"
               className={styles.textarea}
-              rows="3"
+              rows={3}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder={t('vehicles.buyMessagePlaceholder', 'Disponibilité pour visite, questions techniques ou essai...')}
+              placeholder="Ex : Équipements spécifiques demandés, délai souhaité..."
             />
           </div>
 
-          <div className={styles.checkboxGroup}>
+          {/* Champ piège antispam invisible */}
+          <div style={{ display: 'none' }} aria-hidden="true">
+            <input
+              type="text"
+              name="website"
+              value={websiteHoneypot}
+              onChange={(e) => setWebsiteHoneypot(e.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+            />
+          </div>
+
+          {/* Consentement RGPD / Confidentialité */}
+          <div className={styles.fieldGroup}>
             <label className={styles.checkboxLabel}>
               <input
                 type="checkbox"
+                className={styles.checkbox}
                 checked={consent}
                 onChange={(e) => setConsent(e.target.checked)}
                 required
               />
-              <span>{t('forms.consent')} *</span>
+              <span className={styles.consentText}>
+                {t('forms.consentPrefix', 'J’accepte que mes données soient traitées par ETOF SARL conformément aux ')}
+                <a href="/mentions-legales" target="_blank" rel="noopener noreferrer" className={styles.consentLink}>
+                  {t('forms.privacyPolicy', 'conditions générales')}
+                </a>.
+              </span>
             </label>
-            {errors.consent && <span className={styles.fieldError}>{errors.consent}</span>}
+            {errors.consent && <span className={styles.fieldError}>{Array.isArray(errors.consent) ? errors.consent.join(' ') : errors.consent}</span>}
           </div>
 
-          <div className={styles.actions}>
-            <Button type="button" variant="ghost" size="md" onClick={handleResetAndClose}>
-              {t('common.cancel')}
-            </Button>
-            <Button type="submit" variant="primary" size="md" loading={isSubmitting}>
-              {t('vehicles.submitPurchaseRequest', 'Envoyer ma demande d’achat')}
+          {/* Bouton de confirmation */}
+          <div style={{ marginTop: '1rem' }}>
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              fullWidth
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <span className={styles.spinner} aria-hidden="true" />
+                  {t('forms.submitting', 'Traitement en cours...')}
+                </>
+              ) : (
+                t('vehicles.btnSendBuyRequest', 'Transmettre ma demande d’achat')
+              )}
             </Button>
           </div>
         </form>
@@ -381,4 +446,3 @@ export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
 }
 
 export default VehicleBuyModal;
-

@@ -31,6 +31,8 @@ export function ActivityVehiclesCatalog() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [buyVehicle, setBuyVehicle] = useState(null);
   const [rentVehicle, setRentVehicle] = useState(null);
+  const [buyQuantity, setBuyQuantity] = useState(1);
+  const [rentQuantity, setRentQuantity] = useState(1);
 
   useEffect(() => {
     let isMounted = true;
@@ -156,8 +158,14 @@ export function ActivityVehiclesCatalog() {
                 key={v.id}
                 vehicle={v}
                 onSelect={handleOpenDetail}
-                onBuy={(veh) => setBuyVehicle(veh)}
-                onRent={(veh) => setRentVehicle(veh)}
+                onBuy={(veh, q = 1) => {
+                  setBuyQuantity(q);
+                  setBuyVehicle(veh);
+                }}
+                onRent={(veh, q = 1) => {
+                  setRentQuantity(q);
+                  setRentVehicle(veh);
+                }}
               />
             ))}
           </div>
@@ -186,12 +194,24 @@ export function ActivityVehiclesCatalog() {
           slug={selectedVehicle.slug}
           isOpen={isDetailOpen}
           onClose={handleCloseDetail}
-          onReserve={(v) => {
+          onReserve={(v, q = 1) => {
             handleCloseDetail();
+            setRentQuantity(q);
             setRentVehicle(v);
           }}
-          onPurchase={(v) => {
+          onPurchase={(v, q = 1) => {
             handleCloseDetail();
+            setBuyQuantity(q);
+            setBuyVehicle(v);
+          }}
+          onRent={(v, q = 1) => {
+            handleCloseDetail();
+            setRentQuantity(q);
+            setRentVehicle(v);
+          }}
+          onBuy={(v, q = 1) => {
+            handleCloseDetail();
+            setBuyQuantity(q);
             setBuyVehicle(v);
           }}
         />
@@ -201,6 +221,7 @@ export function ActivityVehiclesCatalog() {
         <VehicleBuyModal
           vehicle={buyVehicle}
           isOpen={Boolean(buyVehicle)}
+          initialQuantity={buyQuantity}
           onClose={() => setBuyVehicle(null)}
         />
       )}
@@ -209,6 +230,7 @@ export function ActivityVehiclesCatalog() {
         <VehicleRentModal
           vehicle={rentVehicle}
           isOpen={Boolean(rentVehicle)}
+          initialQuantity={rentQuantity}
           onClose={() => setRentVehicle(null)}
         />
       )}
