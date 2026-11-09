@@ -47,18 +47,12 @@ const PRODUCT_ANGLES = [
 export function ProductModal({ isOpen, onClose, product = null, categories = [], onSaved }) {
   const isEditing = Boolean(product && product.id);
 
-  // Onglet linguistique actif (fr ou en)
-  const [activeTab, setActiveTab] = useState('fr');
-
-  // Champs du formulaire
+  // Champs du formulaire unifiés
   const [formData, setFormData] = useState({
     category_id: '',
-    name_fr: '',
-    name_en: '',
-    description_fr: '',
-    description_en: '',
-    unit_fr: '',
-    unit_en: '',
+    name: '',
+    description: '',
+    unit: 'pièce',
     reference: '',
     price: '',
     min_quantity: '1',
@@ -101,12 +95,9 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
     if (product) {
       setFormData({
         category_id: product.category_id || product.category?.id || '',
-        name_fr: product.name_fr || product.name || '',
-        name_en: product.name_en || '',
-        description_fr: product.description_fr || product.description || '',
-        description_en: product.description_en || '',
-        unit_fr: product.unit_fr || product.unit || '',
-        unit_en: product.unit_en || '',
+        name: product.name_fr || product.name || product.name_en || '',
+        description: product.description_fr || product.description || product.description_en || '',
+        unit: product.unit_fr || product.unit || product.unit_en || 'pièce',
         reference: product.reference || '',
         price: product.price !== null && product.price !== undefined ? String(product.price) : '',
         min_quantity: String(product.min_quantity || 1),
@@ -146,12 +137,9 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
       const defaultCat = categories.length > 0 ? String(categories[0].id) : '';
       setFormData({
         category_id: defaultCat,
-        name_fr: '',
-        name_en: '',
-        description_fr: '',
-        description_en: '',
-        unit_fr: 'pièce',
-        unit_en: 'piece',
+        name: '',
+        description: '',
+        unit: 'pièce',
         reference: '',
         price: '',
         min_quantity: '1',
@@ -346,12 +334,12 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
 
       const payload = {
         category_id: parseInt(formData.category_id, 10),
-        name_fr: formData.name_fr.trim(),
-        name_en: formData.name_en.trim() || formData.name_fr.trim(),
-        description_fr: formData.description_fr.trim() || null,
-        description_en: formData.description_en.trim() || null,
-        unit_fr: formData.unit_fr.trim() || null,
-        unit_en: formData.unit_en.trim() || null,
+        name_fr: formData.name.trim(),
+        name_en: formData.name.trim(),
+        description_fr: formData.description.trim() || null,
+        description_en: formData.description.trim() || null,
+        unit_fr: formData.unit.trim() || null,
+        unit_en: formData.unit.trim() || null,
         reference: formData.reference.trim() || null,
         price: formData.price !== '' ? parseInt(formData.price, 10) : null,
         specs: Object.keys(specsObject).length > 0 ? specsObject : null,
@@ -413,128 +401,57 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
       <form onSubmit={handleSubmit} className={styles.form} noValidate>
         {generalError && <Alert variant="danger">{generalError}</Alert>}
 
-        {/* Sélecteur d'onglets FR / EN */}
-        <div className={styles.tabsHeader} role="tablist">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'fr'}
-            className={`${styles.tabBtn} ${activeTab === 'fr' ? styles.tabBtnActive : ''}`}
-            onClick={() => setActiveTab('fr')}
-          >
-            🇫🇷 Français (Principal)
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'en'}
-            className={`${styles.tabBtn} ${activeTab === 'en' ? styles.tabBtnActive : ''}`}
-            onClick={() => setActiveTab('en')}
-          >
-            🇬🇧 Anglais (English)
-          </button>
+        {/* Informations Principales du Produit */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div className={styles.fieldGroup}>
+            <label htmlFor="prod-name" className={styles.label}>
+              Nom du produit <span className={styles.required}>*</span>
+            </label>
+            <input
+              id="prod-name"
+              name="name"
+              type="text"
+              required
+              className={`${styles.input} ${fieldErrors.name_fr || fieldErrors.name ? styles.inputError : ''}`}
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Ex. Poulet de chair fermier, Carton papier A4..."
+            />
+            {(fieldErrors.name_fr || fieldErrors.name) && (
+              <span className={styles.fieldError}>{(fieldErrors.name_fr || fieldErrors.name)[0]}</span>
+            )}
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label htmlFor="prod-desc" className={styles.label}>
+              Description détaillée du produit
+            </label>
+            <textarea
+              id="prod-desc"
+              name="description"
+              className={styles.textarea}
+              value={formData.description}
+              onChange={handleChange}
+              rows={3}
+              placeholder="Description, présentation, méthode d'élevage, caractéristiques..."
+            />
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label htmlFor="prod-unit" className={styles.label}>
+              Unité de vente
+            </label>
+            <input
+              id="prod-unit"
+              name="unit"
+              type="text"
+              className={styles.input}
+              value={formData.unit}
+              onChange={handleChange}
+              placeholder="Ex. pièce, carton, kg, rame..."
+            />
+          </div>
         </div>
-
-        {/* Contenu de l'onglet Français */}
-        {activeTab === 'fr' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div className={styles.fieldGroup}>
-              <label htmlFor="prod-name-fr" className={styles.label}>
-                Nom du produit (FR) <span className={styles.required}>*</span>
-              </label>
-              <input
-                id="prod-name-fr"
-                name="name_fr"
-                type="text"
-                required
-                className={`${styles.input} ${fieldErrors.name_fr ? styles.inputError : ''}`}
-                value={formData.name_fr}
-                onChange={handleChange}
-                placeholder="Ex. Poulet de chair fermier"
-              />
-              {fieldErrors.name_fr && <span className={styles.fieldError}>{fieldErrors.name_fr[0]}</span>}
-            </div>
-
-            <div className={styles.fieldGroup}>
-              <label htmlFor="prod-desc-fr" className={styles.label}>
-                Description détaillée (FR)
-              </label>
-              <textarea
-                id="prod-desc-fr"
-                name="description_fr"
-                className={styles.textarea}
-                value={formData.description_fr}
-                onChange={handleChange}
-                placeholder="Description, méthode d'élevage, caractéristiques..."
-              />
-            </div>
-
-            <div className={styles.fieldGroup}>
-              <label htmlFor="prod-unit-fr" className={styles.label}>
-                Unité de vente (FR)
-              </label>
-              <input
-                id="prod-unit-fr"
-                name="unit_fr"
-                type="text"
-                className={styles.input}
-                value={formData.unit_fr}
-                onChange={handleChange}
-                placeholder="Ex. pièce, carton, kg, rame..."
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Contenu de l'onglet Anglais */}
-        {activeTab === 'en' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div className={styles.fieldGroup}>
-              <label htmlFor="prod-name-en" className={styles.label}>
-                Nom du produit (EN)
-              </label>
-              <input
-                id="prod-name-en"
-                name="name_en"
-                type="text"
-                className={styles.input}
-                value={formData.name_en}
-                onChange={handleChange}
-                placeholder="Ex. Free-range broiler chicken"
-              />
-              <span className={styles.helperText}>Laissez vide pour utiliser le nom français par défaut.</span>
-            </div>
-
-            <div className={styles.fieldGroup}>
-              <label htmlFor="prod-desc-en" className={styles.label}>
-                Description détaillée (EN)
-              </label>
-              <textarea
-                id="prod-desc-en"
-                name="description_en"
-                className={styles.textarea}
-                value={formData.description_en}
-                onChange={handleChange}
-                placeholder="Description in English..."
-              />
-            </div>
-
-            <div className={styles.fieldGroup}>
-              <label htmlFor="prod-unit-en" className={styles.label}>
-                Unité de vente (EN)
-              </label>
-              <input
-                id="prod-unit-en"
-                name="unit_en"
-                type="text"
-                className={styles.input}
-                value={formData.unit_en}
-                onChange={handleChange}
-                placeholder="Ex. piece, box, kg, ream..."
-              />
-            </div>
-          </div>
-        )}
 
         {/* Paramètres généraux & Données numériques */}
         <div className={styles.grid2}>

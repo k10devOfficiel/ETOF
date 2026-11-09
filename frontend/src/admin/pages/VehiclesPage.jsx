@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import adminApi from '../api/adminApi.js';
 import Button from '../../components/ui/Button.jsx';
 import Badge from '../../components/ui/Badge.jsx';
@@ -6,6 +7,7 @@ import Spinner from '../../components/ui/Spinner.jsx';
 import Alert from '../../components/ui/Alert.jsx';
 import VehicleModal from '../components/VehicleModal.jsx';
 import ConfirmModal from '../components/ConfirmModal.jsx';
+import { ADMIN_PATH } from '../../config/adminConfig.js';
 import styles from './ProductsPage.module.css';
 
 /**
@@ -217,15 +219,26 @@ export function VehiclesPage() {
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <h1 className={styles.title}>Parc Automobile</h1>
+          <h1 className={styles.title}>Vente & Location de Véhicules</h1>
           <p className={styles.subtitle}>
-            Gérez les véhicules à la vente et à la location, leurs caractéristiques et leur disponibilité.
+            Gérez la flotte automobile, les prix de vente et de location journalière, les angles et la disponibilité.
           </p>
         </div>
 
-        <Button variant="primary" size="md" onClick={handleOpenCreate}>
-          + Nouveau Véhicule
-        </Button>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <Link
+            to={`${ADMIN_PATH}/demandes?activity=vehicle`}
+            style={{ textDecoration: 'none' }}
+          >
+            <Button variant="outline" size="md">
+              📋 Réservations & Achats Voitures
+            </Button>
+          </Link>
+
+          <Button variant="primary" size="md" onClick={handleOpenCreate}>
+            + Nouveau Véhicule
+          </Button>
+        </div>
       </header>
 
       {successMessage && <Alert variant="success">{successMessage}</Alert>}

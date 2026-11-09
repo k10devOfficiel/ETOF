@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
 import adminApi from '../api/adminApi.js';
 import Button from '../../components/ui/Button.jsx';
 import Badge from '../../components/ui/Badge.jsx';
@@ -6,6 +7,7 @@ import Spinner from '../../components/ui/Spinner.jsx';
 import Alert from '../../components/ui/Alert.jsx';
 import ProductModal from '../components/ProductModal.jsx';
 import ConfirmModal from '../components/ConfirmModal.jsx';
+import { ADMIN_PATH } from '../../config/adminConfig.js';
 import styles from './ProductsPage.module.css';
 
 /**
@@ -17,6 +19,9 @@ import styles from './ProductsPage.module.css';
  * @returns {JSX.Element}
  */
 export function ProductsPage() {
+  const [searchParams] = useSearchParams();
+  const activityParam = searchParams.get('activity') || '';
+
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [pagination, setPagination] = useState({
@@ -51,10 +56,14 @@ export function ProductsPage() {
       .getCategories()
       .then((data) => {
         const items = Array.isArray(data) ? data : data?.items || [];
-        setCategories(items.filter((c) => c.activity === 'farm' || c.activity === 'office'));
+        if (activityParam) {
+          setCategories(items.filter((c) => c.activity === activityParam));
+        } else {
+          setCategories(items.filter((c) => c.activity === 'farm' || c.activity === 'office'));
+        }
       })
       .catch((err) => console.warn('Erreur chargement catégories:', err));
-  }, []);
+  }, [activityParam]);
 
   // Chargement des produits
   const loadProducts = useCallback(
@@ -71,6 +80,7 @@ export function ProductsPage() {
         };
 
         if (search.trim()) params.q = search.trim();
+        if (activityParam) params.activity = activityParam;
         if (categoryId) params.category_id = categoryId;
         if (activeFilter !== '') params.is_active = activeFilter;
 
@@ -176,15 +186,38 @@ export function ProductsPage() {
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <h1 className={styles.title}>Gestion des Produits</h1>
+          <h1 className={styles.title}>
+            {activityParam === 'farm'
+              ? 'Ferme & Élevage de Volailles'
+              : activityParam === 'office'
+              ? 'Fournitures de Bureau'
+              : 'Gestion des Produits'}
+          </h1>
           <p className={styles.subtitle}>
-            Créez, modifiez et gérez l'ensemble des produits des pôles Ferme et Fournitures.
+            {activityParam === 'farm'
+              ? 'Gestion des poulets fermiers, pondeuses, pintades, cailles et œufs frais.'
+              : activityParam === 'office'
+              ? 'Gestion des articles de papeterie, consommables et matériel de bureau.'
+              : "Créez, modifiez et gérez l'ensemble des produits des pôles Ferme et Fournitures."}
           </p>
         </div>
 
-        <Button variant="primary" size="md" onClick={handleOpenCreate}>
-          + Nouveau Produit
-        </Button>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          {activityParam && (
+            <Link
+              to={`${ADMIN_PATH}/demandes?activity=${activityParam}`}
+              style={{ textDecoration: 'none' }}
+            >
+              <Button variant="outline" size="md">
+                📋 Voir les commandes {activityParam === 'farm' ? 'Ferme' : 'Fournitures'}
+              </Button>
+            </Link>
+          )}
+
+          <Button variant="primary" size="md" onClick={handleOpenCreate}>
+            + Nouveau Produit
+          </Button>
+        </div>
       </header>
 
       {successMessage && <Alert variant="success">{successMessage}</Alert>}

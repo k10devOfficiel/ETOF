@@ -67,10 +67,7 @@ const VEHICLE_ANGLES = [
 export function VehicleModal({ isOpen, onClose, vehicle = null, categories = [], onSaved }) {
   const isEditing = Boolean(vehicle && vehicle.id);
 
-  // Onglet linguistique actif (fr ou en)
-  const [activeTab, setActiveTab] = useState('fr');
-
-  // Champs du formulaire
+  // Champs du formulaire unifiés
   const [formData, setFormData] = useState({
     category_id: '',
     brand: '',
@@ -80,8 +77,7 @@ export function VehicleModal({ isOpen, onClose, vehicle = null, categories = [],
     status: 'available',
     price_sale: '',
     price_rental_day: '',
-    description_fr: '',
-    description_en: '',
+    description: '',
     is_active: true,
   });
 
@@ -128,8 +124,7 @@ export function VehicleModal({ isOpen, onClose, vehicle = null, categories = [],
         status: vehicle.status || 'available',
         price_sale: vehicle.price_sale !== null && vehicle.price_sale !== undefined ? String(vehicle.price_sale) : '',
         price_rental_day: vehicle.price_rental_day !== null && vehicle.price_rental_day !== undefined ? String(vehicle.price_rental_day) : '',
-        description_fr: vehicle.description_fr || vehicle.description || '',
-        description_en: vehicle.description_en || '',
+        description: vehicle.description_fr || vehicle.description || vehicle.description_en || '',
         is_active: vehicle.is_active !== undefined ? Boolean(vehicle.is_active) : true,
       });
 
@@ -172,8 +167,7 @@ export function VehicleModal({ isOpen, onClose, vehicle = null, categories = [],
         status: 'available',
         price_sale: '',
         price_rental_day: '',
-        description_fr: '',
-        description_en: '',
+        description: '',
         is_active: true,
       });
       setSpecsData({
@@ -198,7 +192,6 @@ export function VehicleModal({ isOpen, onClose, vehicle = null, categories = [],
     setSelectedAngleKey('exterior_front');
     setGeneralError(null);
     setFieldErrors({});
-    setActiveTab('fr');
   }, [vehicle, categories, isOpen]);
 
   if (!isOpen) return null;
@@ -354,8 +347,8 @@ export function VehicleModal({ isOpen, onClose, vehicle = null, categories = [],
         price_sale: formData.price_sale !== '' ? parseInt(formData.price_sale, 10) : null,
         price_rental_day: formData.price_rental_day !== '' ? parseInt(formData.price_rental_day, 10) : null,
         specs: specsObject,
-        description_fr: formData.description_fr.trim() || null,
-        description_en: formData.description_en.trim() || null,
+        description_fr: formData.description.trim() || null,
+        description_en: formData.description.trim() || null,
         is_active: Boolean(formData.is_active),
       };
 
@@ -410,31 +403,8 @@ export function VehicleModal({ isOpen, onClose, vehicle = null, categories = [],
       <form onSubmit={handleSubmit} className={styles.form} noValidate>
         {generalError && <Alert variant="danger">{generalError}</Alert>}
 
-        {/* Sélecteur d'onglets FR / EN */}
-        <div className={styles.tabsHeader} role="tablist">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'fr'}
-            className={`${styles.tabBtn} ${activeTab === 'fr' ? styles.tabBtnActive : ''}`}
-            onClick={() => setActiveTab('fr')}
-          >
-            🇫🇷 Informations (Français)
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'en'}
-            className={`${styles.tabBtn} ${activeTab === 'en' ? styles.tabBtnActive : ''}`}
-            onClick={() => setActiveTab('en')}
-          >
-            🇬🇧 English Description
-          </button>
-        </div>
-
-        {/* Onglet Français */}
-        {activeTab === 'fr' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {/* Informations Générales du Véhicule */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div className={styles.grid3}>
               <div className={styles.fieldGroup}>
                 <label htmlFor="veh-brand" className={styles.label}>
@@ -586,38 +556,19 @@ export function VehicleModal({ isOpen, onClose, vehicle = null, categories = [],
 
             <div className={styles.fieldGroup}>
               <label htmlFor="veh-desc-fr" className={styles.label}>
-                Description commerciale (FR)
+                Description commerciale du véhicule
               </label>
               <textarea
-                id="veh-desc-fr"
-                name="description_fr"
+                id="veh-desc"
+                name="description"
                 className={styles.textarea}
-                value={formData.description_fr}
+                value={formData.description}
                 onChange={handleChange}
-                placeholder="Présentation du véhicule, finitions, motorisation..."
+                rows={3}
+                placeholder="Présentation du véhicule, finitions, motorisation, état général..."
               />
             </div>
           </div>
-        )}
-
-        {/* Onglet Anglais */}
-        {activeTab === 'en' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div className={styles.fieldGroup}>
-              <label htmlFor="veh-desc-en" className={styles.label}>
-                Commercial description (English)
-              </label>
-              <textarea
-                id="veh-desc-en"
-                name="description_en"
-                className={styles.textarea}
-                value={formData.description_en}
-                onChange={handleChange}
-                placeholder="Vehicle presentation, features, condition in English..."
-              />
-            </div>
-          </div>
-        )}
 
         {/* Caractéristiques techniques complètes sans omission */}
         <div className={styles.specsSection}>

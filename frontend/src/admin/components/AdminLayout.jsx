@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext.jsx';
 import Alert from '../../components/ui/Alert.jsx';
 import Button from '../../components/ui/Button.jsx';
@@ -17,6 +18,8 @@ import styles from './AdminLayout.module.css';
  */
 export function AdminLayout() {
   const { admin, logout, sessionExpired, dismissSessionExpired } = useAuth();
+  const { i18n } = useTranslation();
+  const currentLang = (i18n.language || 'fr').slice(0, 2).toLowerCase();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -243,6 +246,27 @@ export function AdminLayout() {
           </div>
 
           <div className={styles.topBarRight}>
+            {/* Sélecteur de langue bilingue pour l'administration */}
+            <div className={styles.langSwitch} role="group" aria-label="Langue d'administration">
+              <button
+                type="button"
+                className={`${styles.langBtn} ${currentLang === 'fr' ? styles.langBtnActive : ''}`}
+                onClick={() => i18n.changeLanguage('fr')}
+                title="Passer l'administration en français"
+              >
+                FR
+              </button>
+              <span className={styles.langDivider}>|</span>
+              <button
+                type="button"
+                className={`${styles.langBtn} ${currentLang === 'en' ? styles.langBtnActive : ''}`}
+                onClick={() => i18n.changeLanguage('en')}
+                title="Switch admin to English"
+              >
+                EN
+              </button>
+            </div>
+
             <AdminNotificationBell />
 
             <div className={styles.dateWidget}>

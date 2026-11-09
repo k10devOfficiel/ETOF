@@ -439,6 +439,10 @@ final class AdminRequestController
         $productsCount = (int) ($pdo->query("SELECT COUNT(*) FROM products")->fetchColumn() ?: 0);
         $vehiclesCount = (int) ($pdo->query("SELECT COUNT(*) FROM vehicles")->fetchColumn() ?: 0);
 
+        // Totaux produits ventilés par activité (ferme avicole, fournitures de bureau)
+        $farmProductsCount = (int) ($pdo->query("SELECT COUNT(p.id) FROM products p JOIN categories c ON p.category_id = c.id WHERE c.activity = 'farm'")->fetchColumn() ?: 0);
+        $officeProductsCount = (int) ($pdo->query("SELECT COUNT(p.id) FROM products p JOIN categories c ON p.category_id = c.id WHERE c.activity = 'office'")->fetchColumn() ?: 0);
+
         return Response::success([
             'total' => $total,
             'by_status' => $byStatus,
@@ -448,6 +452,8 @@ final class AdminRequestController
             'monthly_history' => array_values($monthlyHistory),
             'products_count' => $productsCount,
             'vehicles_count' => $vehiclesCount,
+            'farm_products_count' => $farmProductsCount,
+            'office_products_count' => $officeProductsCount,
             'timestamp' => date('c'),
         ]);
     }

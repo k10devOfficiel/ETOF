@@ -135,12 +135,27 @@ export function DashboardPage() {
       // Filtre recherche textuelle
       if (searchFilter.trim() !== '') {
         const query = searchFilter.toLowerCase().trim();
-        const refMatch = (r.reference || '').toLowerCase().includes(query);
-        const nameMatch = (r.name || '').toLowerCase().includes(query);
-        const emailMatch = (r.email || '').toLowerCase().includes(query);
-        const phoneMatch = (r.phone || '').toLowerCase().includes(query);
-        const typeMatch = (TYPE_LABELS[r.type] || '').toLowerCase().includes(query);
-        return refMatch || nameMatch || emailMatch || phoneMatch || typeMatch;
+        const clientFullName = (r.full_name || r.name || '').toLowerCase();
+        const refStr = (r.reference || '').toLowerCase();
+        const emailStr = (r.email || '').toLowerCase();
+        const phoneStr = (r.phone || '').toLowerCase();
+        const companyStr = (r.company || '').toLowerCase();
+        const vehicleStr = (r.vehicle_name || '').toLowerCase();
+        const typeStr = (TYPE_LABELS[r.type] || r.type || '').toLowerCase();
+        const actStr = (ACTIVITY_LABELS[r.activity] || r.activity || '').toLowerCase();
+        const statusStr = (STATUS_CONFIG[r.status]?.label || r.status || '').toLowerCase();
+
+        return (
+          clientFullName.includes(query) ||
+          refStr.includes(query) ||
+          emailStr.includes(query) ||
+          phoneStr.includes(query) ||
+          companyStr.includes(query) ||
+          vehicleStr.includes(query) ||
+          typeStr.includes(query) ||
+          actStr.includes(query) ||
+          statusStr.includes(query)
+        );
       }
       return true;
     });
@@ -161,12 +176,16 @@ export function DashboardPage() {
 
     const actRequests = recentRequests.filter((r) => r.activity === selectedActivity);
     return {
-      total: actRequests.length,
+      total: stats?.by_activity?.[selectedActivity] ?? actRequests.length,
       new: actRequests.filter((r) => r.status === 'new').length,
       in_progress: actRequests.filter((r) => r.status === 'in_progress').length,
       confirmed: actRequests.filter((r) => r.status === 'confirmed').length,
-      vehicles: selectedActivity === 'vehicle' ? (stats?.vehicles_count ?? 6) : 0,
-      products: selectedActivity === 'farm' || selectedActivity === 'office' ? (stats?.products_count ?? 6) : 0,
+      vehicles: selectedActivity === 'vehicle' ? (stats?.vehicles_count ?? 6) : null,
+      products: selectedActivity === 'farm'
+        ? (stats?.farm_products_count ?? 6)
+        : selectedActivity === 'office'
+        ? (stats?.office_products_count ?? 6)
+        : null,
     };
   }, [stats, recentRequests, selectedActivity]);
 
@@ -291,33 +310,45 @@ export function DashboardPage() {
               </div>
             </div>
 
-            <div className={styles.kpiCard}>
-              <div className={styles.kpiHeader}>
-                <div className={styles.kpiIconWrapper} style={{ background: '#ede9fe', color: '#6d28d9' }}>
-                  <Icon name="car" size={18} />
+            {/* Carte Voitures : affichée uniquement pour Tous les pôles et le pôle Véhicules */}
+            {(selectedActivity === 'all' || selectedActivity === 'vehicle') && (
+              <div className={styles.kpiCard}>
+                <div className={styles.kpiHeader}>
+                  <div className={styles.kpiIconWrapper} style={{ background: '#ede9fe', color: '#6d28d9' }}>
+                    <Icon name="car" size={18} />
+                  </div>
+                  <span className={`${styles.kpiTrendBadge} ${styles.trendNeutral}`}>Parc</span>
                 </div>
-                <span className={`${styles.kpiTrendBadge} ${styles.trendNeutral}`}>Parc</span>
+                <p className={styles.kpiTitle}>
+                  {selectedActivity === 'vehicle' ? 'Véhicules du Parc' : 'Voitures'}
+                </p>
+                <div className={styles.kpiValueRow}>
+                  <span className={styles.kpiValue}>{displayedStats.vehicles}</span>
+                  <span className={styles.kpiSubtext}>modèles</span>
+                </div>
               </div>
-              <p className={styles.kpiTitle}>Voitures</p>
-              <div className={styles.kpiValueRow}>
-                <span className={styles.kpiValue}>{displayedStats.vehicles}</span>
-                <span className={styles.kpiSubtext}>modèles</span>
-              </div>
-            </div>
+            )}
 
-            <div className={styles.kpiCard}>
-              <div className={styles.kpiHeader}>
-                <div className={styles.kpiIconWrapper} style={{ background: '#f1f5f9', color: '#0b2a4a' }}>
-                  <Icon name="box" size={18} />
+            {/* Carte Produits : affichée uniquement pour Tous les pôles, Ferme et Fournitures */}
+            {(selectedActivity === 'all' || selectedActivity === 'farm' || selectedActivity === 'office') && (
+              <div className={styles.kpiCard}>
+                <div className={styles.kpiHeader}>
+                  <div className={styles.kpiIconWrapper} style={{ background: '#f1f5f9', color: '#0b2a4a' }}>
+                    <Icon name={selectedActivity === 'farm' ? 'feather' : 'box'} size={18} />
+                  </div>
+                  <span className={`${styles.kpiTrendBadge} ${styles.trendNeutral}`}>
+                    {selectedActivity === 'farm' ? 'Élevage' : selectedActivity === 'office' ? 'Fournitures' : 'Stock'}
+                  </span>
                 </div>
-                <span className={`${styles.kpiTrendBadge} ${styles.trendNeutral}`}>Stock</span>
+                <p className={styles.kpiTitle}>
+                  {selectedActivity === 'farm' ? 'Volailles Référencées' : selectedActivity === 'office' ? 'Articles de Bureau' : 'Produits'}
+                </p>
+                <div className={styles.kpiValueRow}>
+                  <span className={styles.kpiValue}>{displayedStats.products}</span>
+                  <span className={styles.kpiSubtext}>articles</span>
+                </div>
               </div>
-              <p className={styles.kpiTitle}>Produits</p>
-              <div className={styles.kpiValueRow}>
-                <span className={styles.kpiValue}>{displayedStats.products}</span>
-                <span className={styles.kpiSubtext}>articles</span>
-              </div>
-            </div>
+            )}
           </section>
 
           {/* Grille Médiane : Graphique interactif Chart.js + Suivi des 4 Pôles */}
@@ -458,7 +489,7 @@ export function DashboardPage() {
                           </td>
                           <td className={styles.td}>
                             <div className={styles.clientMeta}>
-                              <span className={styles.clientName}>{req.name || 'Client'}</span>
+                              <span className={styles.clientName}>{req.full_name || req.name || 'Client'}</span>
                               <span className={styles.clientContact}>{req.email || req.phone || '-'}</span>
                             </div>
                           </td>

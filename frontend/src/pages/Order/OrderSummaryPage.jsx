@@ -132,6 +132,16 @@ export function OrderSummaryPage() {
     }
   };
 
+  // Détection automatique de l'activité cible selon les articles du panier
+  const detectedActivity = useMemo(() => {
+    if (!items || items.length === 0) return 'farm';
+    const firstWithAct = items.find((i) => i.activity || i.category?.activity);
+    if (firstWithAct) {
+      return firstWithAct.activity || firstWithAct.category?.activity;
+    }
+    return 'farm';
+  }, [items]);
+
   return (
     <main className={styles.page}>
       <Seo
@@ -435,7 +445,7 @@ export function OrderSummaryPage() {
 
               <RequestForm
                 formType="order"
-                initialActivity="general"
+                initialActivity={detectedActivity}
                 items={items}
                 onSuccess={(res) => {
                   // Mémoriser la commande soumise pour afficher le bandeau officiel

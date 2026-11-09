@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import adminApi from '../api/adminApi.js';
 import Spinner from '../../components/ui/Spinner.jsx';
 import Alert from '../../components/ui/Alert.jsx';
@@ -52,13 +53,26 @@ export function RequestsPage() {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlActivity = searchParams.get('activity') || '';
+  const urlQ = searchParams.get('q') || '';
+
   // Filtres
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(urlQ);
   const [typeFilter, setTypeFilter] = useState('');
-  const [activityFilter, setActivityFilter] = useState('');
+  const [activityFilter, setActivityFilter] = useState(urlActivity);
   const [statusFilter, setStatusFilter] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+
+  // Synchronisation avec l'URL si elle change (ex. clic sur le menu latéral)
+  useEffect(() => {
+    const act = searchParams.get('activity') || '';
+    const q = searchParams.get('q') || '';
+    setActivityFilter(act);
+    if (q) setSearch(q);
+    setPage(1);
+  }, [searchParams]);
 
   // Tri & Pagination
   const [sortOrder, setSortOrder] = useState('desc'); // 'desc' ou 'asc'
@@ -241,6 +255,89 @@ export function RequestsPage() {
           <Alert variant="danger">{error}</Alert>
         </div>
       )}
+
+      {/* Sélecteur instantané des 4 Pôles d'Activités */}
+      <div className={styles.activityTabs} role="tablist" aria-label="Filtrer les demandes par pôle">
+        <button
+          type="button"
+          className={`${styles.activityTabBtn} ${activityFilter === '' ? styles.activityTabBtnActive : ''}`}
+          onClick={() => {
+            setActivityFilter('');
+            setSearchParams((prev) => {
+              const next = new URLSearchParams(prev);
+              next.delete('activity');
+              return next;
+            });
+            setPage(1);
+          }}
+        >
+          Tous les pôles
+        </button>
+        <button
+          type="button"
+          className={`${styles.activityTabBtn} ${activityFilter === 'farm' ? styles.activityTabBtnActive : ''}`}
+          onClick={() => {
+            setActivityFilter('farm');
+            setSearchParams((prev) => {
+              const next = new URLSearchParams(prev);
+              next.set('activity', 'farm');
+              return next;
+            });
+            setPage(1);
+          }}
+        >
+          <i className="fa-solid fa-feather-pointed" style={{ marginRight: '6px' }} />
+          <span>Ferme & Volaille</span>
+        </button>
+        <button
+          type="button"
+          className={`${styles.activityTabBtn} ${activityFilter === 'vehicle' ? styles.activityTabBtnActive : ''}`}
+          onClick={() => {
+            setActivityFilter('vehicle');
+            setSearchParams((prev) => {
+              const next = new URLSearchParams(prev);
+              next.set('activity', 'vehicle');
+              return next;
+            });
+            setPage(1);
+          }}
+        >
+          <i className="fa-solid fa-car" style={{ marginRight: '6px' }} />
+          <span>Vente & Location Voitures</span>
+        </button>
+        <button
+          type="button"
+          className={`${styles.activityTabBtn} ${activityFilter === 'office' ? styles.activityTabBtnActive : ''}`}
+          onClick={() => {
+            setActivityFilter('office');
+            setSearchParams((prev) => {
+              const next = new URLSearchParams(prev);
+              next.set('activity', 'office');
+              return next;
+            });
+            setPage(1);
+          }}
+        >
+          <i className="fa-solid fa-briefcase" style={{ marginRight: '6px' }} />
+          <span>Fournitures de Bureau</span>
+        </button>
+        <button
+          type="button"
+          className={`${styles.activityTabBtn} ${activityFilter === 'fuel' ? styles.activityTabBtnActive : ''}`}
+          onClick={() => {
+            setActivityFilter('fuel');
+            setSearchParams((prev) => {
+              const next = new URLSearchParams(prev);
+              next.set('activity', 'fuel');
+              return next;
+            });
+            setPage(1);
+          }}
+        >
+          <i className="fa-solid fa-gas-pump" style={{ marginRight: '6px' }} />
+          <span>Transport Hydrocarbures</span>
+        </button>
+      </div>
 
       {/* Barre de filtres multi-critères */}
       <section className={styles.filtersCard}>
