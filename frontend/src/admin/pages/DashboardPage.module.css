@@ -62,32 +62,32 @@
 .tabBtn {
   background: transparent;
   border: none;
-  border-radius: 8px;
-  padding: 0.45rem 0.95rem;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  padding: 0.5rem 0.95rem;
   font-size: 0.825rem;
   font-weight: 500;
   color: #64748b;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease;
 }
 
 .tabBtn:hover {
   color: #0b2a4a;
-  background: #f1f5f9;
-  transform: translateY(-1px);
+  border-bottom-color: #cbd5e1;
 }
 
 .tabBtn:active {
-  transform: scale(0.97);
+  transform: none;
 }
 
 .activeTabBtn {
-  background: #0b2a4a !important;
-  color: #ffffff !important;
-  font-weight: 600;
-  box-shadow: 0 3px 8px rgba(11, 42, 74, 0.25);
-  transform: translateY(-1px);
+  background: transparent !important;
+  color: #0b2a4a !important;
+  border-bottom: 2px solid #14b8c4 !important;
+  font-weight: 700;
+  box-shadow: none !important;
 }
 
 /* Grille des 6 KPIs (Rangée supérieure comme l'image de référence) */
@@ -260,96 +260,6 @@
   margin: 0;
 }
 
-.chartControls {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-.chartPillGroup {
-  display: flex;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 3px;
-  gap: 2px;
-}
-
-.chartPillBtn {
-  background: transparent;
-  border: none;
-  font-size: 0.775rem;
-  font-weight: 600;
-  color: #64748b;
-  padding: 0.35rem 0.75rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.chartPillBtn:hover {
-  color: #0b2a4a;
-}
-
-.activeChartPill {
-  background: #0b2a4a;
-  color: #ffffff;
-  box-shadow: 0 1px 3px rgba(11, 42, 74, 0.2);
-}
-
-.chartSvgWrapper {
-  width: 100%;
-  height: 240px;
-  position: relative;
-}
-
-.chartSvg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-.chartPath {
-  transition: d 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.chartPoint {
-  transition: r 0.2s ease, fill 0.2s ease, transform 0.2s ease;
-  cursor: pointer;
-}
-
-.chartPoint:hover {
-  r: 7;
-  fill: #14b8c4;
-}
-
-.chartTooltip {
-  position: absolute;
-  background: #0b2a4a;
-  color: #ffffff;
-  border-radius: 8px;
-  padding: 0.45rem 0.75rem;
-  box-shadow: 0 6px 16px rgba(11, 42, 74, 0.2);
-  font-size: 0.75rem;
-  font-weight: 600;
-  pointer-events: none;
-  transform: translate(-50%, -130%);
-  white-space: nowrap;
-  z-index: 10;
-  animation: tooltipIn 0.15s ease;
-}
-
-@keyframes tooltipIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -115%);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -130%);
-  }
-}
-
 /* Carte Aperçu des 4 Activités */
 .activitiesCard {
   background: #ffffff;
@@ -492,8 +402,8 @@
 }
 
 .viewAllLink:hover {
-  background: #0b2a4a;
-  color: #ffffff;
+  background: rgba(20, 184, 196, 0.15);
+  color: #0b2a4a;
   transform: translateY(-1px);
 }
 
@@ -643,11 +553,11 @@
 }
 
 .actionBtn:hover {
-  background: #0b2a4a;
-  color: #ffffff;
-  border-color: #0b2a4a;
+  background: #f8fafc;
+  color: #0b2a4a;
+  border-color: #14b8c4;
   transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(11, 42, 74, 0.2);
+  box-shadow: 0 4px 10px rgba(20, 184, 196, 0.15);
 }
 
 .actionBtn:active {

@@ -158,22 +158,27 @@ export function AdminLayout() {
           {navGroups.map((group) => (
             <div key={group.title} className={styles.navGroup}>
               <span className={styles.navGroupTitle}>{group.title}</span>
-              {group.items.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.end}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={({ isActive }) =>
-                    `${styles.navLink} ${isActive ? styles.activeNavLink : ''}`
-                  }
-                >
-                  <svg className={styles.navIcon} viewBox="0 0 24 24" aria-hidden="true">
-                    {item.icon}
-                  </svg>
-                  <span>{item.label}</span>
-                </NavLink>
-              ))}
+              {group.items.map((item) => {
+                const currentFullPath = location.pathname + location.search;
+                const isItemActive = item.to.includes('?')
+                  ? currentFullPath === item.to
+                  : location.pathname === item.to && (!location.search || item.to === ADMIN_PATH);
+
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.end}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`${styles.navLink} ${isItemActive ? styles.activeNavLink : ''}`}
+                  >
+                    <svg className={styles.navIcon} viewBox="0 0 24 24" aria-hidden="true">
+                      {item.icon}
+                    </svg>
+                    <span>{item.label}</span>
+                  </NavLink>
+                );
+              })}
             </div>
           ))}
         </nav>
