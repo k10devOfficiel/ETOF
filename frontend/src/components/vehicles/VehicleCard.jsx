@@ -1,6 +1,5 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import Badge from '../ui/Badge.jsx';
 import Button from '../ui/Button.jsx';
 import Icon from '../common/Icon.jsx';
 import styles from './VehicleCard.module.css';
@@ -109,12 +108,6 @@ export function VehicleCard({ vehicle, onSelect, onBuy, onRent }) {
             <span>{t('catalog.noImage')}</span>
           </div>
         )}
-
-        <div className={styles.badgeTop}>
-          <Badge variant={badgeVariant}>
-            {badgeText}
-          </Badge>
-        </div>
       </div>
 
       {/* Contenu textuel */}

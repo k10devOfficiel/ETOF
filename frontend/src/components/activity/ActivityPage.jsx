@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import Seo from '../common/Seo.jsx';
 import Container from '../ui/Container.jsx';
 import Button from '../ui/Button.jsx';
-import DevPlaceholder from '../ui/DevPlaceholder.jsx';
 import styles from './ActivityPage.module.css';
 
 /**
@@ -196,8 +195,6 @@ export function ActivityPage({
               </article>
             ))}
           </div>
-
-          {devTopicKey && <DevPlaceholder topicKey={devTopicKey} />}
         </Container>
       </section>
 

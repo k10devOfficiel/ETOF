@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useOrder } from '../../context/OrderContext.jsx';
 import Modal from '../ui/Modal.jsx';
-import Badge from '../ui/Badge.jsx';
 import Button from '../ui/Button.jsx';
 import styles from './ProductDetailModal.module.css';
 
@@ -102,12 +101,6 @@ export function ProductDetailModal({ product, isOpen, onClose }) {
               <span>{t('catalog.noImage')}</span>
             </div>
           )}
-
-          <div className={styles.badgeTop}>
-            <Badge variant={isAvailable ? 'available' : 'unavailable'}>
-              {isAvailable ? t('catalog.available') : t('catalog.unavailable')}
-            </Badge>
-          </div>
         </div>
 
         {/* Colonne détails et commande */}

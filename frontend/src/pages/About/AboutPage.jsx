@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Seo from '../../components/common/Seo.jsx';
 import Container from '../../components/ui/Container.jsx';
-import DevPlaceholder from '../../components/ui/DevPlaceholder.jsx';
 import styles from './AboutPage.module.css';
 
 /**
@@ -70,9 +69,6 @@ export function AboutPage() {
             <p>{t('about.historyP1')}</p>
             <p>{t('about.historyP2')}</p>
           </div>
-
-          {/* Manque à compléter pour l'historique détaillé (visible uniquement en dev) */}
-          <DevPlaceholder topicKey="historyMilestones" />
         </Container>
       </section>
 
@@ -236,9 +232,6 @@ export function AboutPage() {
               </Link>
             </article>
           </div>
-
-          {/* Manque à compléter pour les chiffres clés (visible uniquement en dev) */}
-          <DevPlaceholder topicKey="keyFigures" />
         </Container>
       </section>
 
@@ -253,7 +246,6 @@ export function AboutPage() {
               <div className={styles.textBlock}>
                 <p>{t('about.teamDesc')}</p>
               </div>
-              <DevPlaceholder topicKey="teamGovernance" />
             </div>
 
             <div>
@@ -261,7 +253,6 @@ export function AboutPage() {
               <div className={styles.textBlock}>
                 <p>{t('about.certificationsDesc')}</p>
               </div>
-              <DevPlaceholder topicKey="certifications" />
             </div>
           </div>
         </Container>

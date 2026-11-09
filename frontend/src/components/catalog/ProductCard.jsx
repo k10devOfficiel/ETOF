@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useOrder } from '../../context/OrderContext.jsx';
-import Badge from '../ui/Badge.jsx';
 import Button from '../ui/Button.jsx';
 import styles from './ProductCard.module.css';
 
@@ -93,12 +92,6 @@ export function ProductCard({ product, onSelect }) {
             <span>{t('catalog.noImage')}</span>
           </div>
         )}
-
-        <div className={styles.badgePosition}>
-          <Badge variant={isAvailable ? 'available' : 'unavailable'}>
-            {isAvailable ? t('catalog.available') : t('catalog.unavailable')}
-          </Badge>
-        </div>
       </div>
 
       {/* Contenu textuel */}
