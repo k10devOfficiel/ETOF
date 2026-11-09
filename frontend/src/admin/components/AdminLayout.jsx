@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import Alert from '../../components/ui/Alert.jsx';
 import Button from '../../components/ui/Button.jsx';
 import { ADMIN_PATH } from '../../config/adminConfig.js';
+import logoOfficial from '../../assets/logo/logo-etof.jpg';
 import styles from './AdminLayout.module.css';
 
 /**
@@ -144,11 +145,12 @@ export function AdminLayout() {
         aria-label="Navigation de l'administration"
       >
         <div className={styles.sidebarHeader}>
-          <Link to={ADMIN_PATH} className={styles.logoLink} aria-label="Tableau de bord">
-            <div className={styles.logoIcon}>E</div>
-            <span className={styles.logoText}>
-              ETOF <span className={styles.logoAccent}>SARL</span>
-            </span>
+          <Link to={ADMIN_PATH} className={styles.logoLink} aria-label="Tableau de bord ETOF SARL">
+            <img
+              src={logoOfficial}
+              alt="ETOF SARL – Une nouvelle vision du monde des affaires"
+              className={styles.sidebarLogoImg}
+            />
           </Link>
         </div>
 

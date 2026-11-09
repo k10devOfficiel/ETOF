@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUserAuth } from '../../context/UserAuthContext.jsx';
 import Spinner from '../../components/ui/Spinner.jsx';
+import logoOfficial from '../../assets/logo/logo-etof.jpg';
 import styles from './AuthCommon.module.css';
 
 export function ClientLoginPage() {
@@ -48,6 +49,11 @@ export function ClientLoginPage() {
     <div className={styles.authPageWrapper}>
       <div className={styles.authCard}>
         <header className={styles.authHeader}>
+          <div className={styles.authLogoWrapper}>
+            <Link to="/" aria-label="Retour à l'accueil">
+              <img src={logoOfficial} alt="ETOF SARL" className={styles.authLogo} />
+            </Link>
+          </div>
           <h1 className={styles.authTitle}>{t('auth.loginTitle', 'Connexion Client')}</h1>
           <p className={styles.authSubtitle}>
             Accédez à votre espace personnel, vos demandes et vos devis ETOF SARL
@@ -109,3 +115,4 @@ export function ClientLoginPage() {
 }
 
 export default ClientLoginPage;
+

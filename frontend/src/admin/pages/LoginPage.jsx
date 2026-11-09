@@ -6,7 +6,7 @@ import Button from '../../components/ui/Button.jsx';
 import Alert from '../../components/ui/Alert.jsx';
 import Spinner from '../../components/ui/Spinner.jsx';
 import { ADMIN_PATH } from '../../config/adminConfig.js';
-import logoSrc from '../../assets/logo/logo.svg';
+import logoSrc from '../../assets/logo/logo-etof.jpg';
 import styles from './LoginPage.module.css';
 
 /**

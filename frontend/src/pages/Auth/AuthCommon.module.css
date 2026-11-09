@@ -34,6 +34,20 @@
   margin-bottom: 2rem;
 }
 
+.authLogoWrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.authLogo {
+  height: 52px;
+  width: auto;
+  max-width: 240px;
+  object-fit: contain;
+}
+
 .authTitle {
   font-family: var(--font-family-heading, 'Cinzel', serif);
   font-size: 1.65rem;
@@ -194,3 +208,4 @@
   border-radius: 8px;
   font-size: 0.875rem;
 }
+

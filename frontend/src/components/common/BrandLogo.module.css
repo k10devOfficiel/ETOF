@@ -1,69 +1,42 @@
 .logoLink {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
   text-decoration: none;
   color: inherit;
   transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.logoLink:hover {
-  opacity: 0.92;
-}
-
-.logoLink:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 4px;
-  border-radius: var(--radius-sm);
-}
-
-.logoBadge {
-  width: 38px;
-  height: 38px;
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--color-primary, #0B2A4A) 0%, #16426E 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  box-shadow: 0 2px 6px rgba(11, 42, 74, 0.25);
-  border: 1px solid rgba(20, 184, 196, 0.35);
   flex-shrink: 0;
 }
 
-.monogram {
-  font-family: var(--font-family-heading, 'Cinzel', serif);
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--color-accent, #14B8C4);
-  line-height: 1;
+.logoLink:hover {
+  opacity: 0.94;
+  transform: scale(1.015);
 }
 
-.textGroup {
-  display: flex;
-  flex-direction: column;
+.logoLink:focus-visible {
+  outline: 2px solid var(--color-accent, #14B8C4);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm, 4px);
 }
 
-.companyName {
-  font-family: var(--font-family-heading, 'Cinzel', serif);
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--color-text-primary, #0F172A);
-  line-height: 1.1;
+.logoImage {
+  height: 48px;
+  width: auto;
+  max-width: 240px;
+  object-fit: contain;
+  display: block;
+  border-radius: var(--radius-sm, 4px);
 }
 
-.tagline {
-  font-size: 0.6875rem;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  color: var(--color-text-muted, #64748B);
-  text-transform: uppercase;
-}
-
-@media (max-width: 480px) {
-  .tagline {
-    display: none;
+@media (max-width: 768px) {
+  .logoImage {
+    height: 42px;
+    max-width: 200px;
   }
 }
 
+@media (max-width: 480px) {
+  .logoImage {
+    height: 38px;
+    max-width: 175px;
+  }
+}
