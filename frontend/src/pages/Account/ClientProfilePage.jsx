@@ -17,7 +17,7 @@ import styles from './ClientProfilePage.module.css';
  */
 export function ClientProfilePage() {
   const { t, i18n } = useTranslation();
-  const { user, updateProfile, requireAuth } = useUserAuth();
+  const { user, updateProfile, requireAuth, logout } = useUserAuth();
   const { notifySuccess, notifyError } = useToast();
 
   const currentLang = (i18n.language || 'fr').slice(0, 2).toLowerCase();
@@ -116,10 +116,23 @@ export function ClientProfilePage() {
   return (
     <main className={styles.container}>
       <header className={styles.header}>
-        <h1 className={styles.title}>{t('account.pageTitle', 'Mon Compte')}</h1>
-        <p className={styles.subtitle}>
-          {t('account.welcomeUser', { name: currentDisplayName, defaultValue: `Bienvenue, ${currentDisplayName}` })}
-        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <h1 className={styles.title}>{t('account.pageTitle', 'Mon Compte')}</h1>
+            <p className={styles.subtitle}>
+              {t('account.welcomeUser', { name: currentDisplayName, defaultValue: `Bienvenue, ${currentDisplayName}` })}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={logout}
+            style={{ color: '#dc2626', borderColor: 'rgba(239, 68, 68, 0.4)' }}
+          >
+            <i className="fa-solid fa-arrow-right-from-bracket" aria-hidden="true" style={{ marginRight: '6px' }} />
+            <span>{t('auth.logout', 'Déconnexion')}</span>
+          </Button>
+        </div>
       </header>
 
       {/* Formulaire des informations personnelles et civilité */}

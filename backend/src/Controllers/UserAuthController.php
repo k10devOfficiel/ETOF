@@ -314,6 +314,7 @@ final class UserAuthController
     {
         SessionService::start();
         unset($_SESSION['user_id'], $_SESSION['user_email'], $_SESSION['user_last_activity']);
+        SessionService::regenerate();
 
         return Response::success([
             'message' => 'Déconnexion réussie.',

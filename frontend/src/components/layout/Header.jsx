@@ -239,15 +239,26 @@ export function Header({ settings }) {
 
               <div className={styles.ctaBtnDesktop}>
                 {user ? (
-                  <Link
-                    to="/mon-compte"
-                    className={styles.navLink}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
-                    title={displayName(user, currentLang)}
-                  >
-                    <Icon name="user" size={18} />
-                    <span>{displayName(user, currentLang)}</span>
-                  </Link>
+                  <div className={styles.userMenu}>
+                    <Link
+                      to="/mon-compte"
+                      className={styles.navLink}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
+                      title={displayName(user, currentLang)}
+                    >
+                      <Icon name="user" size={18} />
+                      <span>{displayName(user, currentLang)}</span>
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={logout}
+                      className={styles.logoutBtn}
+                      title={t('auth.logout', 'Se déconnecter')}
+                      aria-label={t('auth.logout', 'Se déconnecter')}
+                    >
+                      <i className="fa-solid fa-arrow-right-from-bracket" aria-hidden="true" style={{ fontSize: '14px' }} />
+                    </button>
+                  </div>
                 ) : (
                   <button
                     type="button"

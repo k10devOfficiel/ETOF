@@ -172,11 +172,13 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
     onClose();
   };
 
+  const clientOrVehicleName = (fullName.trim() || (user ? displayName(user, currentLang) : '') || vehicleName);
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleResetAndClose}
-      title={t('vehicles.rentModalTitle', { vehicle: vehicleName })}
+      title={t('vehicles.rentModalTitle', { name: clientOrVehicleName, vehicle: vehicleName })}
       size="md"
     >
       {submittedData ? (

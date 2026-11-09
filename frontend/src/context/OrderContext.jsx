@@ -1,26 +1,36 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from './ToastContext.jsx';
 import { useUserAuth } from './UserAuthContext.jsx';
 import { displayName } from '../utils/userHelper.js';
 
 /**
- * Clé de stockage local pour la persistance du récapitulatif de commande.
+ * Génère la clé de stockage isolée par utilisateur pour garantir une stricte
+ * confidentialité des données du panier entre différents clients.
+ *
+ * @param {number|string|null} userId
+ * @returns {string}
  */
-const STORAGE_KEY = 'etof_order_items';
+function getCartStorageKey(userId) {
+  if (userId) {
+    return `etof_cart_user_${userId}`;
+  }
+  return 'etof_cart_guest';
+}
 
 /**
- * Lecture sécurisée du stockage local avec gestion d'erreurs en cas de restrictions
- * du navigateur (mode privé strict, quota dépassé, corruption JSON).
+ * Lecture sécurisée du panier d'un client spécifique depuis localStorage.
  *
+ * @param {number|string|null} userId
  * @returns {Array<any>}
  */
-function loadStoredItems() {
+function loadUserStoredItems(userId) {
   if (typeof window === 'undefined') {
     return [];
   }
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const key = getCartStorageKey(userId);
+    const raw = window.localStorage.getItem(key);
     if (!raw) {
       return [];
     }
@@ -28,26 +38,32 @@ function loadStoredItems() {
     return Array.isArray(parsed) ? parsed : [];
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.warn('Impossible de lire les articles de commande depuis localStorage:', error);
+      console.warn('Impossible de lire les articles du panier:', error);
     }
     return [];
   }
 }
 
 /**
- * Sauvegarde sécurisée du récapitulatif dans le stockage local du navigateur.
+ * Sauvegarde sécurisée du panier dans la zone de stockage propre au client.
  *
+ * @param {number|string|null} userId
  * @param {Array<any>} items
  */
-function persistItems(items) {
+function persistUserItems(userId, items) {
   if (typeof window === 'undefined') {
     return;
   }
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    const key = getCartStorageKey(userId);
+    if (items && items.length > 0) {
+      window.localStorage.setItem(key, JSON.stringify(items));
+    } else {
+      window.localStorage.removeItem(key);
+    }
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.warn('Impossible de sauvegarder les articles de commande dans localStorage:', error);
+      console.warn('Impossible de sauvegarder les articles du panier:', error);
     }
   }
 }
@@ -55,7 +71,10 @@ function persistItems(items) {
 const OrderContext = createContext(null);
 
 /**
- * Fournisseur de contexte pour la gestion réactive du récapitulatif de commande multi-produits.
+ * Fournisseur de contexte pour la gestion réactive et confidentielle du panier client.
+ * Garantit l'isolation stricte des paniers : aucun client n'a accès aux informations
+ * d'un autre client. À la déconnexion, la session active est détruite et le panier
+ * est mis en sûreté pour la prochaine reconnexion de ce même client.
  *
  * @param {{ children: React.ReactNode }} props
  * @returns {JSX.Element}
@@ -64,18 +83,57 @@ export function OrderProvider({ children }) {
   const { i18n } = useTranslation();
   const { user } = useUserAuth();
   const { notifyCartAdd, notifyCartRemove, notifyCartEmpty } = useToast();
-  const [items, setItems] = useState(loadStoredItems);
+
+  const currentUserId = user?.id ? String(user.id) : null;
+  const prevUserIdRef = useRef(currentUserId);
+  const isInitialMount = useRef(true);
+
+  // Initialisation du panier avec les articles propres à l'utilisateur courant (ou invité)
+  const [items, setItems] = useState(() => loadUserStoredItems(currentUserId));
 
   const currentLang = (i18n.language || 'fr').slice(0, 2).toLowerCase();
 
-  // Synchronisation automatique vers localStorage à chaque modification
+  // Gestion de la transition d'authentification (Connexion / Déconnexion / Changement de compte)
   useEffect(() => {
-    persistItems(items);
-  }, [items]);
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    const prevUserId = prevUserIdRef.current;
+
+    // Cas 1 : Déconnexion du client actif (user devient null)
+    if (prevUserId && !currentUserId) {
+      // Sauvegarder le panier du client sortant sous sa clé propre pour sa prochaine session
+      persistUserItems(prevUserId, items);
+      // Nettoyer immédiatement le panier en mémoire et le stockage invité pour confidentialité absolue
+      setItems([]);
+      try {
+        window.localStorage.removeItem('etof_cart_guest');
+        window.localStorage.removeItem('etof_order_items');
+      } catch {}
+    }
+    // Cas 2 : Connexion ou bascule vers un autre client
+    else if (currentUserId && currentUserId !== prevUserId) {
+      if (prevUserId) {
+        // Sauvegarder l'ancien panier sous l'ancien compte
+        persistUserItems(prevUserId, items);
+      }
+      // Charger le panier stocké spécifiquement pour ce client
+      const restored = loadUserStoredItems(currentUserId);
+      setItems(restored);
+    }
+
+    prevUserIdRef.current = currentUserId;
+  }, [currentUserId]);
+
+  // Synchronisation automatique vers localStorage à chaque modification du panier
+  useEffect(() => {
+    persistUserItems(currentUserId, items);
+  }, [items, currentUserId]);
 
   /**
-   * Ajoute un produit au récapitulatif ou incrémente sa quantité s'il existe déjà.
-   * Respecte rigoureusement la quantité minimale imposée par ETOF SARL.
+   * Ajoute un produit au récapitulatif ou incrémente sa quantité.
    *
    * @param {any} product
    * @param {number} [quantityToAdd]
@@ -127,8 +185,7 @@ export function OrderProvider({ children }) {
   };
 
   /**
-   * Met à jour la quantité d'un article en s'assurant qu'elle ne descende jamais
-   * en dessous de sa quantité minimale.
+   * Met à jour la quantité d'un article.
    *
    * @param {number} productId
    * @param {number} newQuantity
@@ -149,7 +206,7 @@ export function OrderProvider({ children }) {
   };
 
   /**
-   * Supprime définitivement un produit du récapitulatif.
+   * Supprime un produit du récapitulatif.
    *
    * @param {number} productId
    */
@@ -163,7 +220,7 @@ export function OrderProvider({ children }) {
   };
 
   /**
-   * Vide intégralement le récapitulatif de commande (ex: après envoi réussi ou action utilisateur).
+   * Vide intégralement le récapitulatif de commande.
    *
    * @param {boolean} [notify=false]
    */
@@ -175,7 +232,9 @@ export function OrderProvider({ children }) {
     setItems([]);
     if (typeof window !== 'undefined') {
       try {
-        window.localStorage.removeItem(STORAGE_KEY);
+        const key = getCartStorageKey(currentUserId);
+        window.localStorage.removeItem(key);
+        window.localStorage.removeItem('etof_order_items');
       } catch (error) {
         if (import.meta.env.DEV) {
           console.warn('Impossible de nettoyer localStorage:', error);
@@ -184,19 +243,9 @@ export function OrderProvider({ children }) {
     }
   };
 
-  /**
-   * Nombre total d'articles distincts dans le récapitulatif.
-   */
   const itemCount = items.length;
-
-  /**
-   * Nombre total d'unités cumulées de produits.
-   */
   const totalQuantity = items.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
 
-  /**
-   * Total financier indicatif uniquement pour les articles disposant d'un prix affiché.
-   */
   const indicativeTotal = items.reduce((sum, item) => {
     const p = Number(item.price);
     if (!isNaN(p) && p > 0) {
@@ -205,9 +254,6 @@ export function OrderProvider({ children }) {
     return sum;
   }, 0);
 
-  /**
-   * Indique si au moins un article du panier a une mention "Prix sur demande".
-   */
   const hasUnpricedItems = items.some(
     (item) => item.price === null || item.price === undefined || Number(item.price) <= 0
   );
@@ -228,22 +274,6 @@ export function OrderProvider({ children }) {
   return <OrderContext.Provider value={value}>{children}</OrderContext.Provider>;
 }
 
-/**
- * Hook personnalisé permettant d'accéder au contexte de commande.
- *
- * @returns {{
- *   items: Array<any>,
- *   itemCount: number,
- *   totalQuantity: number,
- *   indicativeTotal: number,
- *   hasUnpricedItems: boolean,
- *   isEmpty: boolean,
- *   addItem: (product: any, quantity?: number) => void,
- *   updateQuantity: (productId: number, newQuantity: number) => void,
- *   removeItem: (productId: number) => void,
- *   clearOrder: () => void
- * }}
- */
 export function useOrder() {
   const context = useContext(OrderContext);
   if (!context) {
@@ -253,4 +283,3 @@ export function useOrder() {
 }
 
 export default OrderContext;
-

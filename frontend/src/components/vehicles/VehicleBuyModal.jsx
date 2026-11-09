@@ -125,11 +125,13 @@ export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
     onClose();
   };
 
+  const clientOrVehicleName = (fullName.trim() || (user ? displayName(user, currentLang) : '') || vehicleName);
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleResetAndClose}
-      title={t('vehicles.buyModalTitle', { vehicle: vehicleName })}
+      title={t('vehicles.buyModalTitle', { name: clientOrVehicleName, vehicle: vehicleName })}
       size="md"
     >
       {submittedData ? (

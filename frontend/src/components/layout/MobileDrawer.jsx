@@ -263,16 +263,30 @@ export function MobileDrawer({ isOpen, onClose, triggerRef }) {
             </NavLink>
 
             {user ? (
-              <NavLink
-                to="/mon-compte"
-                className={({ isActive }) =>
-                  `${styles.authLinkBtn} ${isActive ? styles.activeNavLink : ''}`
-                }
-                onClick={onClose}
-              >
-                <Icon name="user" size={18} color="currentColor" />
-                <span>{displayName(user, currentLang)}</span>
-              </NavLink>
+              <>
+                <NavLink
+                  to="/mon-compte"
+                  className={({ isActive }) =>
+                    `${styles.authLinkBtn} ${isActive ? styles.activeNavLink : ''}`
+                  }
+                  onClick={onClose}
+                >
+                  <Icon name="user" size={18} color="currentColor" />
+                  <span>{displayName(user, currentLang)}</span>
+                </NavLink>
+                <button
+                  type="button"
+                  className={styles.authLinkBtn}
+                  style={{ color: '#dc2626' }}
+                  onClick={() => {
+                    onClose();
+                    logout();
+                  }}
+                >
+                  <i className="fa-solid fa-arrow-right-from-bracket" aria-hidden="true" style={{ fontSize: '16px' }} />
+                  <span>{t('auth.logout', 'Déconnexion')}</span>
+                </button>
+              </>
             ) : (
               <button
                 type="button"
