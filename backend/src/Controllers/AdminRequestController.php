@@ -391,6 +391,50 @@ final class AdminRequestController
             }
         }
 
+        // Historique des 6 derniers mois groupé par mois et par activité (farm, vehicle, office, fuel)
+        $monthNamesFr = [
+            '01' => 'Jan', '02' => 'Fév', '03' => 'Mar', '04' => 'Avr',
+            '05' => 'Mai', '06' => 'Juin', '07' => 'Juil', '08' => 'Août',
+            '09' => 'Sept', '10' => 'Oct', '11' => 'Nov', '12' => 'Déc',
+        ];
+
+        $monthlyHistory = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $mTime = strtotime("-{$i} months");
+            $mKey = date('Y-m', $mTime);
+            $mNum = date('m', $mTime);
+            $mYear = date('y', $mTime);
+            $label = ($monthNamesFr[$mNum] ?? date('M', $mTime)) . ' ' . $mYear;
+            $monthlyHistory[$mKey] = [
+                'month' => $mKey,
+                'label' => $label,
+                'farm' => 0,
+                'vehicle' => 0,
+                'office' => 0,
+                'fuel' => 0,
+                'total' => 0,
+            ];
+        }
+
+        $monthSql = "SELECT DATE_FORMAT(created_at, '%Y-%m') AS req_month, activity, COUNT(*) AS count
+                     FROM requests
+                     WHERE created_at >= DATE_SUB(DATE_FORMAT(NOW(), '%Y-%m-01'), INTERVAL 5 MONTH)
+                     GROUP BY req_month, activity";
+        $monthStmt = $pdo->query($monthSql);
+        if ($monthStmt !== false) {
+            foreach ($monthStmt->fetchAll() as $mr) {
+                $m = (string) $mr['req_month'];
+                $act = (string) $mr['activity'];
+                $cnt = (int) $mr['count'];
+                if (isset($monthlyHistory[$m])) {
+                    if (isset($monthlyHistory[$m][$act])) {
+                        $monthlyHistory[$m][$act] += $cnt;
+                    }
+                    $monthlyHistory[$m]['total'] += $cnt;
+                }
+            }
+        }
+
         // Totaux catalogue
         $productsCount = (int) ($pdo->query("SELECT COUNT(*) FROM products")->fetchColumn() ?: 0);
         $vehiclesCount = (int) ($pdo->query("SELECT COUNT(*) FROM vehicles")->fetchColumn() ?: 0);
@@ -401,6 +445,7 @@ final class AdminRequestController
             'by_activity' => $byActivity,
             'by_type' => $byType,
             'daily_history' => array_values($dailyHistory),
+            'monthly_history' => array_values($monthlyHistory),
             'products_count' => $productsCount,
             'vehicles_count' => $vehiclesCount,
             'timestamp' => date('c'),

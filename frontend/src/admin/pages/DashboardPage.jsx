@@ -5,6 +5,7 @@ import adminApi from '../api/adminApi.js';
 import Spinner from '../../components/ui/Spinner.jsx';
 import Alert from '../../components/ui/Alert.jsx';
 import RequestDetailModal from '../components/RequestDetailModal.jsx';
+import DemandChart from '../components/DemandChart.jsx';
 import { ADMIN_PATH } from '../../config/adminConfig.js';
 import styles from './DashboardPage.module.css';
 
@@ -49,10 +50,6 @@ export function DashboardPage() {
 
   // Filtre d'activité sélectionné
   const [selectedActivity, setSelectedActivity] = useState('all');
-
-  // Filtre du graphique (Toutes, Devis, Commandes)
-  const [chartMetric, setChartMetric] = useState('all');
-  const [hoveredPoint, setHoveredPoint] = useState(null);
 
   // Recherche locale instantanée
   const [searchFilter, setSearchFilter] = useState('');
@@ -103,65 +100,6 @@ export function DashboardPage() {
       return true;
     });
   }, [recentRequests, selectedActivity, searchFilter]);
-
-  // Données dynamiques du graphique adaptées selon le type et le pôle sélectionné
-  const chartData = useMemo(() => {
-    const rawHistory = stats?.daily_history || [];
-    const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-
-    return days.map((dayLabel, index) => {
-      const histItem = rawHistory[index];
-      let baseCount = histItem?.count ?? [4, 6, 5, 9, 7, 8, 11][index];
-
-      // Ajustement dynamique si un filtre pôle ou type est actif
-      if (selectedActivity !== 'all') {
-        baseCount = Math.max(1, Math.round(baseCount * 0.4));
-      }
-      if (chartMetric === 'quotes') {
-        baseCount = Math.max(1, Math.round(baseCount * 0.6));
-      } else if (chartMetric === 'orders') {
-        baseCount = Math.max(0, Math.round(baseCount * 0.35));
-      }
-
-      return {
-        label: dayLabel,
-        count: baseCount,
-      };
-    });
-  }, [stats, selectedActivity, chartMetric]);
-
-  // Calcul du tracé SVG spline fluide
-  const { pathD, areaD, points } = useMemo(() => {
-    const width = 600;
-    const height = 180;
-    const padX = 35;
-    const padY = 25;
-
-    const maxVal = Math.max(...chartData.map((d) => d.count), 6);
-    const stepX = (width - padX * 2) / Math.max(chartData.length - 1, 1);
-
-    const pts = chartData.map((d, index) => {
-      const x = padX + index * stepX;
-      const y = height - padY - (d.count / maxVal) * (height - padY * 2);
-      return { x, y, ...d };
-    });
-
-    if (pts.length === 0) {
-      return { pathD: '', areaD: '', points: [] };
-    }
-
-    let dStr = `M ${pts[0].x} ${pts[0].y}`;
-    for (let i = 0; i < pts.length - 1; i++) {
-      const p0 = pts[i];
-      const p1 = pts[i + 1];
-      const mx = (p0.x + p1.x) / 2;
-      dStr += ` C ${mx} ${p0.y}, ${mx} ${p1.y}, ${p1.x} ${p1.y}`;
-    }
-
-    const aStr = `${dStr} L ${pts[pts.length - 1].x} ${height} L ${pts[0].x} ${height} Z`;
-
-    return { pathD: dStr, areaD: aStr, points: pts };
-  }, [chartData]);
 
   // Statistiques calculées dynamiquement selon le pôle sélectionné
   const displayedStats = useMemo(() => {
@@ -351,113 +289,9 @@ export function DashboardPage() {
             </div>
           </section>
 
-          {/* Grille Médiane : Graphique interactif + Suivi des 4 Pôles */}
+          {/* Grille Médiane : Graphique interactif Chart.js + Suivi des 4 Pôles */}
           <div className={styles.middleGrid}>
-            <div className={styles.chartCard}>
-              <div className={styles.chartCardHeader}>
-                <div className={styles.chartTitleGroup}>
-                  <h2 className={styles.chartTitle}>Activité & Flux des Demandes</h2>
-                  <p className={styles.chartSubtitle}>
-                    {selectedActivity === 'all'
-                      ? 'Tous secteurs confondus sur les 7 derniers jours'
-                      : `Filtre actif : ${ACTIVITY_LABELS[selectedActivity]}`}
-                  </p>
-                </div>
-
-                <div className={styles.chartControls}>
-                  <div className={styles.chartPillGroup} role="group" aria-label="Filtrer le type">
-                    <button
-                      type="button"
-                      className={`${styles.chartPillBtn} ${chartMetric === 'all' ? styles.activeChartPill : ''}`}
-                      onClick={() => setChartMetric('all')}
-                    >
-                      Toutes
-                    </button>
-                    <button
-                      type="button"
-                      className={`${styles.chartPillBtn} ${chartMetric === 'quotes' ? styles.activeChartPill : ''}`}
-                      onClick={() => setChartMetric('quotes')}
-                    >
-                      Devis
-                    </button>
-                    <button
-                      type="button"
-                      className={`${styles.chartPillBtn} ${chartMetric === 'orders' ? styles.activeChartPill : ''}`}
-                      onClick={() => setChartMetric('orders')}
-                    >
-                      Commandes
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.chartSvgWrapper}>
-                <svg className={styles.chartSvg} viewBox="0 0 600 200" preserveAspectRatio="none">
-                  <defs>
-                    <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#14b8c4" stopOpacity="0.45" />
-                      <stop offset="70%" stopColor="#0b2a4a" stopOpacity="0.08" />
-                      <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-
-                  <line x1="35" y1="40" x2="565" y2="40" stroke="#f1f5f9" strokeDasharray="3 3" />
-                  <line x1="35" y1="90" x2="565" y2="90" stroke="#f1f5f9" strokeDasharray="3 3" />
-                  <line x1="35" y1="140" x2="565" y2="140" stroke="#f1f5f9" strokeDasharray="3 3" />
-
-                  {areaD && <path d={areaD} fill="url(#chartGradient)" className={styles.chartPath} />}
-
-                  {pathD && (
-                    <path
-                      d={pathD}
-                      fill="none"
-                      stroke="#14b8c4"
-                      strokeWidth="3.5"
-                      strokeLinecap="round"
-                      className={styles.chartPath}
-                    />
-                  )}
-
-                  {points.map((pt, idx) => (
-                    <g key={idx}>
-                      <circle
-                        cx={pt.x}
-                        cy={pt.y}
-                        r={hoveredPoint === idx ? 7 : 4.5}
-                        fill={hoveredPoint === idx ? '#14b8c4' : '#0b2a4a'}
-                        stroke="#ffffff"
-                        strokeWidth="2.5"
-                        className={styles.chartPoint}
-                        onMouseEnter={() => setHoveredPoint(idx)}
-                        onMouseLeave={() => setHoveredPoint(null)}
-                      />
-                      <text
-                        x={pt.x}
-                        y="190"
-                        textAnchor="middle"
-                        fill="#94a3b8"
-                        fontSize="11"
-                        fontWeight="600"
-                      >
-                        {pt.label}
-                      </text>
-                    </g>
-                  ))}
-                </svg>
-
-                {hoveredPoint !== null && points[hoveredPoint] && (
-                  <div
-                    className={styles.chartTooltip}
-                    style={{
-                      left: `${(points[hoveredPoint].x / 600) * 100}%`,
-                      top: `${(points[hoveredPoint].y / 200) * 100}%`,
-                    }}
-                  >
-                    <span>{points[hoveredPoint].label} : {points[hoveredPoint].count} demande(s)</span>
-                  </div>
-                )}
-              </div>
-            </div>
+            <DemandChart stats={stats} loading={loading} error={error} />
 
             {/* Suivi des 4 Pôles d'Activités */}
             <div className={styles.activitiesCard}>

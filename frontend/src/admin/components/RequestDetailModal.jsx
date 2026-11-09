@@ -5,6 +5,7 @@ import Badge from '../../components/ui/Badge.jsx';
 import Spinner from '../../components/ui/Spinner.jsx';
 import Alert from '../../components/ui/Alert.jsx';
 import ConfirmModal from './ConfirmModal.jsx';
+import Icon from '../../components/common/Icon.jsx';
 import adminApi from '../api/adminApi.js';
 import styles from './RequestDetailModal.module.css';
 
@@ -249,17 +250,17 @@ export function RequestDetailModal({ isOpen, onClose, requestId, onUpdated }) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className={`${styles.linkAction} ${styles.whatsappLink}`}
-                    style={{ marginTop: '0.2rem' }}
+                    style={{ marginTop: '0.2rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                   >
-                    💬 WhatsApp Direct
+                    <Icon name="whatsapp" size={16} /> WhatsApp Direct
                   </a>
                 )}
               </div>
 
               <div className={styles.contactItem}>
                 <span className={styles.contactLabel}>Adresse e-mail</span>
-                <a href={`mailto:${request.email}?subject=${encodeURIComponent(`ETOF SARL - Demande ${request.reference}`)}`} className={styles.linkAction}>
-                  ✉️ {request.email}
+                <a href={`mailto:${request.email}?subject=${encodeURIComponent(`ETOF SARL - Demande ${request.reference}`)}`} className={styles.linkAction} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <Icon name="envelope" size={16} /> {request.email}
                 </a>
               </div>
             </div>
@@ -268,8 +269,8 @@ export function RequestDetailModal({ isOpen, onClose, requestId, onUpdated }) {
           {/* Véhicule & Dates de réservation (si applicable) */}
           {hasVehicle && (
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>
-                🚗 Véhicule et Période Souhaitée
+              <h2 className={styles.sectionTitle} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Icon name="car" size={20} color="#0B2A4A" /> Véhicule et Période Souhaitée
               </h2>
 
               <div className={styles.vehicleBox}>
@@ -296,8 +297,8 @@ export function RequestDetailModal({ isOpen, onClose, requestId, onUpdated }) {
           {/* Lignes de commande avec prix mémorisés (snapshots) */}
           {items.length > 0 && (
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>
-                📦 Articles Commandés (Prix figés)
+              <h2 className={styles.sectionTitle} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Icon name="box" size={20} color="#0B2A4A" /> Articles Commandés (Prix figés)
               </h2>
 
               <table className={styles.itemsTable}>
@@ -337,7 +338,9 @@ export function RequestDetailModal({ isOpen, onClose, requestId, onUpdated }) {
           {/* Message du client & détails complémentaires */}
           {request.message && (
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>📝 Message du Client</h2>
+              <h2 className={styles.sectionTitle} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Icon name="message" size={20} color="#0B2A4A" /> Message du Client
+              </h2>
               <p style={{ margin: 0, whiteSpace: 'pre-line', color: '#334155', fontSize: '0.9rem', lineHeight: 1.6 }}>
                 {request.message}
               </p>
@@ -346,7 +349,9 @@ export function RequestDetailModal({ isOpen, onClose, requestId, onUpdated }) {
 
           {/* Note interne modifiable */}
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>🔒 Note Interne (Réservée à l'équipe)</h2>
+            <h2 className={styles.sectionTitle} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Icon name="lock" size={20} color="#0B2A4A" /> Note Interne (Réservée à l'équipe)
+            </h2>
             <form onSubmit={handleSaveNote} className={styles.noteForm}>
               <textarea
                 className={styles.noteTextarea}

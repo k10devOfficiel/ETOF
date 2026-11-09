@@ -1,6 +1,6 @@
 .heroSection {
   position: relative;
-  background: linear-gradient(135deg, rgba(4, 120, 87, 0.08) 0%, rgba(15, 23, 42, 0.04) 100%);
+  background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
   padding: 4.5rem 0 4rem;
   border-bottom: 1px solid var(--color-border, #e2e8f0);
 }
@@ -17,8 +17,8 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--color-primary, #047857);
-  background-color: rgba(4, 120, 87, 0.12);
+  color: var(--color-primary, #0B2A4A);
+  background-color: rgba(20, 184, 196, 0.12);
   padding: 0.35rem 0.85rem;
   border-radius: 9999px;
   margin-bottom: 1.25rem;
@@ -123,7 +123,7 @@
 .aboutPillIcon {
   width: 20px;
   height: 20px;
-  color: var(--color-primary, #047857);
+  color: var(--color-accent, #14B8C4);
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -147,8 +147,8 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--color-primary, #047857);
-  background-color: rgba(4, 120, 87, 0.1);
+  color: var(--color-primary, #0B2A4A);
+  background-color: rgba(20, 184, 196, 0.12);
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
   margin-bottom: 0.75rem;
@@ -198,15 +198,15 @@
 .activityCard:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(0,0,0,0.1));
-  border-color: var(--color-primary, #047857);
+  border-color: var(--color-accent, #14B8C4);
 }
 
 .activityIconBox {
   width: 48px;
   height: 48px;
   border-radius: var(--radius-md, 8px);
-  background: rgba(4, 120, 87, 0.1);
-  color: var(--color-primary, #047857);
+  background: rgba(20, 184, 196, 0.12);
+  color: var(--color-primary, #0B2A4A);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -262,13 +262,13 @@
 }
 
 .previewTabBtn:hover {
-  border-color: var(--color-primary, #047857);
-  color: var(--color-primary, #047857);
+  border-color: var(--color-accent, #14B8C4);
+  color: var(--color-primary, #0B2A4A);
 }
 
 .previewTabBtnActive {
-  background: var(--color-primary, #047857);
-  border-color: var(--color-primary, #047857);
+  background: var(--color-primary, #0B2A4A);
+  border-color: var(--color-primary, #0B2A4A);
   color: #ffffff;
 }
 
@@ -370,7 +370,7 @@
 .whyNumber {
   font-size: 1.75rem;
   font-weight: 900;
-  color: var(--color-primary, #047857);
+  color: var(--color-accent, #14B8C4);
   margin-bottom: 0.75rem;
   line-height: 1;
 }
@@ -392,7 +392,7 @@
 /* Section Final CTA */
 .finalCtaSection {
   padding: 4.5rem 0;
-  background: linear-gradient(135deg, #047857 0%, #064e3b 100%);
+  background: linear-gradient(135deg, #0B2A4A 0%, #16426E 100%);
   color: #ffffff;
   text-align: center;
 }

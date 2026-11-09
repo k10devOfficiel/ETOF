@@ -384,10 +384,10 @@ export function VehiclesPage() {
                             onChange={(e) => handleQuickStatusChange(v, e.target.value)}
                             title="Modifier le statut du véhicule"
                           >
-                            <option value="available">🟢 Disponible</option>
-                            <option value="reserved">🟠 Réservé</option>
-                            <option value="sold">🔴 Vendu</option>
-                            <option value="unavailable">⚪ Indisponible</option>
+                            <option value="available">Disponible</option>
+                            <option value="reserved">Réservé</option>
+                            <option value="sold">Vendu</option>
+                            <option value="unavailable">Indisponible</option>
                           </select>
                           {isUpdatingThis && <Spinner size="sm" />}
                         </div>

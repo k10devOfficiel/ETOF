@@ -67,6 +67,13 @@ a:hover {
   outline: none;
 }
 
+section:focus,
+section:focus-visible,
+main:focus,
+main:focus-visible {
+  outline: none;
+}
+
 /* Accessibilité : zone tactile minimale recommandée 44x44px sur mobile et écrans tactiles */
 @media (max-width: 768px) {
   input[type="text"],
