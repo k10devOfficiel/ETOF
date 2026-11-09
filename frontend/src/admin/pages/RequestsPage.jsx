@@ -88,25 +88,50 @@ export function RequestsPage() {
     return params;
   }, [page, perPage, sortOrder, search, typeFilter, activityFilter, statusFilter, dateFrom, dateTo]);
 
-  // Chargement des demandes
-  const loadRequests = useCallback(async () => {
+  // Chargement des demandes avec option silencieuse pour l'arrière-plan
+  const loadRequests = useCallback(async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) {
+        setLoading(true);
+      }
       setError(null);
       const params = buildQueryParams();
       const res = await adminApi.getRequests(params);
 
       setRequests(res?.items || []);
       setTotalCount(res?.total || 0);
-    } catch (err) {
-      setError('Impossible de charger la liste des demandes clients.');
+    } catch {
+      if (!silent) {
+        setError('Impossible de charger la liste des demandes clients.');
+      }
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }, [buildQueryParams]);
 
   useEffect(() => {
     loadRequests();
+
+    // Actualisation silencieuse toutes les 15 secondes
+    const interval = setInterval(() => {
+      loadRequests(true);
+    }, 15000);
+
+    // Écoute des événements temps réel
+    const handleNewRequest = () => {
+      loadRequests(true);
+    };
+
+    window.addEventListener('etof:new-request-received', handleNewRequest);
+    window.addEventListener('etof:new-request-submitted', handleNewRequest);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('etof:new-request-received', handleNewRequest);
+      window.removeEventListener('etof:new-request-submitted', handleNewRequest);
+    };
   }, [loadRequests]);
 
   // Réinitialisation des filtres

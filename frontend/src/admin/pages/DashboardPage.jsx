@@ -58,9 +58,11 @@ export function DashboardPage() {
   // Modal détaillée
   const [selectedRequestId, setSelectedRequestId] = useState(null);
 
-  const loadDashboardData = useCallback(async () => {
+  const loadDashboardData = useCallback(async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) {
+        setLoading(true);
+      }
       setError(null);
 
       const [statsData, requestsData] = await Promise.all([
@@ -71,14 +73,37 @@ export function DashboardPage() {
       setStats(statsData);
       setRecentRequests(requestsData?.items || []);
     } catch {
-      setError('Impossible de charger les données du tableau de bord.');
+      if (!silent) {
+        setError('Impossible de charger les données du tableau de bord.');
+      }
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
     loadDashboardData();
+
+    // Actualisation silencieuse périodique toutes les 15 secondes
+    const interval = setInterval(() => {
+      loadDashboardData(true);
+    }, 15000);
+
+    // Écoute des événements temps réel émis lors d'une nouvelle demande
+    const handleNewRequest = () => {
+      loadDashboardData(true);
+    };
+
+    window.addEventListener('etof:new-request-received', handleNewRequest);
+    window.addEventListener('etof:new-request-submitted', handleNewRequest);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('etof:new-request-received', handleNewRequest);
+      window.removeEventListener('etof:new-request-submitted', handleNewRequest);
+    };
   }, [loadDashboardData]);
 
   // Filtrage combiné : Activité + Recherche instantanée

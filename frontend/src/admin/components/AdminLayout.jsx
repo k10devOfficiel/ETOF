@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { useAuth } from '../context/AuthContext.jsx';
 import Alert from '../../components/ui/Alert.jsx';
 import Button from '../../components/ui/Button.jsx';
+import AdminNotificationBell from './AdminNotificationBell.jsx';
 import { ADMIN_PATH } from '../../config/adminConfig.js';
 import logoOfficial from '../../assets/logo/logo-etof.png';
 import styles from './AdminLayout.module.css';
@@ -220,6 +221,8 @@ export function AdminLayout() {
           </div>
 
           <div className={styles.topBarRight}>
+            <AdminNotificationBell />
+
             <div className={styles.dateWidget}>
               <i className={`fa-regular fa-calendar ${styles.dateIcon}`} aria-hidden="true" />
               <span>{todayFormatted}</span>

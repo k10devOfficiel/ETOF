@@ -24,8 +24,8 @@ function formatPrice(amount) {
  */
 export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
   const { t, i18n } = useTranslation();
-  const { user, requireAuth } = useUserAuth();
-  const { notifyRentalSent } = useToast();
+  const { user } = useUserAuth();
+  const { notifyRentalSent, notifyError } = useToast();
   const currentLang = (i18n.language || 'fr').slice(0, 2).toLowerCase();
 
   const todayStr = new Date().toISOString().split('T')[0];
@@ -88,7 +88,7 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
     return daysCount * dayRate;
   })();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
 
@@ -114,56 +114,56 @@ export function VehicleRentModal({ vehicle, isOpen, onClose, onSuccess }) {
       return;
     }
 
-    requireAuth(async (activeUser) => {
-      try {
-        setIsSubmitting(true);
-        const userEffName = activeUser ? displayName(activeUser, currentLang) : fullName.trim();
-        const userEffEmail = activeUser?.email || email.trim();
-        const userEffPhone = activeUser?.phone || phone.trim();
+    try {
+      setIsSubmitting(true);
+      const userEffName = user ? displayName(user, currentLang) : fullName.trim();
+      const userEffEmail = user?.email || email.trim();
+      const userEffPhone = user?.phone || phone.trim();
 
-        const payload = {
-          type: 'reservation',
-          activity: 'vehicle',
-          lang: currentLang,
-          vehicle_id: Number(vehicle.id),
-          start_date: startDate,
-          end_date: endDate,
-          full_name: userEffName,
-          phone: userEffPhone,
-          email: userEffEmail,
-          message: message.trim() || undefined,
-          consent: Boolean(consent),
-          website: websiteHoneypot,
-          details: {
-            city: city.trim(),
-            usage_zone: usageZone,
-            days_count: daysCount,
-            estimated_cost: estimatedTotal,
-            pickup_location: pickupLocation,
-            with_driver: withDriver ? 'yes' : 'no',
-            has_valid_license: hasValidLicense ? 'yes' : 'no',
-          },
-        };
+      const payload = {
+        type: 'reservation',
+        activity: 'vehicle',
+        lang: currentLang,
+        vehicle_id: Number(vehicle.id),
+        start_date: startDate,
+        end_date: endDate,
+        full_name: userEffName,
+        phone: userEffPhone,
+        email: userEffEmail,
+        message: message.trim() || undefined,
+        consent: Boolean(consent),
+        website: websiteHoneypot,
+        details: {
+          city: city.trim(),
+          usage_zone: usageZone,
+          days_count: daysCount,
+          estimated_cost: estimatedTotal,
+          pickup_location: pickupLocation,
+          with_driver: withDriver ? 'yes' : 'no',
+          has_valid_license: hasValidLicense ? 'yes' : 'no',
+        },
+      };
 
-        const res = await client.post('/requests', payload);
-        const data = res.data || res;
-        setSubmittedData(data);
-        notifyRentalSent(userEffName, vehicleName, startDate, endDate, data.reference || '');
-        if (onSuccess) onSuccess(data);
-      } catch (err) {
-        if (err.status === 401) {
-          requireAuth(() => handleSubmit(e), t('auth.sessionExpiredBanner', 'Votre session a expiré. Veuillez vous reconnecter.'));
-          return;
-        }
-        if (err.fields) {
-          setErrors(err.fields);
-        } else {
-          setErrors({ global: err.message || t('forms.errors.genericServer') });
-        }
-      } finally {
-        setIsSubmitting(false);
+      const res = await client.post('/requests', payload);
+      const data = res.data || res;
+      setSubmittedData(data);
+      notifyRentalSent(userEffName, vehicleName, startDate, endDate, data.reference || '');
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('etof:new-request-submitted', { detail: data }));
       }
-    }, t('auth.requireAuthBanner', 'Connectez-vous ou créez un compte pour envoyer votre demande'));
+
+      if (onSuccess) onSuccess(data);
+    } catch (err) {
+      if (err.fields) {
+        setErrors(err.fields);
+      } else {
+        setErrors({ global: err.message || t('forms.errors.genericServer') });
+      }
+      notifyError(err.message || t('forms.errors.genericServer'));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleResetAndClose = () => {

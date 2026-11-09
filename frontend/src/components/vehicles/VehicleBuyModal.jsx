@@ -24,8 +24,8 @@ function formatPrice(amount) {
  */
 export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
   const { t, i18n } = useTranslation();
-  const { user, requireAuth } = useUserAuth();
-  const { notifyBuySent } = useToast();
+  const { user } = useUserAuth();
+  const { notifyBuySent, notifyError } = useToast();
   const currentLang = (i18n.language || 'fr').slice(0, 2).toLowerCase();
 
   const [fullName, setFullName] = useState('');
@@ -57,7 +57,7 @@ export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
   const priceDisplay = formatPrice(vehicle.price_sale) || t('catalog.priceOnDemand');
   const specs = vehicle.specs || {};
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
 
@@ -72,51 +72,51 @@ export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
       return;
     }
 
-    requireAuth(async (activeUser) => {
-      try {
-        setIsSubmitting(true);
-        const userEffName = activeUser ? displayName(activeUser, currentLang) : fullName.trim();
-        const userEffEmail = activeUser?.email || email.trim();
-        const userEffPhone = activeUser?.phone || phone.trim();
+    try {
+      setIsSubmitting(true);
+      const userEffName = user ? displayName(user, currentLang) : fullName.trim();
+      const userEffEmail = user?.email || email.trim();
+      const userEffPhone = user?.phone || phone.trim();
 
-        const payload = {
-          type: 'purchase',
-          activity: 'vehicle',
-          lang: currentLang,
-          vehicle_id: Number(vehicle.id),
-          full_name: userEffName,
-          phone: userEffPhone,
-          email: userEffEmail,
-          message: message.trim() || undefined,
-          consent: Boolean(consent),
-          website: websiteHoneypot,
-          details: {
-            city: city.trim(),
-            payment_method: paymentMethod,
-            trade_in: tradeIn ? 'yes' : 'no',
-            trade_in_details: tradeIn ? tradeInDetails.trim() : '',
-          },
-        };
+      const payload = {
+        type: 'purchase',
+        activity: 'vehicle',
+        lang: currentLang,
+        vehicle_id: Number(vehicle.id),
+        full_name: userEffName,
+        phone: userEffPhone,
+        email: userEffEmail,
+        message: message.trim() || undefined,
+        consent: Boolean(consent),
+        website: websiteHoneypot,
+        details: {
+          city: city.trim(),
+          payment_method: paymentMethod,
+          trade_in: tradeIn ? 'yes' : 'no',
+          trade_in_details: tradeIn ? tradeInDetails.trim() : '',
+        },
+      };
 
-        const res = await client.post('/requests', payload);
-        const data = res.data || res;
-        setSubmittedData(data);
-        notifyBuySent(userEffName, vehicleName, data.reference || '');
-        if (onSuccess) onSuccess(data);
-      } catch (err) {
-        if (err.status === 401) {
-          requireAuth(() => handleSubmit(e), t('auth.sessionExpiredBanner', 'Votre session a expiré. Veuillez vous reconnecter.'));
-          return;
-        }
-        if (err.fields) {
-          setErrors(err.fields);
-        } else {
-          setErrors({ global: err.message || t('forms.errors.genericServer') });
-        }
-      } finally {
-        setIsSubmitting(false);
+      const res = await client.post('/requests', payload);
+      const data = res.data || res;
+      setSubmittedData(data);
+      notifyBuySent(userEffName, vehicleName, data.reference || '');
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('etof:new-request-submitted', { detail: data }));
       }
-    }, t('auth.requireAuthBanner', 'Connectez-vous ou créez un compte pour envoyer votre demande'));
+
+      if (onSuccess) onSuccess(data);
+    } catch (err) {
+      if (err.fields) {
+        setErrors(err.fields);
+      } else {
+        setErrors({ global: err.message || t('forms.errors.genericServer') });
+      }
+      notifyError(err.message || t('forms.errors.genericServer'));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleResetAndClose = () => {
