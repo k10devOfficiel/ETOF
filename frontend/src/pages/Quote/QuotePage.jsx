@@ -135,7 +135,6 @@ export function QuotePage() {
       {/* En-tête de page */}
       <header className={styles.pageHeader}>
         <Container size="fixed">
-          <span className={styles.pageTag}>{t('forms.pageTag')}</span>
           <h1 className={styles.pageTitle}>{t('forms.pageTitle')}</h1>
           <p className={styles.pageSubtitle}>{t('forms.pageSubtitle')}</p>
         </Container>

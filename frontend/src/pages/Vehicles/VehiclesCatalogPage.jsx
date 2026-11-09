@@ -217,7 +217,6 @@ export function VehiclesCatalogPage() {
       {/* En-tête de page */}
       <header className={styles.pageHeader}>
         <Container size="fixed">
-          <span className={styles.pageTag}>{t('vehicles.badge')}</span>
           <h1 className={styles.pageTitle}>{t('vehicles.catalogPageTitle')}</h1>
           <p className={styles.pageSubtitle}>{t('vehicles.catalogPageSubtitle')}</p>
         </Container>

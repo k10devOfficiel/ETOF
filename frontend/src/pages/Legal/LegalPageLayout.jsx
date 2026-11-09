@@ -45,7 +45,6 @@ export function LegalPageLayout({
       {/* En-tête / Hero */}
       <section className={styles.hero} aria-labelledby="legal-page-title">
         <Container size="xl">
-          <span className={styles.heroTag}>{tag || t('legal.defaultTag')}</span>
           <h1 id="legal-page-title" className={styles.heroTitle}>
             {title}
           </h1>

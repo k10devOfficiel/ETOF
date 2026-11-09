@@ -92,7 +92,6 @@ export function ContactPage() {
       {/* En-tête / Bannière Hero */}
       <section className={styles.hero} aria-labelledby="contact-heading">
         <Container size="xl">
-          <span className={styles.heroTag}>{t('contact.heroTag')}</span>
           <h1 id="contact-heading" className={styles.heroTitle}>
             {t('contact.pageTitle')}
           </h1>

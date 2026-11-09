@@ -169,7 +169,6 @@ export function ActivityProductCatalog({
     <section id={`catalog-${activity}`} className={styles.catalogSection} aria-label={title || t('catalog.pageTitle')}>
       <Container size="fixed">
         <header className={styles.sectionHeader}>
-          {badge && <span className={styles.sectionBadge}>{badge}</span>}
           <h2 className={styles.sectionTitle}>{title || t('catalog.pageTitle')}</h2>
           {subtitle && <p className={styles.sectionSubtitle}>{subtitle}</p>}
         </header>

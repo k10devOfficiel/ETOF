@@ -232,7 +232,6 @@ export function CatalogPage() {
       {/* En-tête de page */}
       <header className={styles.pageHeader}>
         <Container size="fixed">
-          <span className={styles.pageTag}>{t('catalog.pageTag')}</span>
           <h1 className={styles.pageTitle}>{t('catalog.pageTitle')}</h1>
           <p className={styles.pageSubtitle}>{t('catalog.pageSubtitle')}</p>
         </Container>

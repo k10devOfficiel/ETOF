@@ -26,7 +26,6 @@ export function AboutPage() {
       {/* En-tête Héro */}
       <header className={styles.hero}>
         <Container size="fixed">
-          <span className={styles.heroTag}>{t('about.heroTag')}</span>
           <h1 className={styles.heroTitle}>{t('about.heroTitle')}</h1>
           <p className={styles.heroSubtitle}>{t('about.heroSubtitle')}</p>
         </Container>

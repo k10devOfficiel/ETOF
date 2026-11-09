@@ -88,7 +88,6 @@ export function ActivityPage({
       {/* Bandeau Hero avec boutons d'action visibles sans défiler */}
       <header className={styles.hero}>
         <Container size="fixed">
-          {badge && <span className={styles.heroBadge}>{badge}</span>}
           <h1 className={styles.heroTitle}>{title}</h1>
           <p className={styles.heroSubtitle}>{subtitle}</p>
 

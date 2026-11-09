@@ -46,17 +46,15 @@ export function VehicleCard({ vehicle, onSelect, onBuy, onRent }) {
   const { t } = useTranslation();
 
   const fullName = `${vehicle.brand} ${vehicle.model}`;
-  const isAvailable = vehicle.status === 'available';
 
-  // Détermination de la variante du badge selon le statut
-  const badgeVariant =
-    vehicle.status === 'available'
-      ? 'available'
-      : vehicle.status === 'reserved'
-      ? 'reserved'
-      : vehicle.status === 'sold'
-      ? 'sold'
-      : 'unavailable';
+  // Détermination de la variante du badge selon le statut (vert = disponible, rouge = indisponible / vendu)
+  const isAvailable = vehicle.status === 'available';
+  const badgeVariant = isAvailable ? 'available' : 'unavailable';
+  const badgeText = isAvailable
+    ? t('vehicles.status_available', 'Disponible')
+    : vehicle.status === 'sold'
+    ? t('vehicles.status_sold', 'Vendu')
+    : t('vehicles.status_unavailable', 'Indisponible');
 
   const hasSalePrice =
     vehicle.price_sale !== null &&
@@ -115,13 +113,9 @@ export function VehicleCard({ vehicle, onSelect, onBuy, onRent }) {
 
         <div className={styles.badgeTop}>
           <Badge variant={badgeVariant}>
-            {t(`vehicles.status_${vehicle.status}`)}
+            {badgeText}
           </Badge>
         </div>
-
-        <span className={styles.modeTag}>
-          {t(`vehicles.mode_${vehicle.mode}`)}
-        </span>
       </div>
 
       {/* Contenu textuel */}

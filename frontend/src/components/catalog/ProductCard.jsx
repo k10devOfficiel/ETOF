@@ -105,10 +105,6 @@ export function ProductCard({ product, onSelect }) {
             {isAvailable ? t('catalog.available') : t('catalog.unavailable')}
           </Badge>
         </div>
-
-        {product.category?.name && (
-          <span className={styles.categoryTag}>{product.category.name}</span>
-        )}
       </div>
 
       {/* Contenu textuel */}
