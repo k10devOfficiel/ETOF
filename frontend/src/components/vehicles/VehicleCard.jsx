@@ -184,11 +184,13 @@ export function VehicleCard({ vehicle, onSelect, onBuy, onRent }) {
           )}
 
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={() => onSelect(vehicle)}
+            aria-label={`${t('vehicles.view', 'Voir')} - ${fullName}`}
           >
-            {t('vehicles.viewDetails', 'Voir la fiche')}
+            <i className="fa-solid fa-eye" aria-hidden="true" style={{ marginRight: '6px' }} />
+            <span>{t('vehicles.view', 'Voir')}</span>
           </Button>
         </div>
 

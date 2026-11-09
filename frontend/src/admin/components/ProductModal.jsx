@@ -43,6 +43,7 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
     is_active: true,
     sort_order: '0',
     image: '',
+    specs: '',
   });
 
   // États locaux
@@ -72,6 +73,7 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
         is_active: product.is_active !== undefined ? Boolean(product.is_active) : true,
         sort_order: String(product.sort_order || 0),
         image: product.image || '',
+        specs: product.specs ? (typeof product.specs === 'object' ? JSON.stringify(product.specs, null, 2) : String(product.specs)) : '',
       });
       setPreviewUrl(product.image || '');
     } else {
@@ -92,6 +94,7 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
         is_active: true,
         sort_order: '0',
         image: '',
+        specs: '',
       });
       setPreviewUrl('');
     }
@@ -150,6 +153,17 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
         setIsUploading(false);
       }
 
+      let parsedSpecs = null;
+      if (formData.specs && formData.specs.trim()) {
+        try {
+          parsedSpecs = JSON.parse(formData.specs.trim());
+        } catch {
+          setGeneralError('Le format des caractéristiques techniques (specs) doit être un JSON valide (ex: {"poids": "1.5 kg"}).');
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       const payload = {
         category_id: parseInt(formData.category_id, 10),
         name_fr: formData.name_fr.trim(),
@@ -160,6 +174,7 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
         unit_en: formData.unit_en.trim() || null,
         reference: formData.reference.trim() || null,
         price: formData.price !== '' ? parseInt(formData.price, 10) : null,
+        specs: parsedSpecs,
         min_quantity: Math.max(1, parseInt(formData.min_quantity || '1', 10)),
         is_orderable: Boolean(formData.is_orderable),
         is_available: Boolean(formData.is_available),
@@ -430,6 +445,26 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
             />
             <span>Actif (visible sur le site)</span>
           </label>
+        </div>
+
+        {/* Spécifications techniques détaillées */}
+        <div className={styles.fieldGroup}>
+          <label htmlFor="prod-specs" className={styles.label}>
+            Caractéristiques techniques détaillées (JSON)
+          </label>
+          <textarea
+            id="prod-specs"
+            name="specs"
+            className={styles.textarea}
+            rows={5}
+            style={{ fontFamily: 'monospace', fontSize: '12px' }}
+            value={formData.specs}
+            onChange={handleChange}
+            placeholder={'{\n  "origin": "Côte d’Ivoire",\n  "weight": "1.5 kg",\n  "packaging": "Prêt à cuire"\n}'}
+          />
+          <span className={styles.helperText}>
+            Format objet JSON associant des caractéristiques techniques (ex: origine, poids, packaging, certification).
+          </span>
         </div>
 
         {/* Téléversement d'image avec aperçu */}

@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useOrder } from '../../context/OrderContext.jsx';
 import Modal from '../ui/Modal.jsx';
 import Button from '../ui/Button.jsx';
+import ProductGallery from './ProductGallery.jsx';
 import styles from './ProductDetailModal.module.css';
 
 /**
@@ -20,8 +21,9 @@ function formatPrice(amount) {
 }
 
 /**
- * Boîte de dialogue détaillée affichant la fiche produit complète avec photos,
- * référence, description, quantité minimale et sélecteur de quantité interactif.
+ * Boîte de dialogue détaillée affichant la fiche produit complète avec
+ * galerie multi-angles, spécifications techniques réelles, référence,
+ * description et sélecteur de quantité interactif.
  *
  * @param {{
  *   product: any | null,
@@ -36,6 +38,23 @@ export function ProductDetailModal({ product, isOpen, onClose }) {
   const minQty = Math.max(1, Number(product?.min_quantity) || 1);
   const [quantity, setQuantity] = useState(minQty);
   const [added, setAdded] = useState(false);
+
+  // Normalisation des specs techniques
+  const specsObject = useMemo(() => {
+    if (!product?.specs) return {};
+    if (typeof product.specs === 'object') return product.specs;
+    try {
+      return JSON.parse(product.specs);
+    } catch {
+      return {};
+    }
+  }, [product?.specs]);
+
+  const specEntries = useMemo(() => {
+    return Object.entries(specsObject).filter(
+      ([, value]) => value !== null && value !== undefined && String(value).trim() !== ''
+    );
+  }, [specsObject]);
 
   // Réinitialiser la quantité lors de l'ouverture d'un nouveau produit
   useEffect(() => {
@@ -84,23 +103,13 @@ export function ProductDetailModal({ product, isOpen, onClose }) {
       size="lg"
     >
       <div className={styles.grid}>
-        {/* Colonne visuelle */}
-        <div className={styles.imageContainer}>
-          {product.image ? (
-            <img
-              src={product.image}
-              alt={product.name}
-              className={styles.image}
-              loading="lazy"
-              width="600"
-              height="450"
-            />
-          ) : (
-            <div className={styles.placeholderImage}>
-              <i className={`fa-solid fa-image ${styles.placeholderIcon}`} aria-hidden="true" style={{ fontSize: '40px' }} />
-              <span>{t('catalog.noImage')}</span>
-            </div>
-          )}
+        {/* Colonne Galerie multi-angles */}
+        <div>
+          <ProductGallery
+            images={product.images || []}
+            mainImage={product.image}
+            productName={product.name}
+          />
         </div>
 
         {/* Colonne détails et commande */}
@@ -112,7 +121,7 @@ export function ProductDetailModal({ product, isOpen, onClose }) {
             )}
             {product.reference && (
               <span className={styles.referenceBadge}>
-                {t('catalog.referenceLabel')}: {product.reference}
+                {t('catalog.referenceLabel', 'Réf')}: {product.reference}
               </span>
             )}
           </div>
@@ -121,6 +130,26 @@ export function ProductDetailModal({ product, isOpen, onClose }) {
 
           {product.description && (
             <p className={styles.description}>{product.description}</p>
+          )}
+
+          {/* Grille des caractéristiques techniques */}
+          {specEntries.length > 0 && (
+            <div className={styles.specsSection}>
+              <h3 className={styles.specsTitle}>
+                <i className="fa-solid fa-clipboard-check" aria-hidden="true" style={{ color: 'var(--color-accent)' }} />
+                <span>{t('catalog.technicalSpecs', 'Caractéristiques techniques')}</span>
+              </h3>
+              <div className={styles.specsGrid}>
+                {specEntries.map(([key, val]) => (
+                  <div key={key} className={styles.specItem}>
+                    <span className={styles.specLabel}>
+                      {t(`catalog.specLabels.${key}`, key)}
+                    </span>
+                    <span className={styles.specValue}>{String(val)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           {/* Bloc Tarif */}
@@ -207,7 +236,7 @@ export function ProductDetailModal({ product, isOpen, onClose }) {
                   onClick={onClose}
                 >
                   <Button variant="outline" size="lg">
-                    {t('order.viewSummary')}
+                    {t('order.viewSummary', 'Voir ma commande')}
                   </Button>
                 </Link>
               </>
@@ -224,7 +253,7 @@ export function ProductDetailModal({ product, isOpen, onClose }) {
             )}
 
             <Button variant="ghost" size="lg" onClick={onClose}>
-              {t('common.close')}
+              {t('common.close', 'Fermer')}
             </Button>
           </div>
         </div>
@@ -234,4 +263,3 @@ export function ProductDetailModal({ product, isOpen, onClose }) {
 }
 
 export default ProductDetailModal;
-

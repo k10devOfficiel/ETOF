@@ -101,7 +101,7 @@ final class ProductController
         // Récupération paginée des produits
         $sql = "SELECT p.id, p.slug, p.reference, p.name_fr, p.name_en, 
                        p.description_fr, p.description_en, p.unit_fr, p.unit_en,
-                       p.price, p.min_quantity, p.is_orderable, p.is_available, 
+                       p.price, p.specs, p.min_quantity, p.is_orderable, p.is_available, 
                        p.image, p.sort_order, p.created_at,
                        c.id AS category_id, c.slug AS category_slug, 
                        c.name_fr AS category_name_fr, c.name_en AS category_name_en,
@@ -121,7 +121,30 @@ final class ProductController
         $stmt->execute();
 
         $rows = $stmt->fetchAll();
-        $items = array_map(fn (array $row) => $this->formatProduct($row, $lang), $rows);
+        $productIds = array_map(fn ($r) => (int) $r['id'], $rows);
+
+        // Chargement groupé optimisé des images multi-angles
+        $imagesByProduct = [];
+        if (!empty($productIds)) {
+            $inClause = implode(',', $productIds);
+            $imgStmt = $pdo->query("SELECT id, product_id, path, alt_fr, alt_en, sort_order 
+                                    FROM product_images 
+                                    WHERE product_id IN ({$inClause}) 
+                                    ORDER BY sort_order ASC, id ASC");
+            if ($imgStmt) {
+                while ($img = $imgStmt->fetch(PDO::FETCH_ASSOC)) {
+                    $pid = (int) $img['product_id'];
+                    $imagesByProduct[$pid][] = [
+                        'id' => (int) $img['id'],
+                        'path' => (string) $img['path'],
+                        'alt' => $lang === 'en' && !empty($img['alt_en']) ? (string) $img['alt_en'] : (string) ($img['alt_fr'] ?? ''),
+                        'sort_order' => (int) $img['sort_order'],
+                    ];
+                }
+            }
+        }
+
+        $items = array_map(fn (array $row) => $this->formatProduct($row, $lang, $imagesByProduct[(int) $row['id']] ?? []), $rows);
 
         return Response::success([
             'items' => $items,
@@ -135,7 +158,7 @@ final class ProductController
     }
 
     /**
-     * Fiche détaillée d'un produit par son slug unique.
+     * Fiche détaillée d'un produit par son slug unique avec galerie multi-angles.
      *
      * @param array<string, string> $params
      */
@@ -147,7 +170,7 @@ final class ProductController
 
         $sql = "SELECT p.id, p.slug, p.reference, p.name_fr, p.name_en, 
                        p.description_fr, p.description_en, p.unit_fr, p.unit_en,
-                       p.price, p.min_quantity, p.is_orderable, p.is_available, 
+                       p.price, p.specs, p.min_quantity, p.is_orderable, p.is_available, 
                        p.image, p.sort_order, p.created_at,
                        c.id AS category_id, c.slug AS category_slug, 
                        c.name_fr AS category_name_fr, c.name_en AS category_name_en,
@@ -166,16 +189,34 @@ final class ProductController
             return Response::error('PRODUCT_NOT_FOUND', "Le produit demandé est introuvable ou indisponible.", 404);
         }
 
-        return Response::success($this->formatProduct($row, $lang));
+        $productId = (int) $row['id'];
+        $imgStmt = $pdo->prepare("SELECT id, path, alt_fr, alt_en, sort_order 
+                                  FROM product_images 
+                                  WHERE product_id = :pid 
+                                  ORDER BY sort_order ASC, id ASC");
+        $imgStmt->bindValue(':pid', $productId, PDO::PARAM_INT);
+        $imgStmt->execute();
+        $images = [];
+        while ($img = $imgStmt->fetch(PDO::FETCH_ASSOC)) {
+            $images[] = [
+                'id' => (int) $img['id'],
+                'path' => (string) $img['path'],
+                'alt' => $lang === 'en' && !empty($img['alt_en']) ? (string) $img['alt_en'] : (string) ($img['alt_fr'] ?? ''),
+                'sort_order' => (int) $img['sort_order'],
+            ];
+        }
+
+        return Response::success($this->formatProduct($row, $lang, $images));
     }
 
     /**
      * Formate l'enregistrement produit selon la langue courante et sans exposer les colonnes internes.
      *
      * @param array<string, mixed> $row
+     * @param array<int, array<string, mixed>> $images
      * @return array<string, mixed>
      */
-    private function formatProduct(array $row, string $lang): array
+    private function formatProduct(array $row, string $lang, array $images = []): array
     {
         $isEn = ($lang === 'en');
 
@@ -187,6 +228,14 @@ final class ProductController
             ? (string) $row['category_name_en']
             : (string) $row['category_name_fr'];
 
+        $specs = [];
+        if (!empty($row['specs'])) {
+            $decoded = json_decode((string) $row['specs'], true);
+            if (is_array($decoded)) {
+                $specs = $decoded;
+            }
+        }
+
         return [
             'id' => (int) $row['id'],
             'slug' => (string) $row['slug'],
@@ -195,10 +244,12 @@ final class ProductController
             'description' => $description !== '' ? $description : null,
             'unit' => $unit !== '' ? $unit : null,
             'price' => $row['price'] !== null ? (int) $row['price'] : null,
+            'specs' => $specs,
             'min_quantity' => (int) $row['min_quantity'],
             'is_orderable' => (bool) $row['is_orderable'],
             'is_available' => (bool) $row['is_available'],
             'image' => $row['image'] !== null ? (string) $row['image'] : null,
+            'images' => $images,
             'category' => [
                 'id' => (int) $row['category_id'],
                 'slug' => (string) $row['category_slug'],

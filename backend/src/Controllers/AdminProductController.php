@@ -150,14 +150,19 @@ final class AdminProductController
         $sql = "INSERT INTO products (
             category_id, slug, reference, name_fr, name_en,
             description_fr, description_en, unit_fr, unit_en,
-            price, min_quantity, is_orderable, is_available,
+            price, specs, min_quantity, is_orderable, is_available,
             image, is_active, sort_order, created_at, updated_at
         ) VALUES (
             :category_id, :slug, :reference, :name_fr, :name_en,
             :description_fr, :description_en, :unit_fr, :unit_en,
-            :price, :min_quantity, :is_orderable, :is_available,
+            :price, :specs, :min_quantity, :is_orderable, :is_available,
             :image, :is_active, :sort_order, NOW(), NOW()
         )";
+
+        $specsJson = null;
+        if (isset($body['specs'])) {
+            $specsJson = is_array($body['specs']) ? json_encode($body['specs'], JSON_UNESCAPED_UNICODE) : (string) $body['specs'];
+        }
 
         $stmt = $pdo->prepare($sql);
         $stmt->bindValue(':category_id', $categoryId, PDO::PARAM_INT);
@@ -170,6 +175,7 @@ final class AdminProductController
         $stmt->bindValue(':unit_fr', !empty($body['unit_fr']) ? trim((string) $body['unit_fr']) : null, PDO::PARAM_STR);
         $stmt->bindValue(':unit_en', !empty($body['unit_en']) ? trim((string) $body['unit_en']) : null, PDO::PARAM_STR);
         $stmt->bindValue(':price', $price, $price !== null ? PDO::PARAM_INT : PDO::PARAM_NULL);
+        $stmt->bindValue(':specs', $specsJson, $specsJson !== null ? PDO::PARAM_STR : PDO::PARAM_NULL);
         $stmt->bindValue(':min_quantity', max(1, (int) ($body['min_quantity'] ?? 1)), PDO::PARAM_INT);
         $stmt->bindValue(':is_orderable', isset($body['is_orderable']) ? ((bool) $body['is_orderable'] ? 1 : 0) : 1, PDO::PARAM_INT);
         $stmt->bindValue(':is_available', isset($body['is_available']) ? ((bool) $body['is_available'] ? 1 : 0) : 1, PDO::PARAM_INT);
@@ -260,6 +266,7 @@ final class AdminProductController
             unit_fr = :unit_fr,
             unit_en = :unit_en,
             price = :price,
+            specs = :specs,
             min_quantity = :min_quantity,
             is_orderable = :is_orderable,
             is_available = :is_available,
@@ -268,6 +275,11 @@ final class AdminProductController
             sort_order = :sort_order,
             updated_at = NOW()
         WHERE id = :id";
+
+        $specsJson = null;
+        if (isset($body['specs'])) {
+            $specsJson = is_array($body['specs']) ? json_encode($body['specs'], JSON_UNESCAPED_UNICODE) : (string) $body['specs'];
+        }
 
         $updateStmt = $pdo->prepare($sql);
         $updateStmt->bindValue(':category_id', $categoryId, PDO::PARAM_INT);
@@ -280,6 +292,7 @@ final class AdminProductController
         $updateStmt->bindValue(':unit_fr', !empty($body['unit_fr']) ? trim((string) $body['unit_fr']) : null, PDO::PARAM_STR);
         $updateStmt->bindValue(':unit_en', !empty($body['unit_en']) ? trim((string) $body['unit_en']) : null, PDO::PARAM_STR);
         $updateStmt->bindValue(':price', $price, $price !== null ? PDO::PARAM_INT : PDO::PARAM_NULL);
+        $updateStmt->bindValue(':specs', $specsJson, $specsJson !== null ? PDO::PARAM_STR : PDO::PARAM_NULL);
         $updateStmt->bindValue(':min_quantity', max(1, (int) ($body['min_quantity'] ?? 1)), PDO::PARAM_INT);
         $updateStmt->bindValue(':is_orderable', isset($body['is_orderable']) ? ((bool) $body['is_orderable'] ? 1 : 0) : 1, PDO::PARAM_INT);
         $updateStmt->bindValue(':is_available', isset($body['is_available']) ? ((bool) $body['is_available'] ? 1 : 0) : 1, PDO::PARAM_INT);
@@ -412,6 +425,7 @@ final class AdminProductController
             'unit_fr' => $row['unit_fr'] !== null ? (string) $row['unit_fr'] : null,
             'unit_en' => $row['unit_en'] !== null ? (string) $row['unit_en'] : null,
             'price' => $row['price'] !== null ? (int) $row['price'] : null,
+            'specs' => !empty($row['specs']) ? (is_array($row['specs']) ? $row['specs'] : json_decode((string) $row['specs'], true) ?? []) : [],
             'min_quantity' => (int) $row['min_quantity'],
             'is_orderable' => (bool) $row['is_orderable'],
             'is_available' => (bool) $row['is_available'],

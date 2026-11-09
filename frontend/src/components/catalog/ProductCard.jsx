@@ -146,12 +146,13 @@ export function ProductCard({ product, onSelect }) {
           )}
 
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={() => onSelect(product)}
-            aria-label={`${t('catalog.viewDetails')} ${product.name}`}
+            aria-label={`${t('catalog.view', 'Voir')} ${product.name}`}
           >
-            {t('catalog.viewDetails')}
+            <i className="fa-solid fa-eye" aria-hidden="true" style={{ marginRight: '6px' }} />
+            <span>{t('catalog.view', 'Voir')}</span>
           </Button>
         </div>
       </div>
