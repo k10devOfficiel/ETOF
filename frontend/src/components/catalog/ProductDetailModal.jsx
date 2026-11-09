@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useOrder } from '../../context/OrderContext.jsx';
 import Modal from '../ui/Modal.jsx';
 import Button from '../ui/Button.jsx';
+import Badge from '../ui/Badge.jsx';
 import ProductGallery from './ProductGallery.jsx';
 import styles from './ProductDetailModal.module.css';
 
@@ -116,6 +117,9 @@ export function ProductDetailModal({ product, isOpen, onClose }) {
         <div className={styles.detailsCol}>
           {/* Métadonnées : Référence & Catégorie */}
           <div className={styles.metaRow}>
+            <Badge variant={isAvailable ? 'available' : 'unavailable'}>
+              {isAvailable ? t('catalog.available') : t('catalog.unavailable')}
+            </Badge>
             {product.category?.name && (
               <span className={styles.categoryBadge}>{product.category.name}</span>
             )}

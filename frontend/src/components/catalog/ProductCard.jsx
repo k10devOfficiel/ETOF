@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useOrder } from '../../context/OrderContext.jsx';
 import Button from '../ui/Button.jsx';
+import Badge from '../ui/Badge.jsx';
 import styles from './ProductCard.module.css';
 
 /**
@@ -77,6 +78,12 @@ export function ProductCard({ product, onSelect }) {
         }}
         aria-label={`${t('catalog.viewDetails')} - ${product.name}`}
       >
+        <div className={styles.badgePosition}>
+          <Badge variant={isAvailable ? 'available' : 'unavailable'}>
+            {isAvailable ? t('catalog.available') : t('catalog.unavailable')}
+          </Badge>
+        </div>
+
         {product.image ? (
           <img
             src={product.image}

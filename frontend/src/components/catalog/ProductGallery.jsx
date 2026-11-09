@@ -164,3 +164,4 @@ export function ProductGallery({ images = [], mainImage = null, productName }) {
 }
 
 export default ProductGallery;
+

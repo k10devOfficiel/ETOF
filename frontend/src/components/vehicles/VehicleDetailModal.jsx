@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import Modal from '../ui/Modal.jsx';
 import Button from '../ui/Button.jsx';
+import Badge from '../ui/Badge.jsx';
 import VehicleGallery from './VehicleGallery.jsx';
 import styles from './VehicleDetailModal.module.css';
 
@@ -97,6 +98,15 @@ export function VehicleDetailModal({ vehicle, isOpen, onClose, onBuy, onRent }) 
               </span>
               <h2 className={styles.title}>{vehicle.model}</h2>
             </div>
+            <Badge variant={badgeVariant}>
+              {vehicle.status === 'available'
+                ? t('vehicles.status_available', 'Disponible')
+                : vehicle.status === 'sold'
+                ? t('vehicles.status_sold', 'Vendu')
+                : vehicle.status === 'reserved'
+                ? t('vehicles.status_reserved', 'Réservé')
+                : t('vehicles.status_unavailable', 'Indisponible')}
+            </Badge>
           </div>
 
           {vehicle.description && (

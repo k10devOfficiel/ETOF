@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Button from '../ui/Button.jsx';
+import Badge from '../ui/Badge.jsx';
 import Icon from '../common/Icon.jsx';
 import styles from './VehicleCard.module.css';
 
@@ -93,6 +94,12 @@ export function VehicleCard({ vehicle, onSelect, onBuy, onRent }) {
         }}
         aria-label={`${t('vehicles.viewDetails')} - ${fullName}`}
       >
+        <div className={styles.badgeTop}>
+          <Badge variant={badgeVariant}>
+            {badgeText}
+          </Badge>
+        </div>
+
         {vehicle.main_image ? (
           <img
             src={vehicle.main_image}

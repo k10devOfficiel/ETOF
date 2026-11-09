@@ -129,6 +129,31 @@ export function ProductsPage() {
     }
   };
 
+  // Basculement instantané de la disponibilité (Disponible / Indisponible)
+  const handleToggleAvailable = async (product) => {
+    try {
+      setTogglingId(product.id);
+      const newAvailable = !product.is_available;
+      await adminApi.updateProduct(product.id, {
+        category_id: product.category_id || product.category?.id,
+        name_fr: product.name_fr || product.name,
+        name_en: product.name_en || product.name_fr || product.name,
+        is_available: newAvailable,
+        min_quantity: product.min_quantity || 1,
+      });
+
+      setProducts((prev) =>
+        prev.map((p) => (p.id === product.id ? { ...p, is_available: newAvailable } : p))
+      );
+      setSuccessMessage(`Disponibilité mise à jour : ${newAvailable ? 'Disponible' : 'Indisponible'}.`);
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch {
+      setError('Erreur lors du changement de disponibilité du produit.');
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
   // Confirmation de suppression définitive
   const handleConfirmDelete = async () => {
     if (!deleteProductTarget) return;
@@ -277,9 +302,17 @@ export function ProductsPage() {
                         {p.unit_fr && <span style={{ fontSize: '0.8rem', color: '#64748b' }}> / {p.unit_fr}</span>}
                       </td>
                       <td className={styles.td}>
-                        <Badge variant={p.is_available ? 'available' : 'unavailable'}>
-                          {p.is_available ? 'Disponible' : 'Indisponible'}
-                        </Badge>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleAvailable(p)}
+                          disabled={togglingId === p.id}
+                          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                          title="Cliquer pour basculer instantanément la disponibilité"
+                        >
+                          <Badge variant={p.is_available ? 'available' : 'unavailable'}>
+                            {p.is_available ? 'Disponible' : 'Indisponible'}
+                          </Badge>
+                        </button>
                       </td>
                       <td className={styles.td}>
                         <Badge variant={isActive ? 'available' : 'sold'}>
