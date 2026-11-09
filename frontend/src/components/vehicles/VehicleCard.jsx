@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Badge from '../ui/Badge.jsx';
 import Button from '../ui/Button.jsx';
+import Icon from '../common/Icon.jsx';
 import styles from './VehicleCard.module.css';
 
 /**
@@ -202,7 +203,8 @@ export function VehicleCard({ vehicle, onSelect, onBuy, onRent }) {
 
         {!isAvailable && (
           <p className={styles.statusExplainer} role="note">
-            ℹ️ {unavailableExplanation}
+            <Icon name="circle-info" size={16} color="currentColor" style={{ verticalAlign: 'middle', marginRight: '6px' }} />
+            <span>{unavailableExplanation}</span>
           </p>
         )}
       </div>

@@ -78,8 +78,13 @@ export function Header({ settings }) {
                   </NavLink>
                 </li>
 
-                {/* Dropdown 4 activités */}
-                <li className={styles.dropdownWrapper} ref={dropdownRef}>
+                {/* Dropdown 4 activités (dépliage au survol et au clic) */}
+                <li
+                  className={styles.dropdownWrapper}
+                  ref={dropdownRef}
+                  onMouseEnter={() => setDropdownOpen(true)}
+                  onMouseLeave={() => setDropdownOpen(false)}
+                >
                   <button
                     type="button"
                     className={styles.dropdownTrigger}
