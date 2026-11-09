@@ -360,10 +360,49 @@ final class AdminRequestController
             $byActivity[$ac] = (int) $r['count'];
         }
 
+        // Répartition par type de demande
+        $typeStmt = $pdo->query("SELECT type, COUNT(*) as count FROM requests GROUP BY type");
+        $typeRows = $typeStmt !== false ? $typeStmt->fetchAll() : [];
+        $allTypes = ['quote', 'order', 'reservation', 'purchase', 'contact'];
+        $byType = array_fill_keys($allTypes, 0);
+        foreach ($typeRows as $tr) {
+            $tp = (string) $tr['type'];
+            $byType[$tp] = (int) $tr['count'];
+        }
+
+        // Historique des 7 derniers jours (pour tracer la courbe d'activité)
+        $dailyHistory = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $dayDate = date('Y-m-d', strtotime("-{$i} days"));
+            $dailyHistory[$dayDate] = [
+                'date' => $dayDate,
+                'label' => date('D', strtotime($dayDate)),
+                'count' => 0,
+            ];
+        }
+
+        $histStmt = $pdo->query("SELECT DATE(created_at) as req_date, COUNT(*) as count FROM requests WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) GROUP BY DATE(created_at)");
+        if ($histStmt !== false) {
+            foreach ($histStmt->fetchAll() as $hr) {
+                $d = (string) $hr['req_date'];
+                if (isset($dailyHistory[$d])) {
+                    $dailyHistory[$d]['count'] = (int) $hr['count'];
+                }
+            }
+        }
+
+        // Totaux catalogue
+        $productsCount = (int) ($pdo->query("SELECT COUNT(*) FROM products")->fetchColumn() ?: 0);
+        $vehiclesCount = (int) ($pdo->query("SELECT COUNT(*) FROM vehicles")->fetchColumn() ?: 0);
+
         return Response::success([
             'total' => $total,
             'by_status' => $byStatus,
             'by_activity' => $byActivity,
+            'by_type' => $byType,
+            'daily_history' => array_values($dailyHistory),
+            'products_count' => $productsCount,
+            'vehicles_count' => $vehiclesCount,
             'timestamp' => date('c'),
         ]);
     }

@@ -250,3 +250,28 @@
   background: rgba(11, 42, 74, 0.1);
   color: var(--color-primary);
 }
+
+
+.authLinkBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-primary);
+  background: rgba(11, 42, 74, 0.05);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all var(--transition-fast) ease;
+}
+
+.authLinkBtn:hover {
+  background: rgba(11, 42, 74, 0.1);
+  color: var(--color-primary);
+}
