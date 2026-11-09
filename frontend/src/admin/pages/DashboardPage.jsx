@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import adminApi from '../api/adminApi.js';
 import Spinner from '../../components/ui/Spinner.jsx';
 import Alert from '../../components/ui/Alert.jsx';
+import Icon from '../../components/common/Icon.jsx';
 import RequestDetailModal from '../components/RequestDetailModal.jsx';
 import DemandChart from '../components/DemandChart.jsx';
 import { ADMIN_PATH } from '../../config/adminConfig.js';
@@ -189,11 +190,9 @@ export function DashboardPage() {
             <div className={styles.kpiCard}>
               <div className={styles.kpiHeader}>
                 <div className={styles.kpiIconWrapper} style={{ background: '#e0f2fe', color: '#0369a1' }}>
-                  <svg className={styles.kpiIcon} viewBox="0 0 24 24">
-                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
-                  </svg>
+                  <Icon name="file-lines" size={18} />
                 </div>
-                <span className={`${styles.kpiTrendBadge} ${styles.trendPositive}`}>+8%</span>
+                <span className={`${styles.kpiTrendBadge} ${styles.trendPositive}`}>Actif</span>
               </div>
               <p className={styles.kpiTitle}>Total Demandes</p>
               <div className={styles.kpiValueRow}>
@@ -205,9 +204,7 @@ export function DashboardPage() {
             <div className={styles.kpiCard}>
               <div className={styles.kpiHeader}>
                 <div className={styles.kpiIconWrapper} style={{ background: '#cffafe', color: '#0891b2' }}>
-                  <svg className={styles.kpiIcon} viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z" />
-                  </svg>
+                  <Icon name="bell" size={18} />
                 </div>
                 <span className={`${styles.kpiTrendBadge} ${styles.trendHighlight}`}>À traiter</span>
               </div>
@@ -223,9 +220,7 @@ export function DashboardPage() {
             <div className={styles.kpiCard}>
               <div className={styles.kpiHeader}>
                 <div className={styles.kpiIconWrapper} style={{ background: '#fef3c7', color: '#b45309' }}>
-                  <svg className={styles.kpiIcon} viewBox="0 0 24 24">
-                    <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
-                  </svg>
+                  <Icon name="clock" size={18} />
                 </div>
                 <span className={`${styles.kpiTrendBadge} ${styles.trendNeutral}`}>En cours</span>
               </div>
@@ -241,9 +236,7 @@ export function DashboardPage() {
             <div className={styles.kpiCard}>
               <div className={styles.kpiHeader}>
                 <div className={styles.kpiIconWrapper} style={{ background: '#dcfce7', color: '#15803d' }}>
-                  <svg className={styles.kpiIcon} viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                  </svg>
+                  <Icon name="circle-check" size={18} />
                 </div>
                 <span className={`${styles.kpiTrendBadge} ${styles.trendPositive}`}>Succès</span>
               </div>
@@ -259,9 +252,7 @@ export function DashboardPage() {
             <div className={styles.kpiCard}>
               <div className={styles.kpiHeader}>
                 <div className={styles.kpiIconWrapper} style={{ background: '#ede9fe', color: '#6d28d9' }}>
-                  <svg className={styles.kpiIcon} viewBox="0 0 24 24">
-                    <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z" />
-                  </svg>
+                  <Icon name="car" size={18} />
                 </div>
                 <span className={`${styles.kpiTrendBadge} ${styles.trendNeutral}`}>Parc</span>
               </div>
@@ -275,9 +266,7 @@ export function DashboardPage() {
             <div className={styles.kpiCard}>
               <div className={styles.kpiHeader}>
                 <div className={styles.kpiIconWrapper} style={{ background: '#f1f5f9', color: '#0b2a4a' }}>
-                  <svg className={styles.kpiIcon} viewBox="0 0 24 24">
-                    <path d="M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6-2c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2zm6 16H6V8h2v2c0 .55.45 1 1 1s1-.45 1-1V8h4v2c0 .55.45 1 1 1s1-.45 1-1V8h2v12z" />
-                  </svg>
+                  <Icon name="box" size={18} />
                 </div>
                 <span className={`${styles.kpiTrendBadge} ${styles.trendNeutral}`}>Stock</span>
               </div>
@@ -346,9 +335,9 @@ export function DashboardPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                 {/* Champ de recherche instantanée qui filtre le tableau */}
                 <div className={styles.searchFilterWrapper}>
-                  <svg className={styles.searchFilterIcon} viewBox="0 0 24 24">
-                    <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-                  </svg>
+                  <span className={styles.searchFilterIcon} aria-hidden="true">
+                    <Icon name="magnifying-glass" size={15} color="#94a3b8" />
+                  </span>
                   <input
                     type="text"
                     className={styles.searchFilterInput}
@@ -370,9 +359,7 @@ export function DashboardPage() {
 
                 <Link to={`${ADMIN_PATH}/demandes`} className={styles.viewAllLink}>
                   <span>Toutes les demandes</span>
-                  <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
-                    <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
-                  </svg>
+                  <Icon name="arrow-right" size={13} />
                 </Link>
               </div>
             </div>
@@ -448,7 +435,8 @@ export function DashboardPage() {
                                 setSelectedRequestId(req.id);
                               }}
                             >
-                              Consulter
+                              <Icon name="eye" size={13} />
+                              <span>Consulter</span>
                             </button>
                           </td>
                         </tr>

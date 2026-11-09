@@ -347,3 +347,4 @@ export function DemandChart({ stats, loading = false, error = null }) {
 }
 
 export default DemandChart;
+

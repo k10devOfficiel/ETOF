@@ -38,9 +38,10 @@
 }
 
 .title {
-  font-size: 1.45rem;
+  font-family: var(--font-family-heading, 'Righteous', sans-serif);
+  font-size: 1.55rem;
   font-weight: 700;
-  color: #0f172a;
+  color: #0b2a4a;
   margin: 0;
   letter-spacing: -0.01em;
 }
@@ -362,9 +363,10 @@
 }
 
 .cardHeaderTitle {
-  font-size: 1.05rem;
+  font-family: var(--font-family-heading, 'Righteous', sans-serif);
+  font-size: 1.15rem;
   font-weight: 700;
-  color: #0f172a;
+  color: #0b2a4a;
   margin: 0;
 }
 
@@ -628,13 +630,16 @@
   border: 1px solid #e2e8f0;
   background: #ffffff;
   color: #0b2a4a;
-  padding: 0.4rem 0.85rem;
+  padding: 0.45rem 0.85rem;
   border-radius: 8px;
   font-size: 0.775rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .actionBtn:hover {
@@ -647,4 +652,9 @@
 
 .actionBtn:active {
   transform: translateY(0);
+}
+
+.actionBtn:focus-visible {
+  outline: 2px solid #14b8c4;
+  outline-offset: 2px;
 }
