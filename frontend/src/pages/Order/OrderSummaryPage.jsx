@@ -131,7 +131,7 @@ export function OrderSummaryPage() {
                   <button
                     type="button"
                     className={styles.clearAllBtn}
-                    onClick={clearOrder}
+                    onClick={() => clearOrder(true)}
                     aria-label={t('order.clearAllAria')}
                   >
                     {t('order.clearAll')}

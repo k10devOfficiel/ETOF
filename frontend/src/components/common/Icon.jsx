@@ -94,6 +94,9 @@ export function Icon({
     'circle-info': (
       <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 4.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5zm1.5 10.5h-3a.75.75 0 0 1 0-1.5h.75v-4.5h-.75a.75.75 0 0 1 0-1.5h2.25v6h.75a.75.75 0 0 1 0 1.5z" />
     ),
+    user: (
+      <path d="M12 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm-7 18a7 7 0 0 1 14 0H5z" />
+    ),
   };
 
   const selectedPath = paths[name] || paths.check;

@@ -6,6 +6,8 @@ import './i18n/index.js';
 import './styles/global.css';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { ThemeProvider } from './context/ThemeContext.jsx';
+import { ToastProvider } from './context/ToastContext.jsx';
+import { UserAuthProvider } from './context/UserAuthContext.jsx';
 import { OrderProvider } from './context/OrderContext.jsx';
 import App from './App.jsx';
 
@@ -18,9 +20,13 @@ if (rootElement) {
         <ErrorBoundary>
           <ThemeProvider>
             <BrowserRouter>
-              <OrderProvider>
-                <App />
-              </OrderProvider>
+              <ToastProvider>
+                <UserAuthProvider>
+                  <OrderProvider>
+                    <App />
+                  </OrderProvider>
+                </UserAuthProvider>
+              </ToastProvider>
             </BrowserRouter>
           </ThemeProvider>
         </ErrorBoundary>

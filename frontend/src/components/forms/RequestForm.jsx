@@ -7,6 +7,9 @@ import Textarea from '../ui/Textarea.jsx';
 import Select from '../ui/Select.jsx';
 import Button from '../ui/Button.jsx';
 import Alert from '../ui/Alert.jsx';
+import { useUserAuth } from '../../context/UserAuthContext.jsx';
+import { useToast } from '../../context/ToastContext.jsx';
+import { displayName } from '../../utils/userHelper.js';
 import { submitRequest } from '../../api/requests.js';
 import { ApiError, getCurrentLanguage } from '../../api/client.js';
 import styles from './RequestForm.module.css';
@@ -45,7 +48,11 @@ export function RequestForm({
   items = null,
   onSuccess,
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { user, requireAuth } = useUserAuth();
+  const { notifyQuoteSent, notifyOrderSent, notifyRentalSent, notifyBuySent } = useToast();
+
+  const currentLang = (i18n.language || 'fr').slice(0, 2).toLowerCase();
 
   // États du formulaire commun
   const [fullName, setFullName] = useState('');
@@ -56,6 +63,24 @@ export function RequestForm({
   const [consent, setConsent] = useState(false);
   const [websiteHoneypot, setWebsiteHoneypot] = useState('');
   const [contactSubject, setContactSubject] = useState('general');
+
+  // Pré-remplissage automatique si l'utilisateur est connecté
+  useEffect(() => {
+    if (user) {
+      if (!fullName) {
+        setFullName(displayName(user, currentLang));
+      }
+      if (!email && user.email) {
+        setEmail(user.email);
+      }
+      if (!phone && user.phone) {
+        setPhone(user.phone);
+      }
+      if (!company && user.company) {
+        setCompany(user.company);
+      }
+    }
+  }, [user, currentLang]);
 
   // Activité sélectionnée
   const [activity, setActivity] = useState(
@@ -164,7 +189,7 @@ export function RequestForm({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setGlobalError(null);
     setIsRateLimited(false);
@@ -173,116 +198,146 @@ export function RequestForm({
       return;
     }
 
-    try {
-      setIsSubmitting(true);
+    // Exiger une session active avant d'envoyer la demande (devis, commande, réservation, contact)
+    requireAuth(async (activeUser) => {
+      try {
+        setIsSubmitting(true);
 
-      const effectiveType =
-        formType === 'fuel' ? 'quote' : formType;
+        const effectiveType =
+          formType === 'fuel' ? 'quote' : formType;
 
-      let effectiveActivity = activity || 'general';
-      if (formType === 'contact') {
-        effectiveActivity = ['farm', 'vehicle', 'office', 'fuel'].includes(contactSubject)
-          ? contactSubject
-          : 'general';
-      } else if (formType === 'order' && Array.isArray(items) && items.length > 0) {
-        const activities = new Set(items.map((it) => it.activity).filter(Boolean));
-        if (activities.size === 1) {
-          effectiveActivity = Array.from(activities)[0];
-        } else {
-          effectiveActivity = 'general';
+        let effectiveActivity = activity || 'general';
+        if (formType === 'contact') {
+          effectiveActivity = ['farm', 'vehicle', 'office', 'fuel'].includes(contactSubject)
+            ? contactSubject
+            : 'general';
+        } else if (formType === 'order' && Array.isArray(items) && items.length > 0) {
+          const activities = new Set(items.map((it) => it.activity).filter(Boolean));
+          if (activities.size === 1) {
+            effectiveActivity = Array.from(activities)[0];
+          } else {
+            effectiveActivity = 'general';
+          }
         }
-      }
 
-      let effectiveMessage = message.trim() || undefined;
-      if (formType === 'contact') {
-        const subjectLabels = {
-          general: t('contact.subjects.general'),
-          farm: t('contact.subjects.farm'),
-          vehicle: t('contact.subjects.vehicle'),
-          office: t('contact.subjects.office'),
-          fuel: t('contact.subjects.fuel'),
-          partnership: t('contact.subjects.partnership'),
-          other: t('contact.subjects.other'),
-        };
-        const subjectText = subjectLabels[contactSubject] || contactSubject;
-        effectiveMessage = message.trim()
-          ? `[${t('contact.subjectLabel')}: ${subjectText}]\n\n${message.trim()}`
-          : `[${t('contact.subjectLabel')}: ${subjectText}]`;
-      }
-
-      const payload = {
-        type: effectiveType,
-        activity: effectiveActivity,
-        lang: getCurrentLanguage(),
-        full_name: fullName.trim(),
-        email: email.trim(),
-        phone: phone.trim(),
-        company: company.trim() || undefined,
-        message: effectiveMessage,
-        consent: Boolean(consent),
-        website: websiteHoneypot, // Champ piège qui doit être vide
-      };
-
-      // Payload commande / devis produits (liste d'articles ou article unique pré-rempli)
-      if (Array.isArray(items) && items.length > 0) {
-        payload.items = items.map((it) => ({
-          product_id: Number(it.product_id || it.id),
-          quantity: Math.max(1, Number(it.quantity)),
-        }));
-      } else if (prefilledItem?.id) {
-        payload.items = [
-          {
-            product_id: Number(prefilledItem.id),
-            quantity: Math.max(1, itemQuantity),
-          },
-        ];
-      }
-
-      // Payload réservation / achat véhicule
-      if (prefilledVehicle?.id) {
-        payload.vehicle_id = Number(prefilledVehicle.id);
-      }
-
-      if (formType === 'reservation') {
-        payload.start_date = startDate;
-        payload.end_date = endDate;
-      }
-
-      // Payload détails hydrocarbures
-      if (formType === 'fuel' || activity === 'fuel') {
-        payload.details = {
-          service_type: fuelServiceType,
-          estimated_volume: estimatedVolume.trim(),
-          origin: origin.trim(),
-          destination: destination.trim(),
-          desired_date: desiredDate,
-        };
-      }
-
-      const res = await submitRequest(payload);
-      setSubmittedData(res);
-      if (onSuccess) {
-        onSuccess(res);
-      }
-    } catch (err) {
-      if (err instanceof ApiError) {
-        if (err.status === 429) {
-          setIsRateLimited(true);
-        } else if (err.status === 422 && err.fields) {
-          const apiErrors = {};
-          Object.entries(err.fields).forEach(([fKey, fVal]) => {
-            apiErrors[fKey] = Array.isArray(fVal) ? fVal.join(' ') : String(fVal);
-          });
-          setErrors(apiErrors);
-        } else {
-          setGlobalError(err.message || t('forms.errors.genericServer'));
+        let effectiveMessage = message.trim() || undefined;
+        if (formType === 'contact') {
+          const subjectLabels = {
+            general: t('contact.subjects.general'),
+            farm: t('contact.subjects.farm'),
+            vehicle: t('contact.subjects.vehicle'),
+            office: t('contact.subjects.office'),
+            fuel: t('contact.subjects.fuel'),
+            partnership: t('contact.subjects.partnership'),
+            other: t('contact.subjects.other'),
+          };
+          const subjectText = subjectLabels[contactSubject] || contactSubject;
+          effectiveMessage = message.trim()
+            ? `[${t('contact.subjectLabel')}: ${subjectText}]\n\n${message.trim()}`
+            : `[${t('contact.subjectLabel')}: ${subjectText}]`;
         }
-      } else {
-        setGlobalError(t('forms.errors.networkError'));
+
+        const userEffectiveName = activeUser ? displayName(activeUser, currentLang) : fullName.trim();
+        const userEffectiveEmail = activeUser?.email || email.trim();
+        const userEffectivePhone = activeUser?.phone || phone.trim();
+
+        const payload = {
+          type: effectiveType,
+          activity: effectiveActivity,
+          lang: getCurrentLanguage(),
+          full_name: userEffectiveName,
+          email: userEffectiveEmail,
+          phone: userEffectivePhone,
+          company: company.trim() || activeUser?.company || undefined,
+          message: effectiveMessage,
+          consent: Boolean(consent),
+          website: websiteHoneypot, // Champ piège qui doit être vide
+        };
+
+        // Payload commande / devis produits (liste d'articles ou article unique pré-rempli)
+        if (Array.isArray(items) && items.length > 0) {
+          payload.items = items.map((it) => ({
+            product_id: Number(it.product_id || it.id),
+            quantity: Math.max(1, Number(it.quantity)),
+          }));
+        } else if (prefilledItem?.id) {
+          payload.items = [
+            {
+              product_id: Number(prefilledItem.id),
+              quantity: Math.max(1, itemQuantity),
+            },
+          ];
+        }
+
+        // Payload réservation / achat véhicule
+        if (prefilledVehicle?.id) {
+          payload.vehicle_id = Number(prefilledVehicle.id);
+        }
+
+        if (formType === 'reservation') {
+          payload.start_date = startDate;
+          payload.end_date = endDate;
+        }
+
+        // Payload détails hydrocarbures
+        if (formType === 'fuel' || activity === 'fuel') {
+          payload.details = {
+            service_type: fuelServiceType,
+            estimated_volume: estimatedVolume.trim(),
+            origin: origin.trim(),
+            destination: destination.trim(),
+            desired_date: desiredDate,
+          };
+        }
+
+        const res = await submitRequest(payload);
+        setSubmittedData(res);
+
+        // Déclenchement de la notification personnalisée adaptée
+        const ref = res?.reference || '';
+        if (formType === 'order') {
+          const totalCount = Array.isArray(items)
+            ? items.reduce((s, it) => s + (Number(it.quantity) || 1), 0)
+            : itemQuantity;
+          notifyOrderSent(userEffectiveName, totalCount, ref);
+        } else if (formType === 'reservation') {
+          const vName = prefilledVehicle ? `${prefilledVehicle.brand} ${prefilledVehicle.model}` : t('vehicles.vehicle');
+          notifyRentalSent(userEffectiveName, vName, startDate, endDate, ref);
+        } else if (formType === 'purchase') {
+          const vName = prefilledVehicle ? `${prefilledVehicle.brand} ${prefilledVehicle.model}` : t('vehicles.vehicle');
+          notifyBuySent(userEffectiveName, vName, ref);
+        } else {
+          notifyQuoteSent(userEffectiveName, ref);
+        }
+
+        if (onSuccess) {
+          onSuccess(res);
+        }
+      } catch (err) {
+        if (err instanceof ApiError) {
+          if (err.status === 401) {
+            // Session expirée pendant la saisie : on redemande la connexion puis on réexécute
+            requireAuth(() => handleSubmit(e), t('auth.sessionExpiredBanner', 'Votre session a expiré. Veuillez vous reconnecter pour finaliser votre envoi.'));
+            return;
+          }
+          if (err.status === 429) {
+            setIsRateLimited(true);
+          } else if (err.status === 422 && err.fields) {
+            const apiErrors = {};
+            Object.entries(err.fields).forEach(([fKey, fVal]) => {
+              apiErrors[fKey] = Array.isArray(fVal) ? fVal.join(' ') : String(fVal);
+            });
+            setErrors(apiErrors);
+          } else {
+            setGlobalError(err.message || t('forms.errors.genericServer'));
+          }
+        } else {
+          setGlobalError(t('forms.errors.networkError'));
+        }
+      } finally {
+        setIsSubmitting(false);
       }
-    } finally {
-      setIsSubmitting(false);
-    }
+    }, t('auth.requireAuthBanner', 'Connectez-vous ou créez un compte pour envoyer votre demande'));
   };
 
   const handleReset = () => {

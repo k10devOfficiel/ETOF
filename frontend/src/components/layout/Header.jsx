@@ -2,10 +2,13 @@ import { useState, useRef, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useOrder } from '../../context/OrderContext.jsx';
+import { useUserAuth } from '../../context/UserAuthContext.jsx';
+import { displayName } from '../../utils/userHelper.js';
 import { Container } from '../ui/Container.jsx';
 import { Button } from '../ui/Button.jsx';
 import { ThemeToggle } from '../ui/ThemeToggle.jsx';
 import { BrandLogo } from '../common/BrandLogo.jsx';
+import Icon from '../common/Icon.jsx';
 import { MobileDrawer } from './MobileDrawer.jsx';
 import styles from './Header.module.css';
 
@@ -21,6 +24,7 @@ import styles from './Header.module.css';
 export function Header({ settings }) {
   const { t, i18n } = useTranslation();
   const { totalQuantity } = useOrder();
+  const { user, requireAuth, logout } = useUserAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -94,16 +98,9 @@ export function Header({ settings }) {
                     aria-controls="activities-dropdown-menu"
                   >
                     <span>{t('nav.activities')}</span>
-                    <svg
-                      className={`${styles.dropdownChevron} ${
-                        dropdownOpen ? styles.chevronOpen : ''
-                      }`}
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                      role="img"
-                    >
-                      <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z" />
-                    </svg>
+                    <span className={`${styles.dropdownChevron} ${dropdownOpen ? styles.chevronOpen : ''}`} aria-hidden="true">
+                      <Icon name="chevronDown" size={14} />
+                    </span>
                   </button>
 
                   {dropdownOpen && (
@@ -204,13 +201,7 @@ export function Header({ settings }) {
                 aria-label={t('order.viewSummaryAria', { count: totalQuantity })}
                 title={t('order.summaryTitle')}
               >
-                <svg
-                  className={styles.orderSummaryIcon}
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
-                </svg>
+                <Icon name="cart" size={24} className={styles.orderSummaryIcon} />
                 {totalQuantity > 0 && (
                   <span className={styles.orderBadge}>
                     {totalQuantity > 99 ? '99+' : totalQuantity}
@@ -228,9 +219,8 @@ export function Header({ settings }) {
               >
                 <button
                   type="button"
-                  className={`${styles.langBtn} ${
-                    currentLang === 'fr' ? styles.langBtnActive : ''
-                  }`}
+                  className={`${styles.langBtn} ${currentLang === 'fr' ? styles.langBtnActive : ''
+                    }`}
                   onClick={() => changeLanguage('fr')}
                   aria-pressed={currentLang === 'fr'}
                 >
@@ -238,9 +228,8 @@ export function Header({ settings }) {
                 </button>
                 <button
                   type="button"
-                  className={`${styles.langBtn} ${
-                    currentLang === 'en' ? styles.langBtnActive : ''
-                  }`}
+                  className={`${styles.langBtn} ${currentLang === 'en' ? styles.langBtnActive : ''
+                    }`}
                   onClick={() => changeLanguage('en')}
                   aria-pressed={currentLang === 'en'}
                 >
@@ -249,7 +238,29 @@ export function Header({ settings }) {
               </div>
 
               <div className={styles.ctaBtnDesktop}>
-                <Link to="/devis" style={{ textDecoration: 'none' }}>
+                {user ? (
+                  <Link
+                    to="/mon-compte"
+                    className={styles.navLink}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
+                    title={displayName(user, currentLang)}
+                  >
+                    <Icon name="user" size={18} />
+                    <span>{displayName(user, currentLang)}</span>
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    className={styles.navLink}
+                    onClick={() => requireAuth(() => {})}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}
+                  >
+                    <Icon name="user" size={18} />
+                    <span>{t('auth.login', 'Connexion')}</span>
+                  </button>
+                )}
+
+                <Link to="/devis" style={{ textDecoration: 'none', marginLeft: '0.5rem' }}>
                   <Button variant="primary" size="md">
                     {t('nav.requestQuote')}
                   </Button>

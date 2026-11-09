@@ -248,27 +248,43 @@ final class RequestService
         // 5. Enregistrement transactionnel en base de données
         $pdo->beginTransaction();
         try {
+            SessionService::start();
+            $userId = !empty($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null;
+
+            // Récupération de l'utilisateur pour formater la civilité et le nom
+            $formattedFullName = trim((string) $data['full_name']);
+            if ($userId !== null) {
+                $userStmt = $pdo->prepare("SELECT civility, first_name, last_name, preferred_name FROM users WHERE id = :id LIMIT 1");
+                $userStmt->bindValue(':id', $userId, PDO::PARAM_INT);
+                $userStmt->execute();
+                $userData = $userStmt->fetch();
+                if ($userData !== false) {
+                    $formattedFullName = UserHelper::displayName($userData, $lang);
+                }
+            }
+
             $reference = self::generateNextReference($pdo);
             $ipHash = RateLimiter::hashIp($ip);
 
             $insertSql = "INSERT INTO requests (
-                reference, type, activity, status, lang,
+                user_id, reference, type, activity, status, lang,
                 full_name, company, email, phone, message,
                 details, vehicle_id, start_date, end_date,
                 consent, ip_hash, internal_note, created_at, updated_at
             ) VALUES (
-                :reference, :type, :activity, 'new', :lang,
+                :user_id, :reference, :type, :activity, 'new', :lang,
                 :full_name, :company, :email, :phone, :message,
                 :details, :vehicle_id, :start_date, :end_date,
                 1, :ip_hash, NULL, NOW(), NOW()
             )";
 
             $stmt = $pdo->prepare($insertSql);
+            $stmt->bindValue(':user_id', $userId, $userId !== null ? PDO::PARAM_INT : PDO::PARAM_NULL);
             $stmt->bindValue(':reference', $reference, PDO::PARAM_STR);
             $stmt->bindValue(':type', $type, PDO::PARAM_STR);
             $stmt->bindValue(':activity', $activity, PDO::PARAM_STR);
             $stmt->bindValue(':lang', $lang, PDO::PARAM_STR);
-            $stmt->bindValue(':full_name', trim((string) $data['full_name']), PDO::PARAM_STR);
+            $stmt->bindValue(':full_name', $formattedFullName, PDO::PARAM_STR);
             $stmt->bindValue(':company', !empty($data['company']) ? trim((string) $data['company']) : null, PDO::PARAM_STR);
             $stmt->bindValue(':email', strtolower(trim((string) $data['email'])), PDO::PARAM_STR);
             $stmt->bindValue(':phone', trim((string) $data['phone']), PDO::PARAM_STR);
@@ -310,7 +326,7 @@ final class RequestService
             'type' => $type,
             'activity' => $activity,
             'lang' => $lang,
-            'full_name' => (string) $data['full_name'],
+            'full_name' => $formattedFullName,
             'company' => (string) ($data['company'] ?? ''),
             'email' => (string) $data['email'],
             'phone' => (string) $data['phone'],

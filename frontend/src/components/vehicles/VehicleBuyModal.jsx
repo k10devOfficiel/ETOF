@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../ui/Modal.jsx';
 import Button from '../ui/Button.jsx';
+import { useUserAuth } from '../../context/UserAuthContext.jsx';
+import { useToast } from '../../context/ToastContext.jsx';
+import { displayName } from '../../utils/userHelper.js';
 import { client } from '../../api/client.js';
 import styles from './VehicleModalForms.module.css';
 
@@ -21,6 +24,8 @@ function formatPrice(amount) {
  */
 export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
   const { t, i18n } = useTranslation();
+  const { user, requireAuth } = useUserAuth();
+  const { notifyBuySent } = useToast();
   const currentLang = (i18n.language || 'fr').slice(0, 2).toLowerCase();
 
   const [fullName, setFullName] = useState('');
@@ -38,13 +43,21 @@ export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
   const [errors, setErrors] = useState({});
   const [submittedData, setSubmittedData] = useState(null);
 
+  useEffect(() => {
+    if (user) {
+      if (!fullName) setFullName(displayName(user, currentLang));
+      if (!email && user.email) setEmail(user.email);
+      if (!phone && user.phone) setPhone(user.phone);
+    }
+  }, [user, currentLang]);
+
   if (!vehicle) return null;
 
   const vehicleName = `${vehicle.brand} ${vehicle.model} ${vehicle.year ? `(${vehicle.year})` : ''}`;
   const priceDisplay = formatPrice(vehicle.price_sale) || t('catalog.priceOnDemand');
   const specs = vehicle.specs || {};
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setErrors({});
 
@@ -59,39 +72,51 @@ export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
       return;
     }
 
-    try {
-      setIsSubmitting(true);
-      const payload = {
-        type: 'purchase',
-        activity: 'vehicle',
-        lang: currentLang,
-        vehicle_id: Number(vehicle.id),
-        full_name: fullName.trim(),
-        phone: phone.trim(),
-        email: email.trim(),
-        message: message.trim() || undefined,
-        consent: Boolean(consent),
-        website: websiteHoneypot,
-        details: {
-          city: city.trim(),
-          payment_method: paymentMethod,
-          trade_in: tradeIn ? 'yes' : 'no',
-          trade_in_details: tradeIn ? tradeInDetails.trim() : '',
-        },
-      };
+    requireAuth(async (activeUser) => {
+      try {
+        setIsSubmitting(true);
+        const userEffName = activeUser ? displayName(activeUser, currentLang) : fullName.trim();
+        const userEffEmail = activeUser?.email || email.trim();
+        const userEffPhone = activeUser?.phone || phone.trim();
 
-      const res = await client.post('/requests', payload);
-      setSubmittedData(res.data || res);
-      if (onSuccess) onSuccess(res.data || res);
-    } catch (err) {
-      if (err.fields) {
-        setErrors(err.fields);
-      } else {
-        setErrors({ global: err.message || t('forms.errors.genericServer') });
+        const payload = {
+          type: 'purchase',
+          activity: 'vehicle',
+          lang: currentLang,
+          vehicle_id: Number(vehicle.id),
+          full_name: userEffName,
+          phone: userEffPhone,
+          email: userEffEmail,
+          message: message.trim() || undefined,
+          consent: Boolean(consent),
+          website: websiteHoneypot,
+          details: {
+            city: city.trim(),
+            payment_method: paymentMethod,
+            trade_in: tradeIn ? 'yes' : 'no',
+            trade_in_details: tradeIn ? tradeInDetails.trim() : '',
+          },
+        };
+
+        const res = await client.post('/requests', payload);
+        const data = res.data || res;
+        setSubmittedData(data);
+        notifyBuySent(userEffName, vehicleName, data.reference || '');
+        if (onSuccess) onSuccess(data);
+      } catch (err) {
+        if (err.status === 401) {
+          requireAuth(() => handleSubmit(e), t('auth.sessionExpiredBanner', 'Votre session a expiré. Veuillez vous reconnecter.'));
+          return;
+        }
+        if (err.fields) {
+          setErrors(err.fields);
+        } else {
+          setErrors({ global: err.message || t('forms.errors.genericServer') });
+        }
+      } finally {
+        setIsSubmitting(false);
       }
-    } finally {
-      setIsSubmitting(false);
-    }
+    }, t('auth.requireAuthBanner', 'Connectez-vous ou créez un compte pour envoyer votre demande'));
   };
 
   const handleResetAndClose = () => {

@@ -54,6 +54,7 @@ use App\Controllers\CategoryController;
 use App\Controllers\ProductController;
 use App\Controllers\RequestController;
 use App\Controllers\SettingsController;
+use App\Controllers\UserAuthController;
 use App\Controllers\VehicleController;
 use App\Core\Config;
 use App\Core\Database;
@@ -63,6 +64,7 @@ use App\Core\Response;
 use App\Core\Router;
 use App\Middlewares\AdminAuthMiddleware;
 use App\Middlewares\CsrfMiddleware;
+use App\Middlewares\UserAuthMiddleware;
 use App\Services\RateLimiter;
 use App\Services\UploadService;
 
@@ -164,8 +166,16 @@ $router->get('/api/products/{slug}', [ProductController::class, 'show']);
 $router->get('/api/vehicles', [VehicleController::class, 'index']);
 $router->get('/api/vehicles/{slug}', [VehicleController::class, 'show']);
 
-// Route de soumission des demandes clients (devis, commandes, réservations, contacts)
-$router->post('/api/requests', [RequestController::class, 'store']);
+// Routes d'authentification utilisateur client
+$router->post('/api/auth/register', [UserAuthController::class, 'register']);
+$router->post('/api/auth/login', [UserAuthController::class, 'login']);
+$router->post('/api/auth/logout', [UserAuthController::class, 'logout']);
+$router->get('/api/auth/me', [UserAuthController::class, 'me']);
+$router->put('/api/auth/profile', [UserAuthController::class, 'updateProfile'], [UserAuthMiddleware::class]);
+$router->get('/api/auth/requests', [UserAuthController::class, 'requests'], [UserAuthMiddleware::class]);
+
+// Route de soumission des demandes clients (protégée : HTTP 401 si aucune session client active)
+$router->post('/api/requests', [RequestController::class, 'store'], [UserAuthMiddleware::class]);
 
 // Routes d'authentification administrateur et sécurité de session
 $router->get('/api/admin/csrf', [AdminAuthController::class, 'csrf']);

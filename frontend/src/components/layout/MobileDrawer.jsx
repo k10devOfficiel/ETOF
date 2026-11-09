@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useOrder } from '../../context/OrderContext.jsx';
+import { useUserAuth } from '../../context/UserAuthContext.jsx';
+import { displayName } from '../../utils/userHelper.js';
 import { Button } from '../ui/Button.jsx';
 import { ThemeToggle } from '../ui/ThemeToggle.jsx';
 import { BrandLogo } from '../common/BrandLogo.jsx';
@@ -21,6 +23,7 @@ import styles from './MobileDrawer.module.css';
 export function MobileDrawer({ isOpen, onClose, triggerRef }) {
   const { t, i18n } = useTranslation();
   const { totalQuantity } = useOrder();
+  const { user, requireAuth, logout } = useUserAuth();
   const location = useLocation();
   const drawerRef = useRef(null);
   const closeBtnRef = useRef(null);
@@ -268,6 +271,38 @@ export function MobileDrawer({ isOpen, onClose, triggerRef }) {
             >
               {t('nav.contact')}
             </NavLink>
+
+            {user ? (
+              <NavLink
+                to="/mon-compte"
+                className={({ isActive }) =>
+                  `${styles.navLink} ${isActive ? styles.activeNavLink : ''}`
+                }
+                onClick={onClose}
+                style={{ fontWeight: 700, color: 'var(--color-primary)' }}
+              >
+                👤 {displayName(user, currentLang)}
+              </NavLink>
+            ) : (
+              <button
+                type="button"
+                className={styles.navLink}
+                onClick={() => {
+                  onClose();
+                  requireAuth(() => {});
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  width: '100%',
+                  fontWeight: 600,
+                }}
+              >
+                👤 {t('auth.login', 'Connexion / Inscription')}
+              </button>
+            )}
           </nav>
 
           <div className={styles.ctaWrapper}>

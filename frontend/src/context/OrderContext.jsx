@@ -1,4 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useToast } from './ToastContext.jsx';
+import { useUserAuth } from './UserAuthContext.jsx';
+import { displayName } from '../utils/userHelper.js';
 
 /**
  * Clé de stockage local pour la persistance du récapitulatif de commande.
@@ -57,7 +61,12 @@ const OrderContext = createContext(null);
  * @returns {JSX.Element}
  */
 export function OrderProvider({ children }) {
+  const { i18n } = useTranslation();
+  const { user } = useUserAuth();
+  const { notifyCartAdd, notifyCartRemove, notifyCartEmpty } = useToast();
   const [items, setItems] = useState(loadStoredItems);
+
+  const currentLang = (i18n.language || 'fr').slice(0, 2).toLowerCase();
 
   // Synchronisation automatique vers localStorage à chaque modification
   useEffect(() => {
@@ -79,6 +88,10 @@ export function OrderProvider({ children }) {
     const addedQty = quantityToAdd !== undefined && quantityToAdd !== null
       ? Math.max(1, Number(quantityToAdd))
       : minQty;
+
+    const productName = product.name || product.name_fr || product.name_en || '';
+    const userName = displayName(user, currentLang);
+    notifyCartAdd(userName, productName);
 
     setItems((prevItems) => {
       const existingIndex = prevItems.findIndex((it) => Number(it.id) === pId);
@@ -142,13 +155,23 @@ export function OrderProvider({ children }) {
    */
   const removeItem = (productId) => {
     const pId = Number(productId);
+    const targetItem = items.find((item) => Number(item.id) === pId);
+    if (targetItem) {
+      notifyCartRemove(targetItem.name || '');
+    }
     setItems((prevItems) => prevItems.filter((item) => Number(item.id) !== pId));
   };
 
   /**
-   * Vide intégralement le récapitulatif de commande (ex: après envoi réussi).
+   * Vide intégralement le récapitulatif de commande (ex: après envoi réussi ou action utilisateur).
+   *
+   * @param {boolean} [notify=false]
    */
-  const clearOrder = () => {
+  const clearOrder = (notify = false) => {
+    if (notify) {
+      const userName = displayName(user, currentLang);
+      notifyCartEmpty(userName);
+    }
     setItems([]);
     if (typeof window !== 'undefined') {
       try {

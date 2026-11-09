@@ -98,3 +98,4 @@ final class TotpService
         return $output;
     }
 }
+

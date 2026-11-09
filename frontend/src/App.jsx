@@ -1,10 +1,13 @@
 import React, { Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './admin/context/AuthContext.jsx';
+import { UserAuthProvider } from './context/UserAuthContext.jsx';
+import { ToastProvider } from './context/ToastContext.jsx';
 import ProtectedRoute from './admin/components/ProtectedRoute.jsx';
 import AdminLayout from './admin/components/AdminLayout.jsx';
 import PublicLayout from './components/layout/PublicLayout.jsx';
 import Spinner from './components/ui/Spinner.jsx';
+import AuthModal from './components/auth/AuthModal.jsx';
 import { ADMIN_PATH } from './config/adminConfig.js';
 
 /**
@@ -35,6 +38,7 @@ const ContactPage = React.lazy(() => import('./pages/Contact/ContactPage.jsx'));
 const LegalTermsPage = React.lazy(() => import('./pages/Legal/LegalTermsPage.jsx'));
 const PrivacyPolicyPage = React.lazy(() => import('./pages/Legal/PrivacyPolicyPage.jsx'));
 const TermsOfServicePage = React.lazy(() => import('./pages/Legal/TermsOfServicePage.jsx'));
+const ClientProfilePage = React.lazy(() => import('./pages/Account/ClientProfilePage.jsx'));
 
 /**
  * Écran de transition accessible affiché pendant le chargement à la demande d'un composant de page.
@@ -66,53 +70,55 @@ function PageLoader() {
 function App() {
   return (
     <AuthProvider>
+      <AuthModal />
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          {/* Espace privé d'Administration sur URL secrète (obfusquée, non référencée, noindex) */}
-          <Route path={`${ADMIN_PATH}/login`} element={<LoginPage />} />
-          <Route
-            path={ADMIN_PATH}
-            element={
-              <ProtectedRoute>
-                <AdminLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<DashboardPage />} />
-            <Route path="demandes" element={<RequestsPage />} />
-            <Route path="produits" element={<ProductsPage />} />
-            <Route path="vehicules" element={<VehiclesPageAdmin />} />
-            <Route path="reglages" element={<SettingsPage />} />
-            <Route path="mon-compte" element={<ProfilePage />} />
-          </Route>
+              {/* Espace privé d'Administration sur URL secrète (obfusquée, non référencée, noindex) */}
+              <Route path={`${ADMIN_PATH}/login`} element={<LoginPage />} />
+              <Route
+                path={ADMIN_PATH}
+                element={
+                  <ProtectedRoute>
+                    <AdminLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<DashboardPage />} />
+                <Route path="demandes" element={<RequestsPage />} />
+                <Route path="produits" element={<ProductsPage />} />
+                <Route path="vehicules" element={<VehiclesPageAdmin />} />
+                <Route path="reglages" element={<SettingsPage />} />
+                <Route path="mon-compte" element={<ProfilePage />} />
+              </Route>
 
-          {/* Routes publiques enveloppées par le Layout institutionnel */}
-          <Route element={<PublicLayout />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/a-propos" element={<AboutPage />} />
-            <Route path="/activites" element={<ActivitiesIndexPage />} />
-            <Route path="/activites/ferme" element={<FarmPage />} />
-            <Route path="/activites/vehicules" element={<VehiclesPage />} />
-            <Route path="/activites/fournitures" element={<OfficePage />} />
-            <Route path="/activites/hydrocarbures" element={<FuelPage />} />
-            <Route path="/catalogue" element={<CatalogPage />} />
-            <Route path="/catalogue/:slug" element={<CatalogPage />} />
-            <Route path="/vehicules" element={<VehiclesCatalogPage />} />
-            <Route path="/vehicules/:slug" element={<VehiclesCatalogPage />} />
-            <Route path="/devis" element={<QuotePage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/commande" element={<OrderSummaryPage />} />
-            <Route path="/recapitulatif" element={<OrderSummaryPage />} />
-            <Route path="/mentions-legales" element={<LegalTermsPage />} />
-            <Route path="/politique-de-confidentialite" element={<PrivacyPolicyPage />} />
-            <Route path="/conditions-generales" element={<TermsOfServicePage />} />
-            <Route path="/conditions" element={<TermsOfServicePage />} />
-            {/* Route 404 */}
-            <Route path="*" element={<NotFoundPage />} />
-          </Route>
-        </Routes>
-      </Suspense>
-    </AuthProvider>
+              {/* Routes publiques enveloppées par le Layout institutionnel */}
+              <Route element={<PublicLayout />}>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/a-propos" element={<AboutPage />} />
+                <Route path="/activites" element={<ActivitiesIndexPage />} />
+                <Route path="/activites/ferme" element={<FarmPage />} />
+                <Route path="/activites/vehicules" element={<VehiclesPage />} />
+                <Route path="/activites/fournitures" element={<OfficePage />} />
+                <Route path="/activites/hydrocarbures" element={<FuelPage />} />
+                <Route path="/catalogue" element={<CatalogPage />} />
+                <Route path="/catalogue/:slug" element={<CatalogPage />} />
+                <Route path="/vehicules" element={<VehiclesCatalogPage />} />
+                <Route path="/vehicules/:slug" element={<VehiclesCatalogPage />} />
+                <Route path="/devis" element={<QuotePage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/commande" element={<OrderSummaryPage />} />
+                <Route path="/recapitulatif" element={<OrderSummaryPage />} />
+                <Route path="/mon-compte" element={<ClientProfilePage />} />
+                <Route path="/mentions-legales" element={<LegalTermsPage />} />
+                <Route path="/politique-de-confidentialite" element={<PrivacyPolicyPage />} />
+                <Route path="/conditions-generales" element={<TermsOfServicePage />} />
+                <Route path="/conditions" element={<TermsOfServicePage />} />
+                {/* Route 404 */}
+                <Route path="*" element={<NotFoundPage />} />
+              </Route>
+            </Routes>
+          </Suspense>
+        </AuthProvider>
   );
 }
 
