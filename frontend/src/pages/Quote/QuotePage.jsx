@@ -216,27 +216,19 @@ export function QuotePage() {
                 <h3 className={styles.sidebarTitle}>{t('forms.commitmentsTitle')}</h3>
                 <ul className={styles.commitmentList}>
                   <li className={styles.commitmentItem}>
-                    <svg className={styles.checkIcon} viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-                    </svg>
+                    <i className={`fa-solid fa-circle-check ${styles.checkIcon}`} aria-hidden="true" />
                     <span>{t('forms.commitment1')}</span>
                   </li>
                   <li className={styles.commitmentItem}>
-                    <svg className={styles.checkIcon} viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-                    </svg>
+                    <i className={`fa-solid fa-circle-check ${styles.checkIcon}`} aria-hidden="true" />
                     <span>{t('forms.commitment2')}</span>
                   </li>
                   <li className={styles.commitmentItem}>
-                    <svg className={styles.checkIcon} viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-                    </svg>
+                    <i className={`fa-solid fa-circle-check ${styles.checkIcon}`} aria-hidden="true" />
                     <span>{t('forms.commitment3')}</span>
                   </li>
                   <li className={styles.commitmentItem}>
-                    <svg className={styles.checkIcon} viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-                    </svg>
+                    <i className={`fa-solid fa-circle-check ${styles.checkIcon}`} aria-hidden="true" />
                     <span>{t('forms.commitment4')}</span>
                   </li>
                 </ul>

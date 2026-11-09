@@ -23,13 +23,13 @@
 }
 
 .vehicleName {
-  font-family: var(--font-family-heading, 'Cinzel', serif);
+  font-family: var(--font-family-heading, 'Righteous', sans-serif);
   font-size: 1rem;
   color: var(--color-primary, #0B2A4A);
 }
 
 .vehiclePrice {
-  font-family: var(--font-family-heading, 'Cinzel', serif);
+  font-family: var(--font-family-heading, 'Righteous', sans-serif);
   font-size: 1.125rem;
   font-weight: 700;
   color: var(--color-accent, #14B8C4);
@@ -144,7 +144,7 @@
 }
 
 .successTitle {
-  font-family: var(--font-family-heading, 'Cinzel', serif);
+  font-family: var(--font-family-heading, 'Righteous', sans-serif);
   font-size: 1.5rem;
   color: var(--color-primary, #0B2A4A);
   margin: 0 0 var(--space-2, 0.5rem);

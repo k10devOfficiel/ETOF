@@ -49,7 +49,7 @@
 }
 
 .authTitle {
-  font-family: var(--font-family-heading, 'Cinzel', serif);
+  font-family: var(--font-family-heading, 'Righteous', sans-serif);
   font-size: 1.65rem;
   font-weight: 700;
   color: #0b2a4a;

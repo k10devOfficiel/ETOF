@@ -164,9 +164,7 @@ export function VehicleDetailModal({ vehicle, isOpen, onClose, onBuy, onRent }) 
           {/* Message d'indisponibilité si vendu, réservé ou indisponible */}
           {!isAvailable && (
             <div className={styles.unavailabilityNotice} role="alert">
-              <svg className={styles.noticeIcon} viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
-              </svg>
+              <i className={`fa-solid fa-circle-exclamation ${styles.noticeIcon}`} aria-hidden="true" />
               <span>{t(`vehicles.unavailableReason_${vehicle.status}`)}</span>
             </div>
           )}
@@ -174,9 +172,7 @@ export function VehicleDetailModal({ vehicle, isOpen, onClose, onBuy, onRent }) 
           {/* Mention obligatoire de confirmation par ETOF SARL pour les réservations */}
           {isRentalAllowed && isAvailable && (
             <div className={styles.reservationNotice} role="note">
-              <svg className={styles.noticeIcon} viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
-              </svg>
+              <i className={`fa-solid fa-circle-info ${styles.noticeIcon}`} aria-hidden="true" />
               <span>{t('vehicles.reservationNotice')}</span>
             </div>
           )}

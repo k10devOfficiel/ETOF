@@ -180,9 +180,7 @@ export function ActivityPage({
                 <div>
                   <div className={styles.serviceCardHeader}>
                     <div className={styles.serviceIconWrapper} aria-hidden="true">
-                      <svg className={styles.serviceIcon} viewBox="0 0 24 24">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                      </svg>
+                      <i className={`fa-solid fa-star ${styles.serviceIcon}`} aria-hidden="true" style={{ fontSize: '18px' }} />
                     </div>
                     <h3 className={styles.serviceTitle}>{item.title}</h3>
                   </div>
@@ -192,14 +190,7 @@ export function ActivityPage({
                 {item.linkTo && item.linkText && (
                   <Link to={item.linkTo} className={styles.serviceLink}>
                     <span>{item.linkText}</span>
-                    <svg
-                      className={styles.serviceIcon}
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                      style={{ width: '16px', height: '16px' }}
-                    >
-                      <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
+                    <i className="fa-solid fa-arrow-right" aria-hidden="true" style={{ fontSize: '14px', marginLeft: '6px' }} />
                   </Link>
                 )}
               </article>

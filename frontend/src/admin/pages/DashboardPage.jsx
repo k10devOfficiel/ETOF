@@ -131,9 +131,7 @@ export function DashboardPage() {
       {/* En-tête : Titre & Sélecteur interactif des 4 Pôles */}
       <div className={styles.headerRow}>
         <div className={styles.titleGroup}>
-          <svg className={styles.titleIcon} viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
-          </svg>
+          <i className={`fa-solid fa-gauge-high ${styles.titleIcon}`} aria-hidden="true" />
           <h1 className={styles.title}>Vue d’ensemble</h1>
         </div>
 

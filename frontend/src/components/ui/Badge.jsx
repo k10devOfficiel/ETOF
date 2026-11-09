@@ -22,10 +22,11 @@ export function Badge({
 }) {
   const isAvailable = variant === 'available';
   const badgeClass = isAvailable ? styles.available : styles.unavailable;
+  const iconClass = isAvailable ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark';
 
   return (
     <span className={`${styles.badge} ${badgeClass} ${className}`} {...restProps}>
-      <span className={styles.dot} aria-hidden="true" />
+      <i className={`${iconClass} ${styles.badgeIcon}`} aria-hidden="true" />
       <span>{children}</span>
     </span>
   );

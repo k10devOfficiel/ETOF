@@ -49,7 +49,7 @@
 }
 
 .title {
-  font-family: var(--font-heading, 'Cinzel', serif);
+  font-family: var(--font-family-heading, 'Righteous', sans-serif);
   font-size: 1.5rem;
   font-weight: 700;
   color: #0f172a;

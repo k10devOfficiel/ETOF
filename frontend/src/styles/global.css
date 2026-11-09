@@ -28,13 +28,17 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+body, button, input, select, textarea, optgroup, p, span, a, label, li, td, th {
+  font-family: var(--font-family-body, 'Archivo', sans-serif);
+}
+
 img, picture, video, canvas, svg {
   max-width: 100%;
   height: auto;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-family-heading);
+  font-family: var(--font-family-heading, 'Righteous', 'Archivo', sans-serif);
   color: var(--color-primary);
   letter-spacing: 0.02em;
   line-height: 1.25;

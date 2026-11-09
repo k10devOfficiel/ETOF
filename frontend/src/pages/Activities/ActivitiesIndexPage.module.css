@@ -6,7 +6,7 @@
 }
 
 .heroTitle {
-  font-family: var(--font-family-heading, 'Cinzel', serif);
+  font-family: var(--font-family-heading, 'Righteous', sans-serif);
   font-size: var(--font-size-4xl);
   font-weight: 700;
   color: #ffffff;
@@ -89,7 +89,7 @@
 }
 
 .cardTitle {
-  font-family: var(--font-family-heading, 'Cinzel', serif);
+  font-family: var(--font-family-heading, 'Righteous', sans-serif);
   font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--color-primary);
@@ -162,7 +162,7 @@
 }
 
 .bannerTitle {
-  font-family: var(--font-family-heading, 'Cinzel', serif);
+  font-family: var(--font-family-heading, 'Righteous', sans-serif);
   font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--color-primary);

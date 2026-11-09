@@ -201,9 +201,7 @@ export function SettingsPage() {
 
             {/* Statut du bouton WhatsApp */}
             <div className={styles.badgePreview}>
-              <svg className={styles.badgePreviewIcon} viewBox="0 0 24 24" fill={hasWhatsApp ? '#22c55e' : '#94a3b8'}>
-                <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.9C17.18 3.03 14.69 2 12.04 2" />
-              </svg>
+              <i className="fa-brands fa-whatsapp" style={{ fontSize: '24px', color: hasWhatsApp ? '#22c55e' : '#94a3b8' }} aria-hidden="true" />
               <div>
                 <p className={styles.badgePreviewText}>
                   <strong>Bouton flottant WhatsApp sur le site : </strong>

@@ -98,13 +98,7 @@ export function ProductDetailModal({ product, isOpen, onClose }) {
             />
           ) : (
             <div className={styles.placeholderImage}>
-              <svg
-                className={styles.placeholderIcon}
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
-              </svg>
+              <i className={`fa-solid fa-image ${styles.placeholderIcon}`} aria-hidden="true" style={{ fontSize: '40px' }} />
               <span>{t('catalog.noImage')}</span>
             </div>
           )}
@@ -155,19 +149,7 @@ export function ProductDetailModal({ product, isOpen, onClose }) {
           {/* Condition de quantité minimale */}
           {minQty > 1 && (
             <div className={styles.minQtyNotice}>
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                aria-hidden="true"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="16" x2="12" y2="12" />
-                <line x1="12" y1="8" x2="12.01" y2="8" />
-              </svg>
+              <i className="fa-solid fa-circle-info" aria-hidden="true" style={{ fontSize: '14px', marginRight: '6px' }} />
               <span>{t('catalog.minQuantityNotice', { min: minQty })}</span>
             </div>
           )}

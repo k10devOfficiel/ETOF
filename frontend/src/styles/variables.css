@@ -63,10 +63,12 @@
   --badge-on-demand-bg: #E6EDF5;
 
   /* Typographies */
-  --font-family-heading: 'Righteous', 'Archivo', system-ui, sans-serif;
-  --font-family-body: 'Archivo', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-heading: 'Righteous', 'Archivo', sans-serif;
+  --font-family-body: 'Archivo', sans-serif;
   --font-family-sans: 'Archivo', sans-serif;
   --font-family-display: 'Righteous', 'Archivo', sans-serif;
+  --font-heading: 'Righteous', 'Archivo', sans-serif;
+  --font-body: 'Archivo', sans-serif;
 
   /* Échelle de tailles de texte */
   --font-size-xs: 0.75rem;

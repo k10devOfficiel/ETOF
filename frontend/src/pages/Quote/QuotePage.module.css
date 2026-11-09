@@ -172,7 +172,12 @@
 .checkIcon {
   width: 16px;
   height: 16px;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  color: var(--color-accent);
   fill: var(--color-accent);
   margin-top: 3px;
 }

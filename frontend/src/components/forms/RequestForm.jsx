@@ -352,9 +352,7 @@ export function RequestForm({
     return (
       <div className={styles.successCard} role="status" aria-live="polite">
         <div className={styles.successIconWrapper}>
-          <svg className={styles.successIcon} viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-          </svg>
+          <i className={`fa-solid fa-circle-check ${styles.successIcon}`} aria-hidden="true" style={{ fontSize: '48px', color: '#16a34a' }} />
         </div>
 
         <h2 className={styles.successTitle}>{t('forms.success.title')}</h2>

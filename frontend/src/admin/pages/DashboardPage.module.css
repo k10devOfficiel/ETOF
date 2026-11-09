@@ -32,9 +32,11 @@
 }
 
 .titleIcon {
-  width: 22px;
-  height: 22px;
-  fill: #0b2a4a;
+  font-size: 20px;
+  color: #0b2a4a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .title {

@@ -109,14 +109,20 @@
 
 .activeNavLink .navIcon {
   fill: #14b8c4;
+  color: #14b8c4;
 }
 
 .navIcon {
   width: 18px;
   height: 18px;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   fill: currentColor;
-  transition: fill 0.15s ease;
+  color: currentColor;
+  transition: all 0.15s ease;
 }
 
 /* Footer de la sidebar : Profil utilisateur */
@@ -272,8 +278,13 @@
 .searchIcon {
   width: 16px;
   height: 16px;
+  font-size: 14px;
+  color: #94a3b8;
   fill: #94a3b8;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .searchInput {
@@ -322,7 +333,12 @@
 .dateIcon {
   width: 15px;
   height: 15px;
+  font-size: 14px;
+  color: #64748b;
   fill: #64748b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .viewSiteLink {

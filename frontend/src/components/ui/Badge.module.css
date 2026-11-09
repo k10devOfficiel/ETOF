@@ -27,11 +27,9 @@
   border: 1px solid #FECACA;
 }
 
-.dot {
-  width: 0.45rem;
-  height: 0.45rem;
-  border-radius: 1px;
-  background-color: currentColor;
+.badgeIcon {
+  font-size: 0.75rem;
+  line-height: 1;
 }
 
 /* Mode sombre */

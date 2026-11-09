@@ -1,26 +1,4 @@
-/* Polices locales ETOF SARL (zéro dépendance CDN externe) */
+/* Polices officielles ETOF SARL (Righteous & Archivo) */
+@import url('https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,100..900;1,100..900&family=Righteous&display=swap');
 
-@font-face {
-  font-family: 'Cinzel';
-  font-style: normal;
-  font-weight: 600 700;
-  font-display: swap;
-  src: url('../assets/fonts/Cinzel-Bold.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Plus Jakarta Sans';
-  font-style: normal;
-  font-weight: 400 500;
-  font-display: swap;
-  src: url('../assets/fonts/PlusJakartaSans-Regular.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Plus Jakarta Sans';
-  font-style: normal;
-  font-weight: 600 700;
-  font-display: swap;
-  src: url('../assets/fonts/PlusJakartaSans-SemiBold.woff2') format('woff2');
-}
 
