@@ -7,6 +7,7 @@ import { displayName } from '../../utils/userHelper.js';
 import Button from '../../components/ui/Button.jsx';
 import Badge from '../../components/ui/Badge.jsx';
 import Spinner from '../../components/ui/Spinner.jsx';
+import Icon from '../../components/common/Icon.jsx';
 import styles from './ClientProfilePage.module.css';
 
 /**
@@ -73,7 +74,7 @@ export function ClientProfilePage() {
     e.preventDefault();
     setSaving(true);
     try {
-      await updateProfile({
+      const updated = await updateProfile({
         civility,
         first_name: firstName.trim(),
         last_name: lastName.trim(),
@@ -81,6 +82,16 @@ export function ClientProfilePage() {
         phone: phone.trim(),
         company: company.trim(),
       });
+
+      if (updated && typeof updated === 'object') {
+        setCivility(updated.civility || 'none');
+        setFirstName(updated.first_name || '');
+        setLastName(updated.last_name || '');
+        setPreferredName(updated.preferred_name || 'first_name');
+        setPhone(updated.phone || '');
+        setCompany(updated.company || '');
+      }
+
       notifySuccess(
         t('account.savedTitle', 'Profil mis à jour'),
         t('account.savedMessage', 'Vos coordonnées et préférences ont été enregistrées avec succès.')
@@ -114,7 +125,8 @@ export function ClientProfilePage() {
       {/* Formulaire des informations personnelles et civilité */}
       <section className={styles.card} aria-labelledby="personal-info-title">
         <h2 id="personal-info-title" className={styles.cardTitle}>
-          {t('account.personalInfoTitle', 'Informations personnelles & Civilité')}
+          <Icon name="user" size={20} color="#0B2A4A" />
+          <span>{t('account.personalInfoTitle', 'Informations personnelles & Civilité')}</span>
         </h2>
 
         <form onSubmit={handleSubmit} noValidate>
@@ -234,7 +246,8 @@ export function ClientProfilePage() {
       {/* Historique des demandes du client */}
       <section className={styles.card} aria-labelledby="requests-history-title">
         <h2 id="requests-history-title" className={styles.cardTitle}>
-          {t('account.requestsHistoryTitle', 'Historique de mes demandes')}
+          <Icon name="file-lines" size={20} color="#0B2A4A" />
+          <span>{t('account.requestsHistoryTitle', 'Historique de mes demandes')}</span>
         </h2>
 
         {loadingRequests ? (

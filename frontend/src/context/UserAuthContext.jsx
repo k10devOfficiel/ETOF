@@ -131,10 +131,11 @@ export function UserAuthProvider({ children }) {
    */
   const updateProfile = useCallback(async (data) => {
     const res = await clientAuthApi.updateProfile(data);
-    if (res?.data?.user) {
-      setUser(res.data.user);
+    const updatedUser = res?.user || res?.data?.user || res;
+    if (updatedUser && typeof updatedUser === 'object') {
+      setUser(updatedUser);
     }
-    return res?.data?.user;
+    return updatedUser;
   }, []);
 
   /**
