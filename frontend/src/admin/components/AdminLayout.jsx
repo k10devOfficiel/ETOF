@@ -47,20 +47,34 @@ export function AdminLayout() {
       ],
     },
     {
-      title: 'Catalogue & Activités',
+      title: 'Les 4 Pôles d’Activités',
       items: [
         {
-          to: `${ADMIN_PATH}/produits`,
-          label: 'Ferme & Fournitures',
+          to: `${ADMIN_PATH}/produits?activity=farm`,
+          label: 'Ferme & Volaille',
+          icon: (
+            <path d="M21.707 2.293a1 1 0 0 0-1.08-.224C17.39 3.325 11.218 6.582 7.732 10.068c-2.31 2.31-3.66 5.253-4.144 8.016L1.293 20.38a1 1 0 1 0 1.414 1.414l2.295-2.295c2.763-.484 5.706-1.834 8.016-4.144 3.486-3.486 6.743-9.658 8-12.895a1 1 0 0 0-.311-1.062z" />
+          ),
+        },
+        {
+          to: `${ADMIN_PATH}/vehicules`,
+          label: 'Vente & Location Voitures',
+          icon: (
+            <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z" />
+          ),
+        },
+        {
+          to: `${ADMIN_PATH}/produits?activity=office`,
+          label: 'Fournitures de Bureau',
           icon: (
             <path d="M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6-2c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2zm6 16H6V8h2v2c0 .55.45 1 1 1s1-.45 1-1V8h4v2c0 .55.45 1 1 1s1-.45 1-1V8h2v12z" />
           ),
         },
         {
-          to: `${ADMIN_PATH}/vehicules`,
-          label: 'Parc Véhicules',
+          to: `${ADMIN_PATH}/demandes?activity=fuel`,
+          label: 'Transport Hydrocarbures',
           icon: (
-            <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z" />
+            <path d="M4 3a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V9.5a1.5 1.5 0 0 1 1.5-1.5h.5V16a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-6.5a4 4 0 0 0-2-3.465V4a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v1.1a3.5 3.5 0 0 0-2-1.1H4zm1 3h6v4H5V6zm14 4v6h-1v-6h1z" />
           ),
         },
       ],

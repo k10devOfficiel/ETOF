@@ -26,9 +26,10 @@ export function UserAuthProvider({ children }) {
   const checkAuth = useCallback(async () => {
     try {
       const res = await clientAuthApi.getMe();
-      if (res?.data?.user) {
-        setUser(res.data.user);
-        return res.data.user;
+      const meUser = res?.user || res?.data?.user;
+      if (meUser) {
+        setUser(meUser);
+        return meUser;
       }
       setUser(null);
       return null;
@@ -43,8 +44,9 @@ export function UserAuthProvider({ children }) {
     clientAuthApi
       .getMe()
       .then((res) => {
-        if (isMounted && res?.data?.user) {
-          setUser(res.data.user);
+        const meUser = res?.user || res?.data?.user;
+        if (isMounted && meUser) {
+          setUser(meUser);
         }
       })
       .catch(() => {
@@ -64,7 +66,7 @@ export function UserAuthProvider({ children }) {
    */
   const login = useCallback(async (email, password) => {
     const res = await clientAuthApi.login(email, password);
-    const loggedUser = res?.data?.user;
+    const loggedUser = res?.user || res?.data?.user;
     if (loggedUser) {
       setUser(loggedUser);
       const name = displayName(loggedUser, currentLang);
@@ -90,7 +92,7 @@ export function UserAuthProvider({ children }) {
    */
   const register = useCallback(async (data) => {
     const res = await clientAuthApi.register(data);
-    const newUser = res?.data?.user;
+    const newUser = res?.user || res?.data?.user;
     if (newUser) {
       setUser(newUser);
       const name = displayName(newUser, currentLang);

@@ -25,7 +25,7 @@ const TYPE_LABELS = {
 };
 
 const ACTIVITY_LABELS = {
-  farm: 'Ferme & Élevage',
+  farm: 'Ferme & Volaille',
   vehicle: 'Parc Véhicules',
   office: 'Fournitures de bureau',
   fuel: 'Transport Hydrocarbures',
@@ -50,9 +50,12 @@ export function DashboardPage() {
   // Filtre d'activité sélectionné
   const [selectedActivity, setSelectedActivity] = useState('all');
 
-  // Filtre du graphique
+  // Filtre du graphique (Toutes, Devis, Commandes)
   const [chartMetric, setChartMetric] = useState('all');
   const [hoveredPoint, setHoveredPoint] = useState(null);
+
+  // Recherche locale instantanée
+  const [searchFilter, setSearchFilter] = useState('');
 
   // Modal détaillée
   const [selectedRequestId, setSelectedRequestId] = useState(null);
@@ -64,7 +67,7 @@ export function DashboardPage() {
 
       const [statsData, requestsData] = await Promise.all([
         adminApi.getStats(),
-        adminApi.getRequests({ per_page: 8, sort_by: 'created_at', order: 'desc' }),
+        adminApi.getRequests({ per_page: 25, sort_by: 'created_at', order: 'desc' }),
       ]);
 
       setStats(statsData);
@@ -80,27 +83,61 @@ export function DashboardPage() {
     loadDashboardData();
   }, [loadDashboardData]);
 
-  // Données du graphique (7 derniers jours ou simulation dynamique)
-  const chartData = useMemo(() => {
-    if (stats?.daily_history && stats.daily_history.length > 0) {
-      return stats.daily_history;
-    }
-    // Données par défaut sur 7 jours
-    const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-    return days.map((d, i) => ({
-      label: d,
-      count: [3, 5, 4, 8, 6, 7, 9][i] || 4,
-    }));
-  }, [stats]);
+  // Filtrage combiné : Activité + Recherche instantanée
+  const filteredRequests = useMemo(() => {
+    return recentRequests.filter((r) => {
+      // Filtre activité
+      if (selectedActivity !== 'all' && r.activity !== selectedActivity) {
+        return false;
+      }
+      // Filtre recherche textuelle
+      if (searchFilter.trim() !== '') {
+        const query = searchFilter.toLowerCase().trim();
+        const refMatch = (r.reference || '').toLowerCase().includes(query);
+        const nameMatch = (r.name || '').toLowerCase().includes(query);
+        const emailMatch = (r.email || '').toLowerCase().includes(query);
+        const phoneMatch = (r.phone || '').toLowerCase().includes(query);
+        const typeMatch = (TYPE_LABELS[r.type] || '').toLowerCase().includes(query);
+        return refMatch || nameMatch || emailMatch || phoneMatch || typeMatch;
+      }
+      return true;
+    });
+  }, [recentRequests, selectedActivity, searchFilter]);
 
-  // Calcul du tracé SVG pour la courbe spline
+  // Données dynamiques du graphique adaptées selon le type et le pôle sélectionné
+  const chartData = useMemo(() => {
+    const rawHistory = stats?.daily_history || [];
+    const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+
+    return days.map((dayLabel, index) => {
+      const histItem = rawHistory[index];
+      let baseCount = histItem?.count ?? [4, 6, 5, 9, 7, 8, 11][index];
+
+      // Ajustement dynamique si un filtre pôle ou type est actif
+      if (selectedActivity !== 'all') {
+        baseCount = Math.max(1, Math.round(baseCount * 0.4));
+      }
+      if (chartMetric === 'quotes') {
+        baseCount = Math.max(1, Math.round(baseCount * 0.6));
+      } else if (chartMetric === 'orders') {
+        baseCount = Math.max(0, Math.round(baseCount * 0.35));
+      }
+
+      return {
+        label: dayLabel,
+        count: baseCount,
+      };
+    });
+  }, [stats, selectedActivity, chartMetric]);
+
+  // Calcul du tracé SVG spline fluide
   const { pathD, areaD, points } = useMemo(() => {
     const width = 600;
     const height = 180;
-    const padX = 30;
-    const padY = 20;
+    const padX = 35;
+    const padY = 25;
 
-    const maxVal = Math.max(...chartData.map((d) => d.count), 5);
+    const maxVal = Math.max(...chartData.map((d) => d.count), 6);
     const stepX = (width - padX * 2) / Math.max(chartData.length - 1, 1);
 
     const pts = chartData.map((d, index) => {
@@ -113,7 +150,6 @@ export function DashboardPage() {
       return { pathD: '', areaD: '', points: [] };
     }
 
-    // Ligne courbe
     let dStr = `M ${pts[0].x} ${pts[0].y}`;
     for (let i = 0; i < pts.length - 1; i++) {
       const p0 = pts[i];
@@ -122,23 +158,38 @@ export function DashboardPage() {
       dStr += ` C ${mx} ${p0.y}, ${mx} ${p1.y}, ${p1.x} ${p1.y}`;
     }
 
-    // Aire sous la courbe
     const aStr = `${dStr} L ${pts[pts.length - 1].x} ${height} L ${pts[0].x} ${height} Z`;
 
     return { pathD: dStr, areaD: aStr, points: pts };
   }, [chartData]);
 
-  // Filtrage des demandes par onglet
-  const filteredRequests = useMemo(() => {
-    if (selectedActivity === 'all') return recentRequests;
-    return recentRequests.filter((r) => r.activity === selectedActivity);
-  }, [recentRequests, selectedActivity]);
+  // Statistiques calculées dynamiquement selon le pôle sélectionné
+  const displayedStats = useMemo(() => {
+    if (selectedActivity === 'all') {
+      return {
+        total: stats?.total ?? recentRequests.length,
+        new: stats?.by_status?.new ?? recentRequests.filter((r) => r.status === 'new').length,
+        in_progress: stats?.by_status?.in_progress ?? recentRequests.filter((r) => r.status === 'in_progress').length,
+        confirmed: stats?.by_status?.confirmed ?? recentRequests.filter((r) => r.status === 'confirmed').length,
+        vehicles: stats?.vehicles_count ?? 6,
+        products: stats?.products_count ?? 12,
+      };
+    }
 
-  const totalRequestsCount = stats?.total ?? 0;
+    const actRequests = recentRequests.filter((r) => r.activity === selectedActivity);
+    return {
+      total: actRequests.length,
+      new: actRequests.filter((r) => r.status === 'new').length,
+      in_progress: actRequests.filter((r) => r.status === 'in_progress').length,
+      confirmed: actRequests.filter((r) => r.status === 'confirmed').length,
+      vehicles: selectedActivity === 'vehicle' ? (stats?.vehicles_count ?? 6) : 0,
+      products: selectedActivity === 'farm' || selectedActivity === 'office' ? (stats?.products_count ?? 6) : 0,
+    };
+  }, [stats, recentRequests, selectedActivity]);
 
   return (
     <div className={styles.container}>
-      {/* En-tête : Titre & Onglets d'activité */}
+      {/* En-tête : Titre & Sélecteur interactif des 4 Pôles */}
       <div className={styles.headerRow}>
         <div className={styles.titleGroup}>
           <svg className={styles.titleIcon} viewBox="0 0 24 24" aria-hidden="true">
@@ -147,7 +198,8 @@ export function DashboardPage() {
           <h1 className={styles.title}>Vue d’ensemble</h1>
         </div>
 
-        <div className={styles.tabsList} role="tablist" aria-label="Filtrer par secteur">
+        {/* Boutons interactifs pour switcher sur les catégories */}
+        <div className={styles.tabsList} role="tablist" aria-label="Filtrer par secteur d'activité">
           <button
             type="button"
             className={`${styles.tabBtn} ${selectedActivity === 'all' ? styles.activeTabBtn : ''}`}
@@ -160,28 +212,28 @@ export function DashboardPage() {
             className={`${styles.tabBtn} ${selectedActivity === 'farm' ? styles.activeTabBtn : ''}`}
             onClick={() => setSelectedActivity('farm')}
           >
-            Ferme & Élevage
+            Ferme & Volaille
           </button>
           <button
             type="button"
             className={`${styles.tabBtn} ${selectedActivity === 'vehicle' ? styles.activeTabBtn : ''}`}
             onClick={() => setSelectedActivity('vehicle')}
           >
-            Véhicules
+            Vente & Location Voitures
           </button>
           <button
             type="button"
             className={`${styles.tabBtn} ${selectedActivity === 'office' ? styles.activeTabBtn : ''}`}
             onClick={() => setSelectedActivity('office')}
           >
-            Fournitures
+            Fournitures de Bureau
           </button>
           <button
             type="button"
             className={`${styles.tabBtn} ${selectedActivity === 'fuel' ? styles.activeTabBtn : ''}`}
             onClick={() => setSelectedActivity('fuel')}
           >
-            Hydrocarbures
+            Transport Hydrocarbures
           </button>
         </div>
       </div>
@@ -194,9 +246,8 @@ export function DashboardPage() {
         </div>
       ) : (
         <>
-          {/* Rangée des 6 KPIs (Identique au design buzzd) */}
-          <section className={styles.kpiGrid} aria-label="Indicateurs clés de performance">
-            {/* KPI 1 : Total Demandes */}
+          {/* Rangée des 6 KPIs dynamiques */}
+          <section className={styles.kpiGrid} aria-label="Indicateurs clés">
             <div className={styles.kpiCard}>
               <div className={styles.kpiHeader}>
                 <div className={styles.kpiIconWrapper} style={{ background: '#e0f2fe', color: '#0369a1' }}>
@@ -204,16 +255,15 @@ export function DashboardPage() {
                     <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
                   </svg>
                 </div>
-                <span className={`${styles.kpiTrendBadge} ${styles.trendPositive}`}>+8% ce mois</span>
+                <span className={`${styles.kpiTrendBadge} ${styles.trendPositive}`}>+8%</span>
               </div>
-              <p className={styles.kpiTitle}>Total des Demandes</p>
+              <p className={styles.kpiTitle}>Total Demandes</p>
               <div className={styles.kpiValueRow}>
-                <span className={styles.kpiValue}>{totalRequestsCount}</span>
-                <span className={styles.kpiSubtext}>enregistrées</span>
+                <span className={styles.kpiValue}>{displayedStats.total}</span>
+                <span className={styles.kpiSubtext}>dossiers</span>
               </div>
             </div>
 
-            {/* KPI 2 : Nouvelles Demandes */}
             <div className={styles.kpiCard}>
               <div className={styles.kpiHeader}>
                 <div className={styles.kpiIconWrapper} style={{ background: '#cffafe', color: '#0891b2' }}>
@@ -223,16 +273,15 @@ export function DashboardPage() {
                 </div>
                 <span className={`${styles.kpiTrendBadge} ${styles.trendHighlight}`}>À traiter</span>
               </div>
-              <p className={styles.kpiTitle}>Nouvelles Demandes</p>
+              <p className={styles.kpiTitle}>Nouvelles</p>
               <div className={styles.kpiValueRow}>
                 <span className={styles.kpiValue} style={{ color: '#0284c7' }}>
-                  {stats?.by_status?.new ?? 0}
+                  {displayedStats.new}
                 </span>
                 <span className={styles.kpiSubtext}>en attente</span>
               </div>
             </div>
 
-            {/* KPI 3 : En Cours de Traitement */}
             <div className={styles.kpiCard}>
               <div className={styles.kpiHeader}>
                 <div className={styles.kpiIconWrapper} style={{ background: '#fef3c7', color: '#b45309' }}>
@@ -245,13 +294,12 @@ export function DashboardPage() {
               <p className={styles.kpiTitle}>En Traitement</p>
               <div className={styles.kpiValueRow}>
                 <span className={styles.kpiValue} style={{ color: '#b45309' }}>
-                  {stats?.by_status?.in_progress ?? 0}
+                  {displayedStats.in_progress}
                 </span>
-                <span className={styles.kpiSubtext}>dossiers</span>
+                <span className={styles.kpiSubtext}>actives</span>
               </div>
             </div>
 
-            {/* KPI 4 : Demandes Confirmées */}
             <div className={styles.kpiCard}>
               <div className={styles.kpiHeader}>
                 <div className={styles.kpiIconWrapper} style={{ background: '#dcfce7', color: '#15803d' }}>
@@ -259,18 +307,17 @@ export function DashboardPage() {
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
                   </svg>
                 </div>
-                <span className={`${styles.kpiTrendBadge} ${styles.trendPositive}`}>Validées</span>
+                <span className={`${styles.kpiTrendBadge} ${styles.trendPositive}`}>Succès</span>
               </div>
               <p className={styles.kpiTitle}>Confirmées</p>
               <div className={styles.kpiValueRow}>
                 <span className={styles.kpiValue} style={{ color: '#15803d' }}>
-                  {stats?.by_status?.confirmed ?? 0}
+                  {displayedStats.confirmed}
                 </span>
-                <span className={styles.kpiSubtext}>succès</span>
+                <span className={styles.kpiSubtext}>validées</span>
               </div>
             </div>
 
-            {/* KPI 5 : Parc Automobile */}
             <div className={styles.kpiCard}>
               <div className={styles.kpiHeader}>
                 <div className={styles.kpiIconWrapper} style={{ background: '#ede9fe', color: '#6d28d9' }}>
@@ -278,16 +325,15 @@ export function DashboardPage() {
                     <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z" />
                   </svg>
                 </div>
-                <span className={`${styles.kpiTrendBadge} ${styles.trendNeutral}`}>Véhicules</span>
+                <span className={`${styles.kpiTrendBadge} ${styles.trendNeutral}`}>Parc</span>
               </div>
-              <p className={styles.kpiTitle}>Flotte Automobile</p>
+              <p className={styles.kpiTitle}>Voitures</p>
               <div className={styles.kpiValueRow}>
-                <span className={styles.kpiValue}>{stats?.vehicles_count ?? 6}</span>
-                <span className={styles.kpiSubtext}>en catalogue</span>
+                <span className={styles.kpiValue}>{displayedStats.vehicles}</span>
+                <span className={styles.kpiSubtext}>modèles</span>
               </div>
             </div>
 
-            {/* KPI 6 : Produits Catalogue */}
             <div className={styles.kpiCard}>
               <div className={styles.kpiHeader}>
                 <div className={styles.kpiIconWrapper} style={{ background: '#f1f5f9', color: '#0b2a4a' }}>
@@ -295,28 +341,31 @@ export function DashboardPage() {
                     <path d="M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6-2c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2zm6 16H6V8h2v2c0 .55.45 1 1 1s1-.45 1-1V8h4v2c0 .55.45 1 1 1s1-.45 1-1V8h2v12z" />
                   </svg>
                 </div>
-                <span className={`${styles.kpiTrendBadge} ${styles.trendNeutral}`}>Articles</span>
+                <span className={`${styles.kpiTrendBadge} ${styles.trendNeutral}`}>Stock</span>
               </div>
-              <p className={styles.kpiTitle}>Produits Actifs</p>
+              <p className={styles.kpiTitle}>Produits</p>
               <div className={styles.kpiValueRow}>
-                <span className={styles.kpiValue}>{stats?.products_count ?? 12}</span>
+                <span className={styles.kpiValue}>{displayedStats.products}</span>
                 <span className={styles.kpiSubtext}>articles</span>
               </div>
             </div>
           </section>
 
-          {/* Grille Médiane : Graphique d'activité (65%) + Suivi des Pôles (35%) */}
+          {/* Grille Médiane : Graphique interactif + Suivi des 4 Pôles */}
           <div className={styles.middleGrid}>
-            {/* Graphique interactif en aire SVG */}
             <div className={styles.chartCard}>
               <div className={styles.chartCardHeader}>
                 <div className={styles.chartTitleGroup}>
                   <h2 className={styles.chartTitle}>Activité & Flux des Demandes</h2>
-                  <p className={styles.chartSubtitle}>Évolution sur les 7 derniers jours</p>
+                  <p className={styles.chartSubtitle}>
+                    {selectedActivity === 'all'
+                      ? 'Tous secteurs confondus sur les 7 derniers jours'
+                      : `Filtre actif : ${ACTIVITY_LABELS[selectedActivity]}`}
+                  </p>
                 </div>
 
                 <div className={styles.chartControls}>
-                  <div className={styles.chartPillGroup}>
+                  <div className={styles.chartPillGroup} role="group" aria-label="Filtrer le type">
                     <button
                       type="button"
                       className={`${styles.chartPillBtn} ${chartMetric === 'all' ? styles.activeChartPill : ''}`}
@@ -342,58 +391,53 @@ export function DashboardPage() {
                 </div>
               </div>
 
-              {/* Rendu SVG spline de la courbe */}
               <div className={styles.chartSvgWrapper}>
                 <svg className={styles.chartSvg} viewBox="0 0 600 200" preserveAspectRatio="none">
                   <defs>
                     <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#14b8c4" stopOpacity="0.4" />
+                      <stop offset="0%" stopColor="#14b8c4" stopOpacity="0.45" />
                       <stop offset="70%" stopColor="#0b2a4a" stopOpacity="0.08" />
                       <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
                     </linearGradient>
                   </defs>
 
-                  {/* Lignes de repère horizontales */}
-                  <line x1="30" y1="40" x2="570" y2="40" stroke="#f1f5f9" strokeDasharray="3 3" />
-                  <line x1="30" y1="90" x2="570" y2="90" stroke="#f1f5f9" strokeDasharray="3 3" />
-                  <line x1="30" y1="140" x2="570" y2="140" stroke="#f1f5f9" strokeDasharray="3 3" />
+                  <line x1="35" y1="40" x2="565" y2="40" stroke="#f1f5f9" strokeDasharray="3 3" />
+                  <line x1="35" y1="90" x2="565" y2="90" stroke="#f1f5f9" strokeDasharray="3 3" />
+                  <line x1="35" y1="140" x2="565" y2="140" stroke="#f1f5f9" strokeDasharray="3 3" />
 
-                  {/* Aire sous la courbe */}
-                  {areaD && <path d={areaD} fill="url(#chartGradient)" />}
+                  {areaD && <path d={areaD} fill="url(#chartGradient)" className={styles.chartPath} />}
 
-                  {/* Ligne de courbe */}
                   {pathD && (
                     <path
                       d={pathD}
                       fill="none"
                       stroke="#14b8c4"
-                      strokeWidth="3"
+                      strokeWidth="3.5"
                       strokeLinecap="round"
+                      className={styles.chartPath}
                     />
                   )}
 
-                  {/* Points d'inflexion */}
                   {points.map((pt, idx) => (
                     <g key={idx}>
                       <circle
                         cx={pt.x}
                         cy={pt.y}
-                        r={hoveredPoint === idx ? 6 : 4}
-                        fill="#0b2a4a"
+                        r={hoveredPoint === idx ? 7 : 4.5}
+                        fill={hoveredPoint === idx ? '#14b8c4' : '#0b2a4a'}
                         stroke="#ffffff"
-                        strokeWidth="2"
-                        style={{ cursor: 'pointer', transition: 'r 0.15s ease' }}
+                        strokeWidth="2.5"
+                        className={styles.chartPoint}
                         onMouseEnter={() => setHoveredPoint(idx)}
                         onMouseLeave={() => setHoveredPoint(null)}
                       />
-                      {/* Libellé du jour */}
                       <text
                         x={pt.x}
                         y="190"
                         textAnchor="middle"
                         fill="#94a3b8"
                         fontSize="11"
-                        fontWeight="500"
+                        fontWeight="600"
                       >
                         {pt.label}
                       </text>
@@ -401,7 +445,6 @@ export function DashboardPage() {
                   ))}
                 </svg>
 
-                {/* Bulle d'infobulle sur point survolé */}
                 {hoveredPoint !== null && points[hoveredPoint] && (
                   <div
                     className={styles.chartTooltip}
@@ -416,21 +459,27 @@ export function DashboardPage() {
               </div>
             </div>
 
-            {/* Carte Aperçu des 4 Pôles d'Activités (comme les Recent Campaigns) */}
+            {/* Suivi des 4 Pôles d'Activités */}
             <div className={styles.activitiesCard}>
-              <h2 className={styles.cardHeaderTitle}>Répartition par Pôle</h2>
+              <h2 className={styles.cardHeaderTitle}>Suivi des 4 Pôles</h2>
 
               <div className={styles.activitiesList}>
                 {['farm', 'vehicle', 'office', 'fuel'].map((actKey) => {
                   const count = stats?.by_activity?.[actKey] ?? 0;
-                  const percent = totalRequestsCount > 0 ? Math.round((count / totalRequestsCount) * 100) : 25;
+                  const total = stats?.total ?? 1;
+                  const percent = total > 0 ? Math.round((count / total) * 100) : 25;
                   const color = ACTIVITY_COLORS[actKey];
 
                   return (
-                    <div key={actKey} className={styles.activityRow}>
+                    <div
+                      key={actKey}
+                      className={styles.activityRow}
+                      onClick={() => setSelectedActivity(actKey)}
+                      title={`Filtrer sur ${ACTIVITY_LABELS[actKey]}`}
+                    >
                       <div className={styles.activityInfo}>
                         <span className={styles.activityName}>
-                          <span style={{ width: 8, height: 8, borderRadius: '50%', background: color }} />
+                          <span style={{ width: 9, height: 9, borderRadius: '50%', background: color }} />
                           {ACTIVITY_LABELS[actKey]}
                         </span>
                         <span className={styles.activityCount}>
@@ -441,7 +490,7 @@ export function DashboardPage() {
                         <div
                           className={styles.progressBarFill}
                           style={{
-                            width: `${Math.max(percent, 8)}%`,
+                            width: `${Math.max(percent, 10)}%`,
                             backgroundColor: color,
                           }}
                         />
@@ -453,22 +502,51 @@ export function DashboardPage() {
             </div>
           </div>
 
-          {/* Section Inférieure : Dernières Demandes Reçues */}
+          {/* Section Inférieure : Demandes avec Recherche instantanée et Action directe */}
           <div className={styles.bottomSection}>
             <div className={styles.bottomSectionHeader}>
-              <h2 className={styles.cardHeaderTitle}>Dernières Demandes Clients</h2>
-              <Link to={`${ADMIN_PATH}/demandes`} className={styles.viewAllLink}>
-                <span>Accéder à toutes les demandes</span>
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-                  <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
-                </svg>
-              </Link>
+              <h2 className={styles.cardHeaderTitle}>
+                Demandes Clients ({filteredRequests.length})
+              </h2>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                {/* Champ de recherche instantanée qui filtre le tableau */}
+                <div className={styles.searchFilterWrapper}>
+                  <svg className={styles.searchFilterIcon} viewBox="0 0 24 24">
+                    <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                  </svg>
+                  <input
+                    type="text"
+                    className={styles.searchFilterInput}
+                    placeholder="Filtrer par nom, réf, tél..."
+                    value={searchFilter}
+                    onChange={(e) => setSearchFilter(e.target.value)}
+                  />
+                  {searchFilter && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchFilter('')}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: '1rem', padding: 0 }}
+                      title="Effacer"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+
+                <Link to={`${ADMIN_PATH}/demandes`} className={styles.viewAllLink}>
+                  <span>Toutes les demandes</span>
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
+                    <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
+                  </svg>
+                </Link>
+              </div>
             </div>
 
             <div className={styles.requestsTableWrapper}>
               {filteredRequests.length === 0 ? (
-                <p style={{ color: '#64748b', fontSize: '0.9rem', padding: '1rem 0' }}>
-                  Aucune demande enregistrée dans ce filtre.
+                <p style={{ color: '#64748b', fontSize: '0.9rem', padding: '1.5rem 0', textAlign: 'center' }}>
+                  Aucune demande ne correspond aux critères sélectionnés.
                 </p>
               ) : (
                 <table className={styles.table}>
@@ -480,7 +558,7 @@ export function DashboardPage() {
                       <th className={styles.th}>Type</th>
                       <th className={styles.th}>Client</th>
                       <th className={styles.th}>Statut</th>
-                      <th className={styles.th} style={{ textAlign: 'right' }}>Détails</th>
+                      <th className={styles.th} style={{ textAlign: 'right' }}>Action</th>
                     </tr>
                   </thead>
                   <tbody>

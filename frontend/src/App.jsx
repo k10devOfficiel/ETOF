@@ -39,6 +39,8 @@ const LegalTermsPage = React.lazy(() => import('./pages/Legal/LegalTermsPage.jsx
 const PrivacyPolicyPage = React.lazy(() => import('./pages/Legal/PrivacyPolicyPage.jsx'));
 const TermsOfServicePage = React.lazy(() => import('./pages/Legal/TermsOfServicePage.jsx'));
 const ClientProfilePage = React.lazy(() => import('./pages/Account/ClientProfilePage.jsx'));
+const ClientLoginPage = React.lazy(() => import('./pages/Auth/LoginPage.jsx'));
+const ClientRegisterPage = React.lazy(() => import('./pages/Auth/RegisterPage.jsx'));
 
 /**
  * Écran de transition accessible affiché pendant le chargement à la demande d'un composant de page.
@@ -109,6 +111,8 @@ function App() {
                 <Route path="/commande" element={<OrderSummaryPage />} />
                 <Route path="/recapitulatif" element={<OrderSummaryPage />} />
                 <Route path="/mon-compte" element={<ClientProfilePage />} />
+                <Route path="/connexion" element={<ClientLoginPage />} />
+                <Route path="/inscription" element={<ClientRegisterPage />} />
                 <Route path="/mentions-legales" element={<LegalTermsPage />} />
                 <Route path="/politique-de-confidentialite" element={<PrivacyPolicyPage />} />
                 <Route path="/conditions-generales" element={<TermsOfServicePage />} />
