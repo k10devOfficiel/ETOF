@@ -21,6 +21,49 @@ import styles from './VehicleModal.module.css';
  * }} props
  * @returns {JSX.Element | null}
  */
+const VEHICLE_ANGLES = [
+  {
+    key: 'exterior_front',
+    category: 'exterior',
+    labelFr: 'Extérieur - Face / 3/4 Avant (Photo principale)',
+    labelEn: 'Exterior - Front view (Main photo)',
+    badgeLabel: 'Extérieur',
+    badgeClass: 'badgeExterior',
+  },
+  {
+    key: 'exterior_rear',
+    category: 'exterior',
+    labelFr: 'Extérieur - Profil / Arrière',
+    labelEn: 'Exterior - Side / Rear view',
+    badgeLabel: 'Extérieur',
+    badgeClass: 'badgeExterior',
+  },
+  {
+    key: 'interior_cockpit',
+    category: 'interior',
+    labelFr: 'Intérieur - Poste de conduite / Cockpit',
+    labelEn: 'Interior - Cockpit / Dashboard',
+    badgeLabel: 'Intérieur',
+    badgeClass: 'badgeInterior',
+  },
+  {
+    key: 'interior_seats',
+    category: 'interior',
+    labelFr: 'Intérieur - Sièges / Habitacle',
+    labelEn: 'Interior - Seats / Cabin',
+    badgeLabel: 'Intérieur',
+    badgeClass: 'badgeInterior',
+  },
+  {
+    key: 'others_details',
+    category: 'others',
+    labelFr: 'Autre vue - Coffre / Moteur / Détails',
+    labelEn: 'Other view - Trunk / Engine / Details',
+    badgeLabel: 'Autre',
+    badgeClass: 'badgeOthers',
+  },
+];
+
 export function VehicleModal({ isOpen, onClose, vehicle = null, categories = [], onSaved }) {
   const isEditing = Boolean(vehicle && vehicle.id);
 
@@ -42,22 +85,32 @@ export function VehicleModal({ isOpen, onClose, vehicle = null, categories = [],
     is_active: true,
   });
 
-  // Caractéristiques techniques individuelles converties en objet specs JSON
+  // Caractéristiques techniques individuelles complètes converties en objet specs JSON
   const [specsData, setSpecsData] = useState({
     fuel: 'Essence',
     transmission: 'Automatique',
     seats: '5',
     mileage: '',
-    color: '',
+    color_exterior: '',
+    color_interior: '',
+    engine: '',
+    air_conditioning: 'Automatique bi-zone',
+    features: '',
+    consumption: '',
   });
 
   // Images existantes de la galerie
   const [galleryImages, setGalleryImages] = useState([]);
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  // Fichier pour nouveau véhicule
-  const [pendingImageFile, setPendingImageFile] = useState(null);
-  const [pendingPreviewUrl, setPendingPreviewUrl] = useState('');
+  // État de sélection d'angle et de fichier pour l'ajout d'une photo
+  const [selectedAngleKey, setSelectedAngleKey] = useState('exterior_front');
+  const [customAngleLabel, setCustomAngleLabel] = useState('');
+  const [newImageFile, setNewImageFile] = useState(null);
+  const [newImagePreview, setNewImagePreview] = useState('');
+
+  // Liste des photos en attente pour un nouveau véhicule
+  const [pendingImages, setPendingImages] = useState([]);
 
   // États locaux
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -99,7 +152,12 @@ export function VehicleModal({ isOpen, onClose, vehicle = null, categories = [],
         transmission: parsedSpecs.transmission || parsedSpecs.boite || 'Automatique',
         seats: String(parsedSpecs.seats || parsedSpecs.places || '5'),
         mileage: parsedSpecs.mileage || parsedSpecs.kilometrage || '',
-        color: parsedSpecs.color || parsedSpecs.couleur || '',
+        color_exterior: parsedSpecs.color_exterior || parsedSpecs.color || parsedSpecs.couleur || '',
+        color_interior: parsedSpecs.color_interior || parsedSpecs.sellerie || '',
+        engine: parsedSpecs.engine || parsedSpecs.motorisation || '',
+        air_conditioning: parsedSpecs.air_conditioning || parsedSpecs.climatisation || 'Automatique bi-zone',
+        features: parsedSpecs.features || parsedSpecs.equipements || '',
+        consumption: parsedSpecs.consumption || parsedSpecs.consommation || '',
       });
 
       setGalleryImages(Array.isArray(vehicle.images) ? [...vehicle.images] : []);
@@ -123,13 +181,21 @@ export function VehicleModal({ isOpen, onClose, vehicle = null, categories = [],
         transmission: 'Automatique',
         seats: '5',
         mileage: '',
-        color: '',
+        color_exterior: '',
+        color_interior: '',
+        engine: '',
+        air_conditioning: 'Automatique bi-zone',
+        features: '',
+        consumption: '',
       });
       setGalleryImages([]);
     }
 
-    setPendingImageFile(null);
-    setPendingPreviewUrl('');
+    setPendingImages([]);
+    setNewImageFile(null);
+    setNewImagePreview('');
+    setCustomAngleLabel('');
+    setSelectedAngleKey('exterior_front');
     setGeneralError(null);
     setFieldErrors({});
     setActiveTab('fr');
@@ -160,56 +226,100 @@ export function VehicleModal({ isOpen, onClose, vehicle = null, categories = [],
     }));
   };
 
-  // Ajout immédiat d'une photo pour un véhicule existant
-  const handleAddImageFile = async (e) => {
+  // Sélection du fichier dans le sélecteur d'angle
+  const handleSelectNewFile = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setNewImageFile(file);
+    setNewImagePreview(URL.createObjectURL(file));
+  };
+
+  // Ajout de la photo avec l'angle spécifié
+  const handleConfirmAddAnglePhoto = async () => {
+    if (!newImageFile) {
+      setGeneralError('Veuillez sélectionner un fichier image pour cet angle.');
+      return;
+    }
+
+    const angleObj = VEHICLE_ANGLES.find((a) => a.key === selectedAngleKey) || VEHICLE_ANGLES[0];
+    const labelFr = customAngleLabel.trim() || angleObj.labelFr;
+    const labelEn = angleObj.labelEn;
 
     if (isEditing) {
       try {
         setUploadingImage(true);
+        setGeneralError(null);
         const nextSortOrder = galleryImages.length;
-        const res = await adminApi.addVehicleImage(vehicle.id, file, '', '', nextSortOrder);
+        const res = await adminApi.addVehicleImage(vehicle.id, newImageFile, labelFr, labelEn, nextSortOrder);
         setGalleryImages((prev) => [...prev, res]);
+        setNewImageFile(null);
+        setNewImagePreview('');
+        setCustomAngleLabel('');
       } catch (err) {
-        setGeneralError('Échec du téléversement de la photo de galerie.');
+        setGeneralError('Échec du téléversement de la photo pour cet angle.');
       } finally {
         setUploadingImage(false);
-        e.target.value = '';
       }
     } else {
-      // Pour un nouveau véhicule en cours de création
-      setPendingImageFile(file);
-      setPendingPreviewUrl(URL.createObjectURL(file));
+      // En création : mise en file d'attente
+      const tempItem = {
+        id: `pending_${Date.now()}_${Math.random()}`,
+        file: newImageFile,
+        previewUrl: newImagePreview,
+        angleKey: selectedAngleKey,
+        category: angleObj.category,
+        badgeLabel: angleObj.badgeLabel,
+        badgeClass: angleObj.badgeClass,
+        labelFr,
+        labelEn,
+      };
+      setPendingImages((prev) => [...prev, tempItem]);
+      setNewImageFile(null);
+      setNewImagePreview('');
+      setCustomAngleLabel('');
     }
   };
 
-  // Suppression d'une photo de galerie
-  const handleDeleteImage = async (imageId) => {
-    if (!isEditing || !imageId) return;
-    try {
-      setUploadingImage(true);
-      await adminApi.deleteVehicleImage(vehicle.id, imageId);
-      setGalleryImages((prev) => prev.filter((img) => img.id !== imageId));
-    } catch (err) {
-      setGeneralError('Erreur lors de la suppression de la photo.');
-    } finally {
-      setUploadingImage(false);
+  // Suppression d'une photo existante ou en attente
+  const handleDeleteImage = async (imgId) => {
+    if (isEditing) {
+      try {
+        setUploadingImage(true);
+        await adminApi.deleteVehicleImage(vehicle.id, imgId);
+        setGalleryImages((prev) => prev.filter((img) => img.id !== imgId));
+      } catch (err) {
+        setGeneralError('Erreur lors de la suppression de la photo.');
+      } finally {
+        setUploadingImage(false);
+      }
+    } else {
+      setPendingImages((prev) => prev.filter((item) => item.id !== imgId));
     }
   };
 
   // Déplacement d'une image (monter ou descendre l'ordre visuel)
   const handleMoveImage = (index, direction) => {
+    const list = isEditing ? galleryImages : pendingImages;
     const targetIndex = index + direction;
-    if (targetIndex < 0 || targetIndex >= galleryImages.length) return;
+    if (targetIndex < 0 || targetIndex >= list.length) return;
 
-    setGalleryImages((prev) => {
-      const copy = [...prev];
-      const temp = copy[index];
-      copy[index] = copy[targetIndex];
-      copy[targetIndex] = temp;
-      return copy;
-    });
+    if (isEditing) {
+      setGalleryImages((prev) => {
+        const copy = [...prev];
+        const temp = copy[index];
+        copy[index] = copy[targetIndex];
+        copy[targetIndex] = temp;
+        return copy;
+      });
+    } else {
+      setPendingImages((prev) => {
+        const copy = [...prev];
+        const temp = copy[index];
+        copy[index] = copy[targetIndex];
+        copy[targetIndex] = temp;
+        return copy;
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -220,13 +330,18 @@ export function VehicleModal({ isOpen, onClose, vehicle = null, categories = [],
     try {
       setIsSubmitting(true);
 
-      // Constitution de l'objet specs JSON
+      // Constitution de l'objet specs JSON complet sans omission
       const specsObject = {
         fuel: specsData.fuel,
         transmission: specsData.transmission,
         seats: parseInt(specsData.seats, 10) || 5,
         mileage: specsData.mileage.trim() || null,
-        color: specsData.color.trim() || null,
+        color_exterior: specsData.color_exterior.trim() || null,
+        color_interior: specsData.color_interior.trim() || null,
+        engine: specsData.engine.trim() || null,
+        air_conditioning: specsData.air_conditioning.trim() || null,
+        features: specsData.features.trim() || null,
+        consumption: specsData.consumption.trim() || null,
       };
 
       const payload = {
@@ -250,12 +365,21 @@ export function VehicleModal({ isOpen, onClose, vehicle = null, categories = [],
         const createRes = await adminApi.createVehicle(payload);
         const newVehicleId = createRes?.id;
 
-        // Téléversement de l'image initiale si fournie
-        if (newVehicleId && pendingImageFile) {
-          try {
-            await adminApi.addVehicleImage(newVehicleId, pendingImageFile, '', '', 0);
-          } catch (err) {
-            console.warn('Image initiale non téléversée:', err);
+        // Téléversement séquentiel de toutes les photos par angle ajoutées lors de la création
+        if (newVehicleId && pendingImages.length > 0) {
+          for (let i = 0; i < pendingImages.length; i++) {
+            const item = pendingImages[i];
+            try {
+              await adminApi.addVehicleImage(
+                newVehicleId,
+                item.file,
+                item.labelFr,
+                item.labelEn,
+                i
+              );
+            } catch (err) {
+              console.warn(`Échec téléversement photo angle ${item.labelFr}:`, err);
+            }
           }
         }
       }
@@ -274,12 +398,14 @@ export function VehicleModal({ isOpen, onClose, vehicle = null, categories = [],
     }
   };
 
+  const activeImagesList = isEditing ? galleryImages : pendingImages;
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={isEditing ? `Modifier le véhicule : ${vehicle?.brand} ${vehicle?.model}` : 'Ajouter un nouveau véhicule'}
-      size="lg"
+      size="xl"
     >
       <form onSubmit={handleSubmit} className={styles.form} noValidate>
         {generalError && <Alert variant="danger">{generalError}</Alert>}
@@ -493,9 +619,10 @@ export function VehicleModal({ isOpen, onClose, vehicle = null, categories = [],
           </div>
         )}
 
-        {/* Caractéristiques techniques simples (converties en JSON) */}
+        {/* Caractéristiques techniques complètes sans omission */}
         <div className={styles.specsSection}>
-          <h2 className={styles.specsTitle}>Caractéristiques Techniques (Specs JSON)</h2>
+          <h2 className={styles.specsTitle}>Caractéristiques Techniques Détaillées</h2>
+          
           <div className={styles.grid3}>
             <div className={styles.fieldGroup}>
               <label htmlFor="spec-fuel" className={styles.label}>Carburant</label>
@@ -524,6 +651,7 @@ export function VehicleModal({ isOpen, onClose, vehicle = null, categories = [],
               >
                 <option value="Automatique">Automatique</option>
                 <option value="Manuelle">Manuelle</option>
+                <option value="Séquentielle">Séquentielle</option>
               </select>
             </div>
 
@@ -542,7 +670,7 @@ export function VehicleModal({ isOpen, onClose, vehicle = null, categories = [],
             </div>
           </div>
 
-          <div className={styles.grid2}>
+          <div className={styles.grid3}>
             <div className={styles.fieldGroup}>
               <label htmlFor="spec-mileage" className={styles.label}>Kilométrage</label>
               <input
@@ -557,99 +685,225 @@ export function VehicleModal({ isOpen, onClose, vehicle = null, categories = [],
             </div>
 
             <div className={styles.fieldGroup}>
-              <label htmlFor="spec-color" className={styles.label}>Couleur extérieure</label>
+              <label htmlFor="spec-color-ext" className={styles.label}>Couleur extérieure</label>
               <input
-                id="spec-color"
-                name="color"
+                id="spec-color-ext"
+                name="color_exterior"
                 type="text"
                 className={styles.input}
-                value={specsData.color}
+                value={specsData.color_exterior}
                 onChange={handleSpecsChange}
-                placeholder="Ex. Blanc nacré, Noir métallisé, Gris argent"
+                placeholder="Ex. Blanc nacré, Noir métallisé"
               />
             </div>
+
+            <div className={styles.fieldGroup}>
+              <label htmlFor="spec-color-int" className={styles.label}>Finition / Sellerie intérieure</label>
+              <input
+                id="spec-color-int"
+                name="color_interior"
+                type="text"
+                className={styles.input}
+                value={specsData.color_interior}
+                onChange={handleSpecsChange}
+                placeholder="Ex. Cuir noir, Tissu gris, Alcantara"
+              />
+            </div>
+          </div>
+
+          <div className={styles.grid3}>
+            <div className={styles.fieldGroup}>
+              <label htmlFor="spec-engine" className={styles.label}>Motorisation / Cylindrée</label>
+              <input
+                id="spec-engine"
+                name="engine"
+                type="text"
+                className={styles.input}
+                value={specsData.engine}
+                onChange={handleSpecsChange}
+                placeholder="Ex. 2.8L D-4D 204 ch, V6 3.0L"
+              />
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <label htmlFor="spec-ac" className={styles.label}>Climatisation</label>
+              <select
+                id="spec-ac"
+                name="air_conditioning"
+                className={styles.select}
+                value={specsData.air_conditioning}
+                onChange={handleSpecsChange}
+              >
+                <option value="Automatique bi-zone">Automatique bi-zone</option>
+                <option value="Automatique">Automatique</option>
+                <option value="Manuelle">Manuelle</option>
+                <option value="Oui">Oui</option>
+                <option value="Non">Non</option>
+              </select>
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <label htmlFor="spec-consumption" className={styles.label}>Consommation mixte</label>
+              <input
+                id="spec-consumption"
+                name="consumption"
+                type="text"
+                className={styles.input}
+                value={specsData.consumption}
+                onChange={handleSpecsChange}
+                placeholder="Ex. 7.8 L / 100 km"
+              />
+            </div>
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label htmlFor="spec-features" className={styles.label}>Équipements & Options clés</label>
+            <input
+              id="spec-features"
+              name="features"
+              type="text"
+              className={styles.input}
+              value={specsData.features}
+              onChange={handleSpecsChange}
+              placeholder="Ex. Caméra de recul, Écran tactile CarPlay, Régulateur adaptatif, Démarrage sans clé"
+            />
           </div>
         </div>
 
-        {/* Galerie d'images du véhicule */}
+        {/* Galerie d'images par Angle de vue */}
         <div className={styles.gallerySection}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 className={styles.specsTitle}>Galerie Photos ({isEditing ? galleryImages.length : pendingPreviewUrl ? 1 : 0})</h2>
+            <h2 className={styles.specsTitle}>
+              Galerie Photos par Angle de Vue ({activeImagesList.length})
+            </h2>
             {uploadingImage && <Spinner size="sm" />}
           </div>
 
-          {isEditing ? (
-            <>
-              {galleryImages.length > 0 ? (
-                <div className={styles.galleryGrid}>
-                  {galleryImages.map((img, idx) => (
-                    <div key={img.id || idx} className={styles.galleryItem}>
-                      <img src={img.path || img.url} alt={`Vue ${idx + 1}`} className={styles.galleryImg} />
-                      <div className={styles.galleryItemActions}>
-                        <div>
-                          <button
-                            type="button"
-                            className={styles.miniBtn}
-                            onClick={() => handleMoveImage(idx, -1)}
-                            disabled={idx === 0}
-                            title="Déplacer vers la gauche"
-                          >
-                            ◀
-                          </button>
-                          <button
-                            type="button"
-                            className={styles.miniBtn}
-                            onClick={() => handleMoveImage(idx, 1)}
-                            disabled={idx === galleryImages.length - 1}
-                            title="Déplacer vers la droite"
-                          >
-                            ▶
-                          </button>
-                        </div>
-                        <button
-                          type="button"
-                          className={`${styles.miniBtn} ${styles.miniBtnDanger}`}
-                          onClick={() => handleDeleteImage(img.id)}
-                          title="Supprimer cette photo"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem' }}>
-                  Aucune photo dans la galerie. Ajoutez-en ci-dessous.
-                </p>
-              )}
+          {/* Formulaire d'ajout d'une photo par angle */}
+          <div className={styles.angleUploaderBox}>
+            <div className={styles.angleUploaderTitle}>
+              <i className="fa-solid fa-camera" aria-hidden="true" />
+              <span>Ajouter une photo sous un angle précis :</span>
+            </div>
 
-              <div style={{ marginTop: '0.5rem' }}>
+            <div className={styles.grid3}>
+              <div className={styles.fieldGroup}>
+                <label className={styles.label}>Angle de vue prédéfini</label>
+                <select
+                  className={styles.select}
+                  value={selectedAngleKey}
+                  onChange={(e) => setSelectedAngleKey(e.target.value)}
+                >
+                  {VEHICLE_ANGLES.map((angle) => (
+                    <option key={angle.key} value={angle.key}>
+                      [{angle.badgeLabel}] {angle.labelFr}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className={styles.fieldGroup}>
+                <label className={styles.label}>Libellé personnalisé (facultatif)</label>
+                <input
+                  type="text"
+                  className={styles.input}
+                  value={customAngleLabel}
+                  onChange={(e) => setCustomAngleLabel(e.target.value)}
+                  placeholder="Ex. Vue profil gauche avec jantes alliage"
+                />
+              </div>
+
+              <div className={styles.fieldGroup}>
+                <label className={styles.label}>Fichier photo (JPG, PNG, WEBP)</label>
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
-                  onChange={handleAddImageFile}
-                  disabled={uploadingImage}
+                  onChange={handleSelectNewFile}
                   className={styles.input}
                 />
-                <span className={styles.helperText}>Ajoutez des photos pour la fiche détaillée (JPG, PNG, WEBP).</span>
               </div>
-            </>
-          ) : (
-            <div>
-              {pendingPreviewUrl && (
-                <div style={{ width: '120px', height: '90px', borderRadius: '6px', overflow: 'hidden', marginBottom: '0.5rem', border: '1px solid #cbd5e1' }}>
-                  <img src={pendingPreviewUrl} alt="Aperçu" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </div>
-              )}
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={handleAddImageFile}
-                className={styles.input}
-              />
-              <span className={styles.helperText}>Sélectionnez une première photo principale. D'autres pourront être ajoutées après création.</span>
             </div>
+
+            {newImagePreview && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.25rem' }}>
+                <div style={{ width: '90px', height: '60px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #cbd5e1' }}>
+                  <img src={newImagePreview} alt="Aperçu angle" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={handleConfirmAddAnglePhoto}
+                  disabled={uploadingImage}
+                >
+                  <i className="fa-solid fa-plus" aria-hidden="true" style={{ marginRight: '6px' }} />
+                  {isEditing ? 'Téléverser cet angle' : 'Ajouter cet angle à la liste'}
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Liste des photos existantes ou en attente */}
+          {activeImagesList.length > 0 ? (
+            <div className={styles.galleryGrid}>
+              {activeImagesList.map((img, idx) => {
+                const imgUrl = img.path || img.previewUrl || img.url;
+                const altText = img.alt_fr || img.labelFr || `Angle ${idx + 1}`;
+                const lower = (altText || '').toLowerCase();
+                const isInt = lower.includes('intérieur') || lower.includes('interior') || lower.includes('cockpit') || lower.includes('siège') || lower.includes('habitacle');
+                const isOth = lower.includes('autre') || lower.includes('moteur') || lower.includes('coffre') || lower.includes('détail');
+                const badgeLabel = isInt ? 'Intérieur' : isOth ? 'Autre' : 'Extérieur';
+                const badgeClass = isInt ? styles.badgeInterior : isOth ? styles.badgeOthers : styles.badgeExterior;
+
+                return (
+                  <div key={img.id || idx} className={styles.galleryItem}>
+                    <img src={imgUrl} alt={altText} className={styles.galleryImg} />
+                    <div className={styles.galleryItemMeta}>
+                      <span className={`${styles.galleryAngleBadge} ${badgeClass}`}>
+                        {badgeLabel}
+                      </span>
+                      <span className={styles.galleryItemLabel} title={altText}>
+                        {altText}
+                      </span>
+                    </div>
+                    <div className={styles.galleryItemActions}>
+                      <div>
+                        <button
+                          type="button"
+                          className={styles.miniBtn}
+                          onClick={() => handleMoveImage(idx, -1)}
+                          disabled={idx === 0}
+                          title="Déplacer vers la gauche"
+                        >
+                          ◀
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.miniBtn}
+                          onClick={() => handleMoveImage(idx, 1)}
+                          disabled={idx === activeImagesList.length - 1}
+                          title="Déplacer vers la droite"
+                        >
+                          ▶
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        className={`${styles.miniBtn} ${styles.miniBtnDanger}`}
+                        onClick={() => handleDeleteImage(img.id)}
+                        title="Supprimer cette photo"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem' }}>
+              Aucune photo enregistrée sous les différents angles. Utilisez le cadre ci-dessus pour ajouter des photos de l'extérieur, du cockpit et des détails.
+            </p>
           )}
         </div>
 

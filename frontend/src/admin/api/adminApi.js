@@ -266,6 +266,36 @@ export const adminApi = {
     }),
 
   /**
+   * Ajouter une image à la galerie d'un produit (angles, détails, packaging)
+   * @param {number} productId
+   * @param {File} file
+   * @param {string} [altFr]
+   * @param {string} [altEn]
+   * @param {number} [sortOrder]
+   */
+  addProductImage: async (productId, file, altFr = '', altEn = '', sortOrder = 0) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    if (altFr) formData.append('alt_fr', altFr);
+    if (altEn) formData.append('alt_en', altEn);
+    formData.append('sort_order', String(sortOrder));
+    return adminFetch(`/api/admin/products/${productId}/images`, {
+      method: 'POST',
+      body: formData,
+    });
+  },
+
+  /**
+   * Supprimer une image de la galerie d'un produit
+   * @param {number} productId
+   * @param {number} imageId
+   */
+  deleteProductImage: async (productId, imageId) =>
+    adminFetch(`/api/admin/products/${productId}/images/${imageId}`, {
+      method: 'DELETE',
+    }),
+
+  /**
    * Véhicules (admin)
    */
   getVehicles: async (params = {}) => adminFetch('/api/admin/vehicles', { method: 'GET', params }),

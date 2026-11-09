@@ -20,6 +20,30 @@ import styles from './ProductModal.module.css';
  * }} props
  * @returns {JSX.Element | null}
  */
+const PRODUCT_ANGLES = [
+  {
+    key: 'front',
+    labelFr: 'Vue Principale - Face / Présentation globale',
+    labelEn: 'Main view - Front / Full product view',
+    badgeLabel: 'Face',
+    badgeClass: 'badgeFront',
+  },
+  {
+    key: 'detail',
+    labelFr: 'Vue Rapprochée - Détail / Texture / Finition',
+    labelEn: 'Close-up - Detail / Texture',
+    badgeLabel: 'Détail',
+    badgeClass: 'badgeDetail',
+  },
+  {
+    key: 'packaging',
+    labelFr: 'Vue Conditionnement - Emballage / Lot / Packaging',
+    labelEn: 'Packaging view - Packaging / Bundle',
+    badgeLabel: 'Packaging',
+    badgeClass: 'badgePackaging',
+  },
+];
+
 export function ProductModal({ isOpen, onClose, product = null, categories = [], onSaved }) {
   const isEditing = Boolean(product && product.id);
 
@@ -43,10 +67,28 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
     is_active: true,
     sort_order: '0',
     image: '',
-    specs: '',
   });
 
-  // États locaux
+  // Caractéristiques techniques spécifiques structurées
+  const [specsData, setSpecsData] = useState({
+    origin: '',
+    weight_volume: '',
+    packaging: '',
+    certification: '',
+    brand: '',
+    storage: '',
+  });
+
+  // Galerie de photos multi-angles du produit
+  const [galleryImages, setGalleryImages] = useState([]);
+  const [selectedAngleKey, setSelectedAngleKey] = useState('front');
+  const [customAngleLabel, setCustomAngleLabel] = useState('');
+  const [newAngleFile, setNewAngleFile] = useState(null);
+  const [newAnglePreview, setNewAnglePreview] = useState('');
+  const [pendingGalleryImages, setPendingGalleryImages] = useState([]);
+  const [uploadingGalleryImage, setUploadingGalleryImage] = useState(false);
+
+  // Photo principale de couverture
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -73,9 +115,33 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
         is_active: product.is_active !== undefined ? Boolean(product.is_active) : true,
         sort_order: String(product.sort_order || 0),
         image: product.image || '',
-        specs: product.specs ? (typeof product.specs === 'object' ? JSON.stringify(product.specs, null, 2) : String(product.specs)) : '',
       });
       setPreviewUrl(product.image || '');
+
+      // Extraction des specs JSON existantes
+      let parsedSpecs = {};
+      if (product.specs) {
+        if (typeof product.specs === 'object') {
+          parsedSpecs = product.specs;
+        } else {
+          try {
+            parsedSpecs = JSON.parse(product.specs);
+          } catch {
+            parsedSpecs = {};
+          }
+        }
+      }
+
+      setSpecsData({
+        origin: parsedSpecs.origin || parsedSpecs.origine || '',
+        weight_volume: parsedSpecs.weight || parsedSpecs.poids || parsedSpecs.volume || parsedSpecs.format || '',
+        packaging: parsedSpecs.packaging || parsedSpecs.conditionnement || '',
+        certification: parsedSpecs.certification || parsedSpecs.norme || '',
+        brand: parsedSpecs.brand || parsedSpecs.marque || '',
+        storage: parsedSpecs.storage || parsedSpecs.conservation || '',
+      });
+
+      setGalleryImages(Array.isArray(product.images) ? [...product.images] : []);
     } else {
       const defaultCat = categories.length > 0 ? String(categories[0].id) : '';
       setFormData({
@@ -94,10 +160,24 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
         is_active: true,
         sort_order: '0',
         image: '',
-        specs: '',
       });
+      setSpecsData({
+        origin: '',
+        weight_volume: '',
+        packaging: '',
+        certification: '',
+        brand: '',
+        storage: '',
+      });
+      setGalleryImages([]);
       setPreviewUrl('');
     }
+
+    setPendingGalleryImages([]);
+    setNewAngleFile(null);
+    setNewAnglePreview('');
+    setCustomAngleLabel('');
+    setSelectedAngleKey('front');
     setSelectedFile(null);
     setGeneralError(null);
     setFieldErrors({});
@@ -121,6 +201,14 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
     }
   };
 
+  const handleSpecsChange = (e) => {
+    const { name, value } = e.target;
+    setSpecsData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -135,6 +223,100 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
     setFormData((prev) => ({ ...prev, image: '' }));
   };
 
+  // Sélection du fichier pour un angle de vue secondaire
+  const handleSelectAngleFile = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setNewAngleFile(file);
+    setNewAnglePreview(URL.createObjectURL(file));
+  };
+
+  // Confirmation de l'ajout de la photo par angle
+  const handleConfirmAddAnglePhoto = async () => {
+    if (!newAngleFile) {
+      setGeneralError('Veuillez sélectionner un fichier image pour cet angle.');
+      return;
+    }
+
+    const angleObj = PRODUCT_ANGLES.find((a) => a.key === selectedAngleKey) || PRODUCT_ANGLES[0];
+    const labelFr = customAngleLabel.trim() || angleObj.labelFr;
+    const labelEn = angleObj.labelEn;
+
+    if (isEditing) {
+      try {
+        setUploadingGalleryImage(true);
+        setGeneralError(null);
+        const nextSortOrder = galleryImages.length;
+        const res = await adminApi.addProductImage(product.id, newAngleFile, labelFr, labelEn, nextSortOrder);
+        setGalleryImages((prev) => [...prev, res]);
+        setNewAngleFile(null);
+        setNewAnglePreview('');
+        setCustomAngleLabel('');
+      } catch (err) {
+        setGeneralError('Échec du téléversement de la photo de galerie.');
+      } finally {
+        setUploadingGalleryImage(false);
+      }
+    } else {
+      const tempItem = {
+        id: `pending_${Date.now()}_${Math.random()}`,
+        file: newAngleFile,
+        previewUrl: newAnglePreview,
+        angleKey: selectedAngleKey,
+        badgeLabel: angleObj.badgeLabel,
+        badgeClass: angleObj.badgeClass,
+        labelFr,
+        labelEn,
+      };
+      setPendingGalleryImages((prev) => [...prev, tempItem]);
+      setNewAngleFile(null);
+      setNewAnglePreview('');
+      setCustomAngleLabel('');
+    }
+  };
+
+  // Suppression d'une photo d'angle
+  const handleDeleteAngleImage = async (imgId) => {
+    if (isEditing) {
+      try {
+        setUploadingGalleryImage(true);
+        await adminApi.deleteProductImage(product.id, imgId);
+        setGalleryImages((prev) => prev.filter((img) => img.id !== imgId));
+      } catch (err) {
+        setGeneralError('Erreur lors de la suppression de la photo.');
+      } finally {
+        setUploadingGalleryImage(false);
+      }
+    } else {
+      setPendingGalleryImages((prev) => prev.filter((item) => item.id !== imgId));
+    }
+  };
+
+  // Déplacement d'une photo d'angle
+  const handleMoveAngleImage = (index, direction) => {
+    const list = isEditing ? galleryImages : pendingGalleryImages;
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= list.length) return;
+
+    if (isEditing) {
+      setGalleryImages((prev) => {
+        const copy = [...prev];
+        const temp = copy[index];
+        copy[index] = copy[targetIndex];
+        copy[targetIndex] = temp;
+        return copy;
+      });
+    } else {
+      setPendingGalleryImages((prev) => {
+        const copy = [...prev];
+        const temp = copy[index];
+        copy[index] = copy[targetIndex];
+        copy[targetIndex] = temp;
+        return copy;
+      });
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setGeneralError(null);
@@ -145,7 +327,7 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
 
       let finalImageUrl = formData.image;
 
-      // Téléversement préalable si un nouveau fichier a été sélectionné
+      // Téléversement préalable de la photo principale si un nouveau fichier a été sélectionné
       if (selectedFile) {
         setIsUploading(true);
         const uploadRes = await adminApi.uploadImage(selectedFile);
@@ -153,16 +335,14 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
         setIsUploading(false);
       }
 
-      let parsedSpecs = null;
-      if (formData.specs && formData.specs.trim()) {
-        try {
-          parsedSpecs = JSON.parse(formData.specs.trim());
-        } catch {
-          setGeneralError('Le format des caractéristiques techniques (specs) doit être un JSON valide (ex: {"poids": "1.5 kg"}).');
-          setIsSubmitting(false);
-          return;
-        }
-      }
+      // Construction de l'objet specs JSON structuré sans omission
+      const specsObject = {};
+      if (specsData.origin.trim()) specsObject.origin = specsData.origin.trim();
+      if (specsData.weight_volume.trim()) specsObject.weight = specsData.weight_volume.trim();
+      if (specsData.packaging.trim()) specsObject.packaging = specsData.packaging.trim();
+      if (specsData.certification.trim()) specsObject.certification = specsData.certification.trim();
+      if (specsData.brand.trim()) specsObject.brand = specsData.brand.trim();
+      if (specsData.storage.trim()) specsObject.storage = specsData.storage.trim();
 
       const payload = {
         category_id: parseInt(formData.category_id, 10),
@@ -174,7 +354,7 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
         unit_en: formData.unit_en.trim() || null,
         reference: formData.reference.trim() || null,
         price: formData.price !== '' ? parseInt(formData.price, 10) : null,
-        specs: parsedSpecs,
+        specs: Object.keys(specsObject).length > 0 ? specsObject : null,
         min_quantity: Math.max(1, parseInt(formData.min_quantity || '1', 10)),
         is_orderable: Boolean(formData.is_orderable),
         is_available: Boolean(formData.is_available),
@@ -186,7 +366,26 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
       if (isEditing) {
         await adminApi.updateProduct(product.id, payload);
       } else {
-        await adminApi.createProduct(payload);
+        const createRes = await adminApi.createProduct(payload);
+        const newProductId = createRes?.id;
+
+        // Téléversement séquentiel des photos d'angles en attente
+        if (newProductId && pendingGalleryImages.length > 0) {
+          for (let i = 0; i < pendingGalleryImages.length; i++) {
+            const item = pendingGalleryImages[i];
+            try {
+              await adminApi.addProductImage(
+                newProductId,
+                item.file,
+                item.labelFr,
+                item.labelEn,
+                i
+              );
+            } catch (err) {
+              console.warn(`Échec téléversement photo angle ${item.labelFr}:`, err);
+            }
+          }
+        }
       }
 
       onSaved();
@@ -209,7 +408,7 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
       isOpen={isOpen}
       onClose={onClose}
       title={isEditing ? `Modifier le produit : ${product?.name_fr || product?.name}` : 'Créer un nouveau produit'}
-      size="lg"
+      size="xl"
     >
       <form onSubmit={handleSubmit} className={styles.form} noValidate>
         {generalError && <Alert variant="danger">{generalError}</Alert>}
@@ -447,29 +646,108 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
           </label>
         </div>
 
-        {/* Spécifications techniques détaillées */}
-        <div className={styles.fieldGroup}>
-          <label htmlFor="prod-specs" className={styles.label}>
-            Caractéristiques techniques détaillées (JSON)
-          </label>
-          <textarea
-            id="prod-specs"
-            name="specs"
-            className={styles.textarea}
-            rows={5}
-            style={{ fontFamily: 'monospace', fontSize: '12px' }}
-            value={formData.specs}
-            onChange={handleChange}
-            placeholder={'{\n  "origin": "Côte d’Ivoire",\n  "weight": "1.5 kg",\n  "packaging": "Prêt à cuire"\n}'}
-          />
-          <span className={styles.helperText}>
-            Format objet JSON associant des caractéristiques techniques (ex: origine, poids, packaging, certification).
-          </span>
+        {/* Caractéristiques techniques spécifiques structurées */}
+        <div className={styles.specsSection}>
+          <h2 className={styles.specsTitle}>Caractéristiques Techniques & Spécifications</h2>
+          
+          <div className={styles.grid3}>
+            <div className={styles.fieldGroup}>
+              <label htmlFor="prod-spec-origin" className={styles.label}>
+                Origine / Provenance
+              </label>
+              <input
+                id="prod-spec-origin"
+                name="origin"
+                type="text"
+                className={styles.input}
+                value={specsData.origin}
+                onChange={handleSpecsChange}
+                placeholder="Ex. Côte d'Ivoire (Abidjan)"
+              />
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <label htmlFor="prod-spec-weight" className={styles.label}>
+                Poids / Volume / Format
+              </label>
+              <input
+                id="prod-spec-weight"
+                name="weight_volume"
+                type="text"
+                className={styles.input}
+                value={specsData.weight_volume}
+                onChange={handleSpecsChange}
+                placeholder="Ex. 1.4 - 1.6 kg ou Format A4 80g"
+              />
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <label htmlFor="prod-spec-packaging" className={styles.label}>
+                Conditionnement / Emballage
+              </label>
+              <input
+                id="prod-spec-packaging"
+                name="packaging"
+                type="text"
+                className={styles.input}
+                value={specsData.packaging}
+                onChange={handleSpecsChange}
+                placeholder="Ex. Prêt à cuire sous film ou Carton de 5 boîtes"
+              />
+            </div>
+          </div>
+
+          <div className={styles.grid3}>
+            <div className={styles.fieldGroup}>
+              <label htmlFor="prod-spec-cert" className={styles.label}>
+                Certification / Norme
+              </label>
+              <input
+                id="prod-spec-cert"
+                name="certification"
+                type="text"
+                className={styles.input}
+                value={specsData.certification}
+                onChange={handleSpecsChange}
+                placeholder="Ex. Élevage fermier garanti, Norme ISO 9001"
+              />
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <label htmlFor="prod-spec-brand" className={styles.label}>
+                Marque / Fabricant
+              </label>
+              <input
+                id="prod-spec-brand"
+                name="brand"
+                type="text"
+                className={styles.input}
+                value={specsData.brand}
+                onChange={handleSpecsChange}
+                placeholder="Ex. ETOF Ferme, Clairefontaine, Bic"
+              />
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <label htmlFor="prod-spec-storage" className={styles.label}>
+                Conseil de conservation
+              </label>
+              <input
+                id="prod-spec-storage"
+                name="storage"
+                type="text"
+                className={styles.input}
+                value={specsData.storage}
+                onChange={handleSpecsChange}
+                placeholder="Ex. Conserver entre 0°C et 4°C, Au sec"
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Téléversement d'image avec aperçu */}
+        {/* Photo principale de couverture */}
         <div className={styles.fieldGroup}>
-          <label className={styles.label}>Photo du produit</label>
+          <label className={styles.label}>Photo principale du produit (Couverture)</label>
           <div className={styles.imageUploadZone}>
             {previewUrl ? (
               <div className={styles.previewContainer}>
@@ -491,8 +769,145 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
               onChange={handleFileChange}
               className={styles.input}
             />
-            <span className={styles.helperText}>Formats acceptés : JPG, PNG, WEBP (max 5 Mo).</span>
+            <span className={styles.helperText}>Image de couverture du catalogue public (JPG, PNG, WEBP).</span>
           </div>
+        </div>
+
+        {/* Galerie Photos Multi-Angles (Face, Détails, Conditionnement) */}
+        <div className={styles.gallerySection}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 className={styles.specsTitle}>
+              Galerie Photos Multi-Angles ({ (isEditing ? galleryImages : pendingGalleryImages).length })
+            </h2>
+            {uploadingGalleryImage && <Spinner size="sm" />}
+          </div>
+
+          {/* Formulaire d'ajout d'une photo d'angle */}
+          <div className={styles.angleUploaderBox}>
+            <div className={styles.angleUploaderTitle}>
+              <i className="fa-solid fa-camera" aria-hidden="true" />
+              <span>Ajouter une vue ou un angle spécifique :</span>
+            </div>
+
+            <div className={styles.grid3}>
+              <div className={styles.fieldGroup}>
+                <label className={styles.label}>Angle de vue</label>
+                <select
+                  className={styles.select}
+                  value={selectedAngleKey}
+                  onChange={(e) => setSelectedAngleKey(e.target.value)}
+                >
+                  {PRODUCT_ANGLES.map((angle) => (
+                    <option key={angle.key} value={angle.key}>
+                      [{angle.badgeLabel}] {angle.labelFr}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className={styles.fieldGroup}>
+                <label className={styles.label}>Libellé personnalisé (facultatif)</label>
+                <input
+                  type="text"
+                  className={styles.input}
+                  value={customAngleLabel}
+                  onChange={(e) => setCustomAngleLabel(e.target.value)}
+                  placeholder="Ex. Gros plan sur l'emballage"
+                />
+              </div>
+
+              <div className={styles.fieldGroup}>
+                <label className={styles.label}>Fichier photo</label>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleSelectAngleFile}
+                  className={styles.input}
+                />
+              </div>
+            </div>
+
+            {newAnglePreview && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.25rem' }}>
+                <div style={{ width: '90px', height: '60px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #cbd5e1' }}>
+                  <img src={newAnglePreview} alt="Aperçu angle" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={handleConfirmAddAnglePhoto}
+                  disabled={uploadingGalleryImage}
+                >
+                  <i className="fa-solid fa-plus" aria-hidden="true" style={{ marginRight: '6px' }} />
+                  {isEditing ? 'Téléverser cet angle' : 'Ajouter cet angle à la liste'}
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Liste des photos d'angles */}
+          {(isEditing ? galleryImages : pendingGalleryImages).length > 0 ? (
+            <div className={styles.galleryGrid}>
+              {(isEditing ? galleryImages : pendingGalleryImages).map((img, idx) => {
+                const imgUrl = img.path || img.previewUrl || img.url;
+                const altText = img.alt_fr || img.labelFr || `Vue ${idx + 1}`;
+                const lower = (altText || '').toLowerCase();
+                const isDetail = lower.includes('détail') || lower.includes('close') || lower.includes('texture');
+                const isPack = lower.includes('conditionnement') || lower.includes('packaging') || lower.includes('emballage') || lower.includes('lot');
+                const badgeLabel = isDetail ? 'Détail' : isPack ? 'Packaging' : 'Face';
+                const badgeClass = isDetail ? styles.badgeDetail : isPack ? styles.badgePackaging : styles.badgeFront;
+
+                return (
+                  <div key={img.id || idx} className={styles.galleryItem}>
+                    <img src={imgUrl} alt={altText} className={styles.galleryImg} />
+                    <div className={styles.galleryItemMeta}>
+                      <span className={`${styles.galleryAngleBadge} ${badgeClass}`}>
+                        {badgeLabel}
+                      </span>
+                      <span className={styles.galleryItemLabel} title={altText}>
+                        {altText}
+                      </span>
+                    </div>
+                    <div className={styles.galleryItemActions}>
+                      <div>
+                        <button
+                          type="button"
+                          className={styles.miniBtn}
+                          onClick={() => handleMoveAngleImage(idx, -1)}
+                          disabled={idx === 0}
+                          title="Déplacer vers la gauche"
+                        >
+                          ◀
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.miniBtn}
+                          onClick={() => handleMoveAngleImage(idx, 1)}
+                          disabled={idx === (isEditing ? galleryImages : pendingGalleryImages).length - 1}
+                          title="Déplacer vers la droite"
+                        >
+                          ▶
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        className={`${styles.miniBtn} ${styles.miniBtnDanger}`}
+                        onClick={() => handleDeleteAngleImage(img.id)}
+                        title="Supprimer cette photo"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem' }}>
+              Aucune photo d'angle enregistrée. Ajoutez des vues rapprochées, de détail ou de conditionnement ci-dessus.
+            </p>
+          )}
         </div>
 
         {/* Boutons d'action */}
@@ -500,11 +915,11 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
           <Button type="button" variant="ghost" onClick={onClose} disabled={isSubmitting}>
             Annuler
           </Button>
-          <Button type="submit" variant="primary" disabled={isSubmitting}>
+          <Button type="submit" variant="primary" disabled={isSubmitting || isUploading || uploadingGalleryImage}>
             {isSubmitting ? (
               <>
                 <Spinner size="sm" />
-                <span>{isUploading ? 'Téléversement...' : 'Enregistrement...'}</span>
+                <span>Enregistrement...</span>
               </>
             ) : isEditing ? (
               'Enregistrer les modifications'

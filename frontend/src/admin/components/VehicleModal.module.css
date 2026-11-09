@@ -143,26 +143,89 @@
   gap: 1rem;
 }
 
+.angleUploaderBox {
+  background: #ffffff;
+  border: 1px dashed #94a3b8;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.angleUploaderTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0b2a4a;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .galleryGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.85rem;
 }
 
 .galleryItem {
   position: relative;
-  border-radius: 6px;
+  border-radius: 8px;
   overflow: hidden;
   border: 1px solid #cbd5e1;
   background: #ffffff;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 .galleryImg {
   width: 100%;
-  height: 90px;
+  height: 105px;
   object-fit: cover;
+  background: #f1f5f9;
+}
+
+.galleryItemMeta {
+  padding: 0.4rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: #ffffff;
+}
+
+.galleryAngleBadge {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.badgeExterior {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.badgeInterior {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.badgeOthers {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+
+.galleryItemLabel {
+  font-size: 0.75rem;
+  color: #475569;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .galleryItemActions {
@@ -170,7 +233,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.35rem 0.5rem;
-  background: #f1f5f9;
+  background: #f8fafc;
   border-top: 1px solid #e2e8f0;
 }
 

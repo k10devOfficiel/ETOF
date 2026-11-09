@@ -382,6 +382,94 @@ final class AdminProductController
     }
 
     /**
+     * Ajoute une photo à la galerie multi-angles d'un produit (POST /api/admin/products/{id}/images).
+     *
+     * @param array<string, string> $params
+     */
+    public function addImage(Request $request, array $params): Response
+    {
+        $pdo = Database::getConnection();
+        $productId = (int) ($params['id'] ?? 0);
+
+        $checkStmt = $pdo->prepare("SELECT id FROM products WHERE id = :id LIMIT 1");
+        $checkStmt->bindValue(':id', $productId, PDO::PARAM_INT);
+        $checkStmt->execute();
+        if ($checkStmt->fetchColumn() === false) {
+            return Response::error('NOT_FOUND', "Le produit spécifié n'existe pas.", 404);
+        }
+
+        if (empty($_FILES['image'])) {
+            return Response::error('MISSING_FILE', "Aucun fichier image transmis (champ 'image').", 400);
+        }
+
+        try {
+            $uploadDir = __DIR__ . '/../../public/uploads/products';
+            $uploadResult = UploadService::processUpload($_FILES['image'], $uploadDir);
+            $relativePath = '/uploads/products/' . $uploadResult['filename'];
+
+            $altFr = !empty($_POST['alt_fr']) ? trim((string) $_POST['alt_fr']) : null;
+            $altEn = !empty($_POST['alt_en']) ? trim((string) $_POST['alt_en']) : null;
+            $sortOrder = isset($_POST['sort_order']) ? (int) $_POST['sort_order'] : 0;
+
+            $insertStmt = $pdo->prepare("INSERT INTO product_images (product_id, path, alt_fr, alt_en, sort_order) 
+                                        VALUES (:product_id, :path, :alt_fr, :alt_en, :sort_order)");
+            $insertStmt->execute([
+                ':product_id' => $productId,
+                ':path' => $relativePath,
+                ':alt_fr' => $altFr,
+                ':alt_en' => $altEn,
+                ':sort_order' => $sortOrder,
+            ]);
+
+            $imageId = (int) $pdo->lastInsertId();
+
+            return Response::success([
+                'id' => $imageId,
+                'product_id' => $productId,
+                'path' => $relativePath,
+                'alt_fr' => $altFr,
+                'alt_en' => $altEn,
+                'sort_order' => $sortOrder,
+                'message' => 'Image ajoutée avec succès au produit.',
+            ], 201);
+        } catch (\Throwable $e) {
+            return Response::error('UPLOAD_FAILED', $e->getMessage(), 422);
+        }
+    }
+
+    /**
+     * Supprime une photo de la galerie d'un produit (DELETE /api/admin/products/{id}/images/{image_id}).
+     *
+     * @param array<string, string> $params
+     */
+    public function deleteImage(Request $request, array $params): Response
+    {
+        $pdo = Database::getConnection();
+        $productId = (int) ($params['id'] ?? 0);
+        $imageId = (int) ($params['image_id'] ?? 0);
+
+        $stmt = $pdo->prepare("SELECT id, path FROM product_images WHERE id = :id AND product_id = :product_id LIMIT 1");
+        $stmt->bindValue(':id', $imageId, PDO::PARAM_INT);
+        $stmt->bindValue(':product_id', $productId, PDO::PARAM_INT);
+        $stmt->execute();
+        $image = $stmt->fetch();
+
+        if ($image === false) {
+            return Response::error('NOT_FOUND', "Image introuvable pour ce produit.", 404);
+        }
+
+        $delStmt = $pdo->prepare("DELETE FROM product_images WHERE id = :id");
+        $delStmt->bindValue(':id', $imageId, PDO::PARAM_INT);
+        $delStmt->execute();
+
+        $this->deleteFileIfOrphan((string) $image['path']);
+
+        return Response::success([
+            'message' => 'Image supprimée avec succès.',
+        ]);
+    }
+
+    /**
      * Supprime un fichier physique du disque si aucun autre enregistrement ne l'utilise.
      */
     private function deleteFileIfOrphan(string $relativePath): void
@@ -413,6 +501,11 @@ final class AdminProductController
      */
     private function formatAdminProduct(array $row): array
     {
+        $pdo = Database::getConnection();
+        $imgStmt = $pdo->prepare("SELECT id, path, alt_fr, alt_en, sort_order FROM product_images WHERE product_id = :pid ORDER BY sort_order ASC, id ASC");
+        $imgStmt->execute([':pid' => (int) $row['id']]);
+        $images = $imgStmt->fetchAll(PDO::FETCH_ASSOC);
+
         return [
             'id' => (int) $row['id'],
             'category_id' => (int) $row['category_id'],
@@ -430,6 +523,7 @@ final class AdminProductController
             'is_orderable' => (bool) $row['is_orderable'],
             'is_available' => (bool) $row['is_available'],
             'image' => $row['image'] !== null ? (string) $row['image'] : null,
+            'images' => $images,
             'is_active' => (bool) $row['is_active'],
             'sort_order' => (int) $row['sort_order'],
             'created_at' => (string) $row['created_at'],

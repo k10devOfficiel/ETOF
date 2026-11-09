@@ -199,6 +199,10 @@ $router->delete('/api/admin/vehicles/{id}', [AdminVehicleController::class, 'des
 $router->post('/api/admin/vehicles/{id}/images', [AdminVehicleController::class, 'addImage'], [AdminAuthMiddleware::class, CsrfMiddleware::class]);
 $router->delete('/api/admin/vehicles/{id}/images/{image_id}', [AdminVehicleController::class, 'deleteImage'], [AdminAuthMiddleware::class, CsrfMiddleware::class]);
 
+// Gestion des images de la galerie des produits
+$router->post('/api/admin/products/{id}/images', [AdminProductController::class, 'addImage'], [AdminAuthMiddleware::class, CsrfMiddleware::class]);
+$router->delete('/api/admin/products/{id}/images/{image_id}', [AdminProductController::class, 'deleteImage'], [AdminAuthMiddleware::class, CsrfMiddleware::class]);
+
 // Routes d'administration - Demandes clients (statistiques, export CSV et gestion de statut)
 $router->get('/api/admin/stats', [AdminRequestController::class, 'stats'], [AdminAuthMiddleware::class]);
 $router->get('/api/admin/requests/export', [AdminRequestController::class, 'export'], [AdminAuthMiddleware::class]);
