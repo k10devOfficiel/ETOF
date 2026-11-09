@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import Alert from '../../components/ui/Alert.jsx';
 import Button from '../../components/ui/Button.jsx';
 import { ADMIN_PATH } from '../../config/adminConfig.js';
-import logoOfficial from '../../assets/logo/logo-etof.jpg';
+import logoOfficial from '../../assets/logo/logo-etof.png';
 import styles from './AdminLayout.module.css';
 
 /**

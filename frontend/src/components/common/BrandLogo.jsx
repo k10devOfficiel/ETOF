@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import logoOfficial from '../../assets/logo/logo-etof.jpg';
+import logoOfficial from '../../assets/logo/logo-etof.png';
 import styles from './BrandLogo.module.css';
 
 /**

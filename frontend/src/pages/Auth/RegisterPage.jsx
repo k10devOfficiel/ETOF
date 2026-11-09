@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUserAuth } from '../../context/UserAuthContext.jsx';
 import Spinner from '../../components/ui/Spinner.jsx';
-import logoOfficial from '../../assets/logo/logo-etof.jpg';
+import logoOfficial from '../../assets/logo/logo-etof.png';
 import styles from './AuthCommon.module.css';
 
 export function ClientRegisterPage() {
