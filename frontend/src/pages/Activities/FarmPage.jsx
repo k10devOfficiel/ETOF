@@ -14,7 +14,6 @@ export function FarmPage() {
 
   return (
     <ActivityPage
-      activity="farm"
       path="/activites/ferme"
       metaTitle={t('farm.metaTitle')}
       metaDescription={t('farm.metaDescription')}

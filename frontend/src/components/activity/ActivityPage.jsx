@@ -1,9 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import Seo from '../common/Seo.jsx';
-import Breadcrumb from '../common/Breadcrumb.jsx';
-import ScrollRotationCanvas from '../common/ScrollRotationCanvas.jsx';
 import Container from '../ui/Container.jsx';
 import Button from '../ui/Button.jsx';
 import DevPlaceholder from '../ui/DevPlaceholder.jsx';
@@ -11,13 +8,11 @@ import styles from './ActivityPage.module.css';
 
 /**
  * Composant de gabarit réutilisable pour les 4 pages d'activités d'ETOF SARL.
- * Intègre un fil d'Ariane, un visualiseur 3D rotatif au défilement,
- * un hero avec boutons d'action visibles sans défilement (above the fold),
+ * Intègre un hero avec boutons d'action visibles sans défilement (above the fold),
  * une notice prudente optionnelle, une présentation, la liste des prestations,
  * les avantages clés et un bloc d'appel à l'action final.
  *
  * @param {{
- *   activity?: 'farm' | 'vehicle' | 'office' | 'fuel',
  *   path?: string,
  *   metaTitle: string,
  *   metaDescription: string,
@@ -66,13 +61,11 @@ import styles from './ActivityPage.module.css';
  *       variant?: 'primary' | 'secondary' | 'outline'
  *     }>
  *   },
- *   devTopicKey?: string,
- *   children?: React.ReactNode
+ *   devTopicKey?: string
  * }} props
  * @returns {JSX.Element}
  */
 export function ActivityPage({
-  activity,
   path,
   metaTitle,
   metaDescription,
@@ -88,60 +81,35 @@ export function ActivityPage({
   devTopicKey,
   children,
 }) {
-  const { t } = useTranslation();
-
-  const breadcrumbs = [
-    { label: t('nav.home', 'Accueil'), to: '/' },
-    { label: t('nav.activities', 'Activités'), to: '/activites' },
-    { label: title },
-  ];
-
   return (
     <>
       <Seo title={metaTitle} description={metaDescription} path={path} />
 
-      {/* Bandeau Hero avec Fil d'Ariane et boutons d'action visibles d'emblée */}
+      {/* Bandeau Hero avec boutons d'action visibles sans défiler */}
       <header className={styles.hero}>
         <Container size="fixed">
-          <div className={styles.heroBreadcrumb}>
-            <Breadcrumb items={breadcrumbs} />
-          </div>
+          {badge && <span className={styles.heroBadge}>{badge}</span>}
+          <h1 className={styles.heroTitle}>{title}</h1>
+          <p className={styles.heroSubtitle}>{subtitle}</p>
 
-          <div className={activity ? styles.heroGrid : styles.heroSingle}>
-            <div className={styles.heroColText}>
-              {badge && <span className={styles.heroBadge}>{badge}</span>}
-              <h1 className={styles.heroTitle}>{title}</h1>
-              <p className={styles.heroSubtitle}>{subtitle}</p>
-
-              {heroActions.length > 0 && (
-                <div className={styles.heroActions}>
-                  {heroActions.map((action, index) => (
-                    <Link
-                      key={index}
-                      to={action.to}
-                      style={{ textDecoration: 'none' }}
-                    >
-                      <Button
-                        variant={action.variant || (index === 0 ? 'primary' : 'outline')}
-                        size="lg"
-                      >
-                        {action.label}
-                      </Button>
-                    </Link>
-                  ))}
-                </div>
-              )}
+          {heroActions.length > 0 && (
+            <div className={styles.heroActions}>
+              {heroActions.map((action, index) => (
+                <Link
+                  key={index}
+                  to={action.to}
+                  style={{ textDecoration: 'none' }}
+                >
+                  <Button
+                    variant={action.variant || (index === 0 ? 'primary' : 'outline')}
+                    size="lg"
+                  >
+                    {action.label}
+                  </Button>
+                </Link>
+              ))}
             </div>
-
-            {activity && (
-              <div className={styles.heroCol3D}>
-                <ScrollRotationCanvas
-                  activity={activity}
-                  altText={`${title} - Rotation 3D`}
-                />
-              </div>
-            )}
-          </div>
+          )}
         </Container>
       </header>
 

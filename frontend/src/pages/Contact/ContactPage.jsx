@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Seo from '../../components/common/Seo.jsx';
-import PageHero from '../../components/layout/PageHero.jsx';
 import { getSettings } from '../../api/catalog.js';
 import { Container } from '../../components/ui/Container.jsx';
 import { RequestForm } from '../../components/forms/RequestForm.jsx';
@@ -90,16 +89,16 @@ export function ContactPage() {
         path="/contact"
       />
 
-      {/* En-tête / Bannière Hero propre avec Fil d'Ariane */}
-      <PageHero
-        badge={t('contact.heroTag')}
-        title={t('contact.pageTitle')}
-        subtitle={t('contact.pageSubtitle')}
-        breadcrumbs={[
-          { label: t('nav.home'), to: '/' },
-          { label: t('nav.contact') },
-        ]}
-      />
+      {/* En-tête / Bannière Hero */}
+      <section className={styles.hero} aria-labelledby="contact-heading">
+        <Container size="xl">
+          <span className={styles.heroTag}>{t('contact.heroTag')}</span>
+          <h1 id="contact-heading" className={styles.heroTitle}>
+            {t('contact.pageTitle')}
+          </h1>
+          <p className={styles.heroSubtitle}>{t('contact.pageSubtitle')}</p>
+        </Container>
+      </section>
 
       <Container size="xl">
         <div className={styles.grid}>

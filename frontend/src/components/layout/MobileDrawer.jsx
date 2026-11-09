@@ -5,7 +5,6 @@ import { useOrder } from '../../context/OrderContext.jsx';
 import { Button } from '../ui/Button.jsx';
 import { ThemeToggle } from '../ui/ThemeToggle.jsx';
 import { BrandLogo } from '../common/BrandLogo.jsx';
-import Icon from '../common/Icon.jsx';
 import styles from './MobileDrawer.module.css';
 
 /**
@@ -118,7 +117,14 @@ export function MobileDrawer({ isOpen, onClose, triggerRef }) {
             onClick={onClose}
             aria-label={t('common.close')}
           >
-            <Icon name="xmark" size={24} className={styles.closeIcon} />
+            <svg
+              className={styles.closeIcon}
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              role="img"
+            >
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+            </svg>
           </button>
         </div>
 
@@ -144,9 +150,16 @@ export function MobileDrawer({ isOpen, onClose, triggerRef }) {
                 aria-controls="mobile-activities-list"
               >
                 <span>{t('nav.activities')}</span>
-                <span className={`${styles.accordionChevron} ${activitiesOpen ? styles.accordionOpen : ''}`} aria-hidden="true">
-                  <Icon name="chevronDown" size={16} />
-                </span>
+                <svg
+                  className={`${styles.accordionChevron} ${
+                    activitiesOpen ? styles.accordionOpen : ''
+                  }`}
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  role="img"
+                >
+                  <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z" />
+                </svg>
               </button>
 
               {activitiesOpen && (

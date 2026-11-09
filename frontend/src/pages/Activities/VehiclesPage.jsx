@@ -14,7 +14,6 @@ export function VehiclesPage() {
 
   return (
     <ActivityPage
-      activity="vehicle"
       path="/activites/vehicules"
       metaTitle={t('vehicles.metaTitle')}
       metaDescription={t('vehicles.metaDescription')}

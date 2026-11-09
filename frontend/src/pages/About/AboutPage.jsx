@@ -2,8 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Seo from '../../components/common/Seo.jsx';
-import PageHero from '../../components/layout/PageHero.jsx';
-import Button from '../../components/ui/Button.jsx';
 import Container from '../../components/ui/Container.jsx';
 import DevPlaceholder from '../../components/ui/DevPlaceholder.jsx';
 import styles from './AboutPage.module.css';
@@ -25,30 +23,14 @@ export function AboutPage() {
         path="/a-propos"
       />
 
-      {/* En-tête Héro propre avec Fil d'Ariane et actions */}
-      <PageHero
-        badge={t('about.heroTag')}
-        title={t('about.heroTitle')}
-        subtitle={t('about.heroSubtitle')}
-        breadcrumbs={[
-          { label: t('nav.home'), to: '/' },
-          { label: t('nav.about') },
-        ]}
-        actions={
-          <>
-            <Link to="/activites" style={{ textDecoration: 'none' }}>
-              <Button variant="primary" size="md">
-                {t('home.btnDiscoverActivities')}
-              </Button>
-            </Link>
-            <Link to="/contact" style={{ textDecoration: 'none' }}>
-              <Button variant="outline" size="md">
-                {t('nav.contact')}
-              </Button>
-            </Link>
-          </>
-        }
-      />
+      {/* En-tête Héro */}
+      <header className={styles.hero}>
+        <Container size="fixed">
+          <span className={styles.heroTag}>{t('about.heroTag')}</span>
+          <h1 className={styles.heroTitle}>{t('about.heroTitle')}</h1>
+          <p className={styles.heroSubtitle}>{t('about.heroSubtitle')}</p>
+        </Container>
+      </header>
 
       {/* Section Présentation */}
       <section className={styles.section} aria-labelledby="presentation-title">

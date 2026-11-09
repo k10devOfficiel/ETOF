@@ -1,46 +1,6 @@
 /* Polices locales ETOF SARL (zéro dépendance CDN externe) */
 
 @font-face {
-  font-family: 'Sora';
-  font-style: normal;
-  font-weight: 600 700;
-  font-display: swap;
-  src: url('../assets/fonts/Cinzel-Bold.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Bricolage Grotesque';
-  font-style: normal;
-  font-weight: 600 700;
-  font-display: swap;
-  src: url('../assets/fonts/Cinzel-Bold.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'DM Sans';
-  font-style: normal;
-  font-weight: 400 500;
-  font-display: swap;
-  src: url('../assets/fonts/PlusJakartaSans-Regular.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'DM Sans';
-  font-style: normal;
-  font-weight: 600 700;
-  font-display: swap;
-  src: url('../assets/fonts/PlusJakartaSans-SemiBold.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Manrope';
-  font-style: normal;
-  font-weight: 400 500;
-  font-display: swap;
-  src: url('../assets/fonts/PlusJakartaSans-Regular.woff2') format('woff2');
-}
-
-@font-face {
   font-family: 'Cinzel';
   font-style: normal;
   font-weight: 600 700;

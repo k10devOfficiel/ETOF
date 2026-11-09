@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { useOrder } from '../../context/OrderContext.jsx';
 import Badge from '../ui/Badge.jsx';
 import Button from '../ui/Button.jsx';
-import Icon from '../common/Icon.jsx';
 import styles from './ProductCard.module.css';
 
 /**
@@ -90,7 +89,13 @@ export function ProductCard({ product, onSelect }) {
           />
         ) : (
           <div className={styles.placeholderImage}>
-            <Icon name="tag" size={32} />
+            <svg
+              className={styles.placeholderIcon}
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+            </svg>
             <span>{t('catalog.noImage')}</span>
           </div>
         )}

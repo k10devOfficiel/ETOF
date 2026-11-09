@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Seo from '../../components/common/Seo.jsx';
-import PageHero from '../../components/layout/PageHero.jsx';
 import Container from '../../components/ui/Container.jsx';
 import RequestForm from '../../components/forms/RequestForm.jsx';
 import { getProducts, getVehicles } from '../../api/catalog.js';
@@ -133,16 +132,14 @@ export function QuotePage() {
         path="/devis"
       />
 
-      {/* En-tête de page propre avec Fil d'Ariane */}
-      <PageHero
-        badge={t('forms.pageTag')}
-        title={t('forms.pageTitle')}
-        subtitle={t('forms.pageSubtitle')}
-        breadcrumbs={[
-          { label: t('nav.home'), to: '/' },
-          { label: t('forms.pageTitle') },
-        ]}
-      />
+      {/* En-tête de page */}
+      <header className={styles.pageHeader}>
+        <Container size="fixed">
+          <span className={styles.pageTag}>{t('forms.pageTag')}</span>
+          <h1 className={styles.pageTitle}>{t('forms.pageTitle')}</h1>
+          <p className={styles.pageSubtitle}>{t('forms.pageSubtitle')}</p>
+        </Container>
+      </header>
 
       {/* Onglets d'orientation entre les 4 usages + hydrocarbures */}
       <nav className={styles.tabsContainer} aria-label={t('forms.tabsAriaLabel')}>

@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSearchParams, useParams, useNavigate, Link } from 'react-router-dom';
+import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Seo from '../../components/common/Seo.jsx';
-import Breadcrumb from '../../components/common/Breadcrumb.jsx';
-import ScrollRotationCanvas from '../../components/common/ScrollRotationCanvas.jsx';
 import Container from '../../components/ui/Container.jsx';
 import Spinner from '../../components/ui/Spinner.jsx';
 import Alert from '../../components/ui/Alert.jsx';
@@ -216,44 +214,12 @@ export function VehiclesCatalogPage() {
         path="/vehicules"
       />
 
-      {/* En-tête de page avec Fil d'Ariane et Rotation 3D */}
+      {/* En-tête de page */}
       <header className={styles.pageHeader}>
         <Container size="fixed">
-          <div className={styles.headerBreadcrumb}>
-            <Breadcrumb
-              items={[
-                { label: t('nav.home'), to: '/' },
-                { label: t('nav.vehicles') },
-              ]}
-            />
-          </div>
-
-          <div className={styles.headerGrid}>
-            <div className={styles.headerColText}>
-              <span className={styles.pageTag}>{t('vehicles.badge')}</span>
-              <h1 className={styles.pageTitle}>{t('vehicles.catalogPageTitle')}</h1>
-              <p className={styles.pageSubtitle}>{t('vehicles.catalogPageSubtitle')}</p>
-              <div className={styles.headerActions}>
-                <Link to="/devis?type=reservation" style={{ textDecoration: 'none' }}>
-                  <Button variant="primary" size="md">
-                    {t('vehicles.reserveAction', 'Réserver un véhicule')}
-                  </Button>
-                </Link>
-                <Link to="/devis?type=purchase" style={{ textDecoration: 'none' }}>
-                  <Button variant="outline" size="md">
-                    {t('vehicles.buyAction', 'Demande d’acquisition')}
-                  </Button>
-                </Link>
-              </div>
-            </div>
-
-            <div className={styles.headerCol3D}>
-              <ScrollRotationCanvas
-                activity="vehicle"
-                altText={t('vehicles.canvasAlt', 'Visualiseur de véhicule en rotation 3D')}
-              />
-            </div>
-          </div>
+          <span className={styles.pageTag}>{t('vehicles.badge')}</span>
+          <h1 className={styles.pageTitle}>{t('vehicles.catalogPageTitle')}</h1>
+          <p className={styles.pageSubtitle}>{t('vehicles.catalogPageSubtitle')}</p>
         </Container>
       </header>
 

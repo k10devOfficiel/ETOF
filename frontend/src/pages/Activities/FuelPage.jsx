@@ -16,7 +16,6 @@ export function FuelPage() {
 
   return (
     <ActivityPage
-      activity="fuel"
       path="/activites/hydrocarbures"
       metaTitle={t('fuel.metaTitle')}
       metaDescription={t('fuel.metaDescription')}

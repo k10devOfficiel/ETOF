@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../ui/Modal.jsx';
 import Button from '../ui/Button.jsx';
-import Icon from '../common/Icon.jsx';
 import { client } from '../../api/client.js';
 import styles from './VehicleModalForms.module.css';
 
@@ -110,9 +109,7 @@ export function VehicleBuyModal({ vehicle, isOpen, onClose, onSuccess }) {
     >
       {submittedData ? (
         <div className={styles.successBox} role="status">
-          <div className={styles.successIcon} aria-hidden="true">
-            <Icon name="check" size={28} />
-          </div>
+          <div className={styles.successIcon} aria-hidden="true">✓</div>
           <h3 className={styles.successTitle}>{t('forms.success.title')}</h3>
           <p className={styles.successDesc}>{t('vehicles.buySuccessMessage')}</p>
           {submittedData.reference && (

@@ -5,39 +5,6 @@
   border-bottom: 1px solid var(--color-border, #e2e8f0);
 }
 
-.heroGrid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2.5rem;
-  align-items: center;
-}
-
-@media (min-width: 992px) {
-  .heroGrid {
-    grid-template-columns: 1.15fr 0.85fr;
-  }
-}
-
-.heroColText {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-@media (min-width: 992px) {
-  .heroColText {
-    align-items: flex-start;
-    text-align: left;
-  }
-}
-
-.heroCol3D {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 .heroContent {
   max-width: 820px;
   margin: 0 auto;

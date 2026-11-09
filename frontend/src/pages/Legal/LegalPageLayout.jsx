@@ -1,7 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Seo from '../../components/common/Seo.jsx';
-import Breadcrumb from '../../components/common/Breadcrumb.jsx';
 import { Container } from '../../components/ui/Container.jsx';
 import styles from './LegalPageLayout.module.css';
 
@@ -46,14 +45,6 @@ export function LegalPageLayout({
       {/* En-tête / Hero */}
       <section className={styles.hero} aria-labelledby="legal-page-title">
         <Container size="xl">
-          <div style={{ marginBottom: '1.5rem' }}>
-            <Breadcrumb
-              items={[
-                { label: t('nav.home', 'Accueil'), to: '/' },
-                { label: title },
-              ]}
-            />
-          </div>
           <span className={styles.heroTag}>{tag || t('legal.defaultTag')}</span>
           <h1 id="legal-page-title" className={styles.heroTitle}>
             {title}
