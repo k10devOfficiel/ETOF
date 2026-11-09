@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Seo from '../../components/common/Seo.jsx';
+import PageHero from '../../components/layout/PageHero.jsx';
 import { Container } from '../../components/ui/Container.jsx';
 import { Button } from '../../components/ui/Button.jsx';
 import Icon from '../../components/common/Icon.jsx';
@@ -76,14 +77,15 @@ export function ActivitiesIndexPage() {
         path="/activites"
       />
 
-      <header className={styles.heroSection}>
-        <Container size="xl">
-          <h1 className={styles.heroTitle}>{t('activities.pageTitle', 'Nos Domaines d’Activité')}</h1>
-          <p className={styles.heroSubtitle}>
-            {t('activities.pageSubtitle', 'Une organisation multisectorielle intégrée au service des particuliers, des entreprises et des institutions en Côte d’Ivoire.')}
-          </p>
-        </Container>
-      </header>
+      <PageHero
+        badge={t('activities.badge', 'Pôles d’excellence')}
+        title={t('activities.pageTitle', 'Nos Domaines d’Activité')}
+        subtitle={t('activities.pageSubtitle', 'Une organisation multisectorielle intégrée au service des particuliers, des entreprises et des institutions en Côte d’Ivoire.')}
+        breadcrumbs={[
+          { label: t('nav.home', 'Accueil'), to: '/' },
+          { label: t('nav.activities', 'Activités') },
+        ]}
+      />
 
       <main className={styles.mainSection}>
         <Container size="xl">

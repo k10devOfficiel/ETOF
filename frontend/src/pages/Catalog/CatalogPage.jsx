@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Seo from '../../components/common/Seo.jsx';
+import PageHero from '../../components/layout/PageHero.jsx';
 import Container from '../../components/ui/Container.jsx';
 import Spinner from '../../components/ui/Spinner.jsx';
 import Alert from '../../components/ui/Alert.jsx';
@@ -229,14 +230,30 @@ export function CatalogPage() {
         path="/catalogue"
       />
 
-      {/* En-tête de page */}
-      <header className={styles.pageHeader}>
-        <Container size="fixed">
-          <span className={styles.pageTag}>{t('catalog.pageTag')}</span>
-          <h1 className={styles.pageTitle}>{t('catalog.pageTitle')}</h1>
-          <p className={styles.pageSubtitle}>{t('catalog.pageSubtitle')}</p>
-        </Container>
-      </header>
+      {/* En-tête de page propre avec Fil d'Ariane et actions rapides */}
+      <PageHero
+        badge={t('catalog.pageTag')}
+        title={t('catalog.pageTitle')}
+        subtitle={t('catalog.pageSubtitle')}
+        breadcrumbs={[
+          { label: t('nav.home'), to: '/' },
+          { label: t('nav.catalog') },
+        ]}
+        actions={
+          <>
+            <Link to="/vehicules" style={{ textDecoration: 'none' }}>
+              <Button variant="outline" size="md">
+                {t('nav.vehicles')}
+              </Button>
+            </Link>
+            <Link to="/devis" style={{ textDecoration: 'none' }}>
+              <Button variant="primary" size="md">
+                {t('home.btnRequestQuote')}
+              </Button>
+            </Link>
+          </>
+        }
+      />
 
       {/* Barre de filtres synchronisée dans l'URL */}
       <section className={styles.filtersSection} aria-label={t('catalog.filtersAriaLabel')}>

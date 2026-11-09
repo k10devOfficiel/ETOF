@@ -14,6 +14,7 @@ export function OfficePage() {
 
   return (
     <ActivityPage
+      activity="office"
       path="/activites/fournitures"
       metaTitle={t('office.metaTitle')}
       metaDescription={t('office.metaDescription')}
