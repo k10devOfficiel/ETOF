@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import Button from '../../components/ui/Button.jsx';
 import Alert from '../../components/ui/Alert.jsx';
 import Spinner from '../../components/ui/Spinner.jsx';
+import { ADMIN_PATH } from '../../config/adminConfig.js';
 import logoSrc from '../../assets/logo/logo.svg';
 import styles from './LoginPage.module.css';
 
@@ -26,10 +27,10 @@ export function LoginPage() {
   const [errorMessage, setErrorMessage] = useState(null);
 
   // Redirection sécurisée immédiate si déjà connecté (protection contre les redirections ouvertes)
-  const rawFrom = location.state?.from?.pathname || '/admin';
+  const rawFrom = location.state?.from?.pathname || ADMIN_PATH;
   const from = (typeof rawFrom === 'string' && rawFrom.startsWith('/') && !rawFrom.startsWith('//'))
     ? rawFrom
-    : '/admin';
+    : ADMIN_PATH;
   if (isAuthenticated) {
     return <Navigate to={from} replace />;
   }

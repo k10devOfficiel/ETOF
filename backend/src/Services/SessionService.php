@@ -33,9 +33,9 @@ final class SessionService
             'lifetime' => 0, // Cookie de session qui expire à la fermeture du navigateur
             'path' => '/',
             'domain' => '',
-            'secure' => !Config::isDev(), // Secure uniquement en production
-            'httponly' => true,           // Inaccessible depuis JavaScript
-            'samesite' => 'Lax',          // Protection contre CSRF inter-sites
+            'secure' => !Config::isDev() || (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
+            'httponly' => true,             // Inaccessible depuis JavaScript
+            'samesite' => 'Strict',         // Protection CSRF stricte
         ]);
 
         session_start();

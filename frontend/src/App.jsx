@@ -5,6 +5,7 @@ import ProtectedRoute from './admin/components/ProtectedRoute.jsx';
 import AdminLayout from './admin/components/AdminLayout.jsx';
 import PublicLayout from './components/layout/PublicLayout.jsx';
 import Spinner from './components/ui/Spinner.jsx';
+import { ADMIN_PATH } from './config/adminConfig.js';
 
 /**
  * Chargement différé (code-splitting / lazy loading) de l'ensemble des pages.
@@ -67,10 +68,10 @@ function App() {
     <AuthProvider>
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          {/* Espace privé d'Administration (/admin) non indexé */}
-          <Route path="/admin/login" element={<LoginPage />} />
+          {/* Espace privé d'Administration sur URL secrète (obfusquée, non référencée, noindex) */}
+          <Route path={`${ADMIN_PATH}/login`} element={<LoginPage />} />
           <Route
-            path="/admin"
+            path={ADMIN_PATH}
             element={
               <ProtectedRoute>
                 <AdminLayout />
