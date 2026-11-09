@@ -324,7 +324,7 @@ $farmProducts = [
         'unit_en' => 'piece',
         'price' => 3500,
         'min_qty' => 2,
-        'image_url' => 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=800&q=80',
+        'image_url' => 'https://upload.wikimedia.org/wikipedia/commons/8/8a/Broiler_Chicken.jpg',
         'file' => 'product-poulet-fermier.jpg',
     ],
     [
@@ -339,7 +339,7 @@ $farmProducts = [
         'unit_en' => 'piece',
         'price' => 5500,
         'min_qty' => 1,
-        'image_url' => 'https://images.unsplash.com/photo-1579202673506-ca3ce28943ef?auto=format&fit=crop&w=800&q=80',
+        'image_url' => 'https://upload.wikimedia.org/wikipedia/commons/0/09/Gallina_de_Guinea_%28Numida_meleagris%29%2C_parque_nacional_Kruger%2C_Sud%C3%A1frica%2C_2018-07-25%2C_DD_42.jpg',
         'file' => 'product-pintade-fermiere.jpg',
     ],
     [
@@ -354,7 +354,7 @@ $farmProducts = [
         'unit_en' => 'piece',
         'price' => 28000,
         'min_qty' => 1,
-        'image_url' => 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=800&q=80',
+        'image_url' => 'https://upload.wikimedia.org/wikipedia/commons/b/bc/20260428_tom_wild_turkey_matthaei_botanical_gardens_PD08952.jpg',
         'file' => 'product-dinde-fermiere.jpg',
     ],
     [
@@ -369,7 +369,7 @@ $farmProducts = [
         'unit_en' => 'pack',
         'price' => 6000,
         'min_qty' => 1,
-        'image_url' => 'https://images.unsplash.com/photo-1552728089-57bdde30beb3?auto=format&fit=crop&w=800&q=80',
+        'image_url' => 'https://upload.wikimedia.org/wikipedia/commons/1/11/Coturnix_japonica%2C_MSU_Faculty_of_Biology%2C_1.JPG',
         'file' => 'product-cailles-lot4.jpg',
     ],
     [
@@ -384,7 +384,7 @@ $farmProducts = [
         'unit_en' => 'piece',
         'price' => 6500,
         'min_qty' => 1,
-        'image_url' => 'https://images.unsplash.com/photo-1563281577-a7be47e20db9?auto=format&fit=crop&w=800&q=80',
+        'image_url' => 'https://upload.wikimedia.org/wikipedia/commons/7/7e/Rooster_on_a_farm_in_Tarn%2C_France%2C_29_September_2012.jpg',
         'file' => 'product-coq-fermier.jpg',
     ],
     [
@@ -399,7 +399,7 @@ $farmProducts = [
         'unit_en' => 'piece',
         'price' => 8500,
         'min_qty' => 1,
-        'image_url' => 'https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&w=800&q=80',
+        'image_url' => 'https://upload.wikimedia.org/wikipedia/commons/3/37/Crested_Pekin_Duck_%28Anas_platyrhynchos_domestica%29_%281%29.jpg',
         'file' => 'product-canard-fermier.jpg',
     ],
     [
@@ -414,7 +414,7 @@ $farmProducts = [
         'unit_en' => 'box',
         'price' => 27500,
         'min_qty' => 1,
-        'image_url' => 'https://images.unsplash.com/photo-1569254994521-ddbb54af5ae8?auto=format&fit=crop&w=800&q=80',
+        'image_url' => 'https://upload.wikimedia.org/wikipedia/commons/5/59/Broiler_chicks.jpg',
         'file' => 'product-poussins-50.jpg',
     ],
     [
@@ -429,7 +429,7 @@ $farmProducts = [
         'unit_en' => 'tray',
         'price' => 2500,
         'min_qty' => 2,
-        'image_url' => 'https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&w=800&q=80',
+        'image_url' => 'https://upload.wikimedia.org/wikipedia/commons/1/12/6-Pack-Chicken-Eggs.jpg',
         'file' => 'product-oeufs-poule-30.jpg',
     ],
     [
@@ -444,7 +444,7 @@ $farmProducts = [
         'unit_en' => 'box',
         'price' => 1800,
         'min_qty' => 2,
-        'image_url' => 'https://images.unsplash.com/photo-1598965675045-45c5e72c7d05?auto=format&fit=crop&w=800&q=80',
+        'image_url' => 'https://upload.wikimedia.org/wikipedia/commons/3/33/Wachteleier_im_Karton-20231205-RM-151854.jpg',
         'file' => 'product-oeufs-caille-24.jpg',
     ],
     [
@@ -459,7 +459,7 @@ $farmProducts = [
         'unit_en' => 'bag',
         'price' => 22500,
         'min_qty' => 1,
-        'image_url' => 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&w=800&q=80',
+        'image_url' => 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&w=800&q=80',
         'file' => 'product-aliment-volaille.jpg',
     ],
 ];
@@ -781,3 +781,4 @@ echo "-> $pOfficeCount produits Fournitures de Bureau enregistrés.\n\n";
 echo "========================================================\n";
 echo "              TOTALEMENT TERMINÉ AVEC SUCCÈS            \n";
 echo "========================================================\n";
+
