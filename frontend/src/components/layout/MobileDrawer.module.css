@@ -1,7 +1,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-modal-backdrop);
+  z-index: 1050;
   background-color: rgba(11, 42, 74, 0.6);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
@@ -20,10 +20,10 @@
   top: 0;
   right: 0;
   bottom: 0;
-  width: 100%;
-  max-width: 360px;
+  width: 85%;
+  max-width: 320px;
   background-color: #ffffff;
-  z-index: var(--z-modal);
+  z-index: 1100;
   box-shadow: var(--shadow-2xl);
   display: flex;
   flex-direction: column;
@@ -225,4 +225,28 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
   padding: 0 var(--space-2);
+}
+
+.authLinkBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-primary);
+  background: rgba(11, 42, 74, 0.05);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all var(--transition-fast) ease;
+}
+
+.authLinkBtn:hover {
+  background: rgba(11, 42, 74, 0.1);
+  color: var(--color-primary);
 }

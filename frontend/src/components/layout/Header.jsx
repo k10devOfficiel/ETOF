@@ -194,20 +194,20 @@ export function Header({ settings }) {
 
             {/* Actions à droite : Sélecteur Langue, CTA Devis & Hamburger mobile */}
             <div className={styles.actions}>
-              {/* Récapitulatif de commande */}
-              <Link
-                to="/commande"
-                className={styles.orderSummaryBtn}
-                aria-label={t('order.viewSummaryAria', { count: totalQuantity })}
-                title={t('order.summaryTitle')}
-              >
-                <Icon name="cart" size={24} className={styles.orderSummaryIcon} />
-                {totalQuantity > 0 && (
+              {/* Récapitulatif de commande (affiché si des articles sont présents) */}
+              {totalQuantity > 0 && (
+                <Link
+                  to="/commande"
+                  className={styles.orderSummaryBtn}
+                  aria-label={t('order.viewSummaryAria', { count: totalQuantity })}
+                  title={t('order.summaryTitle')}
+                >
+                  <Icon name="cart" size={20} className={styles.orderSummaryIcon} />
                   <span className={styles.orderBadge}>
                     {totalQuantity > 99 ? '99+' : totalQuantity}
                   </span>
-                )}
-              </Link>
+                </Link>
+              )}
 
               {/* Bascule de thème Jour / Nuit / Auto */}
               <ThemeToggle />

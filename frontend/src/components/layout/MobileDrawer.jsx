@@ -7,6 +7,7 @@ import { displayName } from '../../utils/userHelper.js';
 import { Button } from '../ui/Button.jsx';
 import { ThemeToggle } from '../ui/ThemeToggle.jsx';
 import { BrandLogo } from '../common/BrandLogo.jsx';
+import Icon from '../common/Icon.jsx';
 import styles from './MobileDrawer.module.css';
 
 /**
@@ -276,31 +277,24 @@ export function MobileDrawer({ isOpen, onClose, triggerRef }) {
               <NavLink
                 to="/mon-compte"
                 className={({ isActive }) =>
-                  `${styles.navLink} ${isActive ? styles.activeNavLink : ''}`
+                  `${styles.authLinkBtn} ${isActive ? styles.activeNavLink : ''}`
                 }
                 onClick={onClose}
-                style={{ fontWeight: 700, color: 'var(--color-primary)' }}
               >
-                👤 {displayName(user, currentLang)}
+                <Icon name="user" size={18} color="currentColor" />
+                <span>{displayName(user, currentLang)}</span>
               </NavLink>
             ) : (
               <button
                 type="button"
-                className={styles.navLink}
+                className={styles.authLinkBtn}
                 onClick={() => {
                   onClose();
                   requireAuth(() => {});
                 }}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  width: '100%',
-                  fontWeight: 600,
-                }}
               >
-                👤 {t('auth.login', 'Connexion / Inscription')}
+                <Icon name="user" size={18} color="currentColor" />
+                <span>{t('auth.loginOrRegister', 'Connexion / Inscription')}</span>
               </button>
             )}
           </nav>

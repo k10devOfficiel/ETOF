@@ -841,6 +841,7 @@ i18n
             },
           },
           auth: {
+            loginOrRegister: 'Connexion / Inscription',
             modalTitle: 'Authentification',
             loginTitle: 'Connexion',
             registerTitle: 'Créer un compte',
@@ -1737,6 +1738,7 @@ i18n
             },
           },
           auth: {
+            loginOrRegister: 'Sign In / Register',
             modalTitle: 'Authentication',
             loginTitle: 'Sign In',
             registerTitle: 'Create an Account',
