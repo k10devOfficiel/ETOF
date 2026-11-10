@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import adminApi from '../api/adminApi.js';
 import { ADMIN_PATH } from '../../config/adminConfig.js';
+import { playSound } from '../../utils/soundHelper.js';
 import styles from './AdminNotificationBell.module.css';
 
 const TYPE_LABELS = {
@@ -115,7 +116,7 @@ export function AdminNotificationBell() {
 
         // Si ce n'est pas le chargement initial et qu'un ID supérieur apparaît : nouvelle demande !
         if (!isInitialLoadRef.current && lastMaxIdRef.current !== null && topId > lastMaxIdRef.current) {
-          playNotificationChime();
+          playSound('notification');
           setIsRinging(true);
           setTimeout(() => setIsRinging(false), 3000);
 
@@ -138,15 +139,58 @@ export function AdminNotificationBell() {
     }
   }, []);
 
-  // Polling périodique automatique toutes les 3,5 secondes
+  // Flux Server-Sent Events (SSE) en temps réel instantané avec repli polling haute réactivité
   useEffect(() => {
     fetchLatest();
-    const interval = setInterval(() => {
-      if (document.visibilityState === 'visible') {
+    let es = null;
+    let fallbackInterval = null;
+
+    try {
+      es = new EventSource('/api/notifications/stream?target=admin');
+
+      es.addEventListener('new_request', () => {
+        playSound('notification');
+        setIsRinging(true);
+        setTimeout(() => setIsRinging(false), 3000);
         fetchLatest();
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('etof:refresh-requests'));
+        }
+      });
+
+      es.addEventListener('request_cancelled', () => {
+        playSound('status_alert');
+        fetchLatest();
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('etof:refresh-requests'));
+        }
+      });
+
+      es.onerror = () => {
+        if (es) {
+          try { es.close(); } catch {}
+          es = null;
+        }
+        if (!fallbackInterval) {
+          fallbackInterval = setInterval(() => {
+            if (document.visibilityState === 'visible') {
+              fetchLatest();
+            }
+          }, 2500);
+        }
+      };
+    } catch {
+      fallbackInterval = setInterval(fetchLatest, 2500);
+    }
+
+    return () => {
+      if (es) {
+        try { es.close(); } catch {}
       }
-    }, 3500);
-    return () => clearInterval(interval);
+      if (fallbackInterval) {
+        clearInterval(fallbackInterval);
+      }
+    };
   }, [fetchLatest]);
 
   // Écoute des événements de soumission et d'annulation pour actualisation instantanée
@@ -155,15 +199,23 @@ export function AdminNotificationBell() {
       fetchLatest();
     };
 
+    const handleCancelled = () => {
+      playSound('status_alert');
+      fetchLatest();
+    };
+
     window.addEventListener('etof:new-request-submitted', handleSync);
-    window.addEventListener('etof:request-cancelled', handleSync);
+    window.addEventListener('etof:request-cancelled', handleCancelled);
     window.addEventListener('etof:refresh-requests', handleSync);
 
     let bc = null;
     if (typeof BroadcastChannel !== 'undefined') {
       try {
         bc = new BroadcastChannel('etof_orders_sync');
-        bc.onmessage = () => {
+        bc.onmessage = (evt) => {
+          if (evt.data?.type === 'order_deleted' || evt.data?.type === 'order_cancelled') {
+            playSound('status_alert');
+          }
           fetchLatest();
         };
       } catch {}
@@ -171,7 +223,7 @@ export function AdminNotificationBell() {
 
     return () => {
       window.removeEventListener('etof:new-request-submitted', handleSync);
-      window.removeEventListener('etof:request-cancelled', handleSync);
+      window.removeEventListener('etof:request-cancelled', handleCancelled);
       window.removeEventListener('etof:refresh-requests', handleSync);
       if (bc) {
         try {

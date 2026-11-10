@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import adminApi from '../api/adminApi.js';
 import Spinner from '../../components/ui/Spinner.jsx';
 import Alert from '../../components/ui/Alert.jsx';
+import Icon from '../../components/common/Icon.jsx';
+import ConfirmModal from '../components/ConfirmModal.jsx';
 import RequestDetailModal from '../components/RequestDetailModal.jsx';
 import styles from './RequestsPage.module.css';
 
@@ -15,6 +17,7 @@ const STATUS_CONFIG = {
   confirmed: { label: 'Confirmée', className: styles.statusConfirmed },
   rejected: { label: 'Rejetée', className: styles.statusRejected },
   closed: { label: 'Clôturée', className: styles.statusClosed },
+  cancelled: { label: 'Annulée par client', className: styles.statusRejected },
 };
 
 /**
@@ -82,6 +85,85 @@ export function RequestsPage() {
 
   // Fiche détaillée modal
   const [selectedRequestId, setSelectedRequestId] = useState(null);
+
+  // Sélection multiple pour actions groupées (CRUD Batch)
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [isConfirmBatchDeleteOpen, setIsConfirmBatchDeleteOpen] = useState(false);
+  const [isProcessingBatch, setIsProcessingBatch] = useState(false);
+  const [singleDeleteId, setSingleDeleteId] = useState(null);
+  const [isProcessingSingleDelete, setIsProcessingSingleDelete] = useState(false);
+
+  const handleToggleSelect = (id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleToggleSelectAll = () => {
+    if (selectedIds.size === requests.length && requests.length > 0) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(requests.map((r) => r.id)));
+    }
+  };
+
+  const handleBatchDelete = async () => {
+    if (selectedIds.size === 0) return;
+    try {
+      setIsProcessingBatch(true);
+      setError(null);
+      const res = await adminApi.batchDeleteRequests(Array.from(selectedIds));
+      setSuccessMessage(res?.message || 'Demandes sélectionnées supprimées.');
+      setSelectedIds(new Set());
+      setIsConfirmBatchDeleteOpen(false);
+      loadRequests();
+      setTimeout(() => setSuccessMessage(null), 3500);
+    } catch (err) {
+      setError(err?.message || 'Erreur lors de la suppression groupée.');
+    } finally {
+      setIsProcessingBatch(false);
+    }
+  };
+
+  const handleBatchStatus = async (status) => {
+    if (selectedIds.size === 0 || !status) return;
+    try {
+      setIsProcessingBatch(true);
+      setError(null);
+      const res = await adminApi.batchUpdateRequestStatus(Array.from(selectedIds), status);
+      setSuccessMessage(res?.message || 'Statut mis à jour pour la sélection.');
+      setSelectedIds(new Set());
+      loadRequests();
+      setTimeout(() => setSuccessMessage(null), 3500);
+    } catch (err) {
+      setError(err?.message || 'Erreur lors de la mise à jour groupée.');
+    } finally {
+      setIsProcessingBatch(false);
+    }
+  };
+
+  const handleConfirmSingleDelete = async () => {
+    if (!singleDeleteId) return;
+    try {
+      setIsProcessingSingleDelete(true);
+      setError(null);
+      await adminApi.deleteRequest(singleDeleteId);
+      setSuccessMessage('Demande supprimée avec succès.');
+      setSingleDeleteId(null);
+      loadRequests();
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      setError(err?.message || 'Erreur lors de la suppression.');
+    } finally {
+      setIsProcessingSingleDelete(false);
+    }
+  };
 
   // Construction des paramètres de requête
   const buildQueryParams = useCallback(() => {
@@ -414,6 +496,7 @@ export function RequestsPage() {
               <option value="confirmed">Confirmée</option>
               <option value="rejected">Rejetée</option>
               <option value="closed">Clôturée</option>
+              <option value="cancelled">Annulée par client</option>
             </select>
           </div>
 
@@ -493,16 +576,71 @@ export function RequestsPage() {
         </div>
       ) : (
         <div className={styles.tableContainer}>
+          {/* Barre d'actions groupées (CRUD Batch) */}
+          {selectedIds.size > 0 && (
+            <div className={styles.batchBar}>
+              <div className={styles.batchInfo}>
+                <Icon name="check-double" size={16} />
+                <span style={{ marginLeft: '6px' }}>{selectedIds.size} demande(s) sélectionnée(s)</span>
+              </div>
+              <div className={styles.batchActions}>
+                <select
+                  className={styles.batchSelect}
+                  defaultValue=""
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      handleBatchStatus(e.target.value);
+                      e.target.value = '';
+                    }
+                  }}
+                  disabled={isProcessingBatch}
+                >
+                  <option value="" disabled>Changer statut en...</option>
+                  <option value="confirmed">Confirmée</option>
+                  <option value="in_progress">En cours</option>
+                  <option value="closed">Clôturée</option>
+                  <option value="rejected">Rejetée</option>
+                </select>
+
+                <button
+                  type="button"
+                  className={styles.batchDeleteBtn}
+                  onClick={() => setIsConfirmBatchDeleteOpen(true)}
+                  disabled={isProcessingBatch}
+                >
+                  <Icon name="trash" size={14} />
+                  <span>Supprimer la sélection</span>
+                </button>
+
+                <button
+                  type="button"
+                  className={styles.batchClearBtn}
+                  onClick={() => setSelectedIds(new Set())}
+                >
+                  Désélectionner
+                </button>
+              </div>
+            </div>
+          )}
+
           <table className={styles.table}>
             <thead>
               <tr>
+                <th className={styles.checkboxTh}>
+                  <input
+                    type="checkbox"
+                    aria-label="Sélectionner toutes les demandes"
+                    checked={requests.length > 0 && selectedIds.size === requests.length}
+                    onChange={handleToggleSelectAll}
+                  />
+                </th>
                 <th className={styles.th}>Référence</th>
                 <th className={styles.th}>Date</th>
                 <th className={styles.th}>Type</th>
                 <th className={styles.th}>Activité</th>
                 <th className={styles.th}>Client</th>
                 <th className={styles.th}>Statut</th>
-                <th className={styles.th} style={{ textAlign: 'right' }}>Action</th>
+                <th className={styles.th} style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -511,13 +649,22 @@ export function RequestsPage() {
                   label: req.status,
                   className: styles.statusClosed,
                 };
+                const isSelected = selectedIds.has(req.id);
 
                 return (
                   <tr
                     key={req.id}
-                    className={styles.tr}
+                    className={`${styles.tr} ${isSelected ? styles.selectedRow : ''}`}
                     onClick={() => setSelectedRequestId(req.id)}
                   >
+                    <td className={styles.checkboxTd} onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        aria-label={`Sélectionner la demande ${req.reference || req.id}`}
+                        checked={isSelected}
+                        onChange={() => handleToggleSelect(req.id)}
+                      />
+                    </td>
                     <td className={styles.td}>
                       <span className={styles.refCode}>{req.reference || `#${req.id}`}</span>
                     </td>
@@ -551,7 +698,7 @@ export function RequestsPage() {
                         {statusMeta.label}
                       </span>
                     </td>
-                    <td className={styles.td} style={{ textAlign: 'right' }}>
+                    <td className={styles.td} style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                       <button
                         type="button"
                         className={styles.actionBtn}
@@ -560,7 +707,18 @@ export function RequestsPage() {
                           setSelectedRequestId(req.id);
                         }}
                       >
-                        Consulter
+                        Consulter / Éditer
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.deleteBtn}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSingleDeleteId(req.id);
+                        }}
+                        title="Supprimer la demande"
+                      >
+                        <Icon name="trash" size={13} />
                       </button>
                     </td>
                   </tr>
@@ -605,6 +763,28 @@ export function RequestsPage() {
           onUpdated={loadRequests}
         />
       )}
+
+      {/* Confirmation de suppression unitaire */}
+      <ConfirmModal
+        isOpen={Boolean(singleDeleteId)}
+        onClose={() => setSingleDeleteId(null)}
+        onConfirm={handleConfirmSingleDelete}
+        title="Supprimer la demande"
+        message="Êtes-vous sûr de vouloir supprimer cette demande ? Cette action effacera également tous les articles commandés qui y sont associés."
+        confirmLabel="Supprimer définitivement"
+        isProcessing={isProcessingSingleDelete}
+      />
+
+      {/* Confirmation de suppression groupée */}
+      <ConfirmModal
+        isOpen={isConfirmBatchDeleteOpen}
+        onClose={() => setIsConfirmBatchDeleteOpen(false)}
+        onConfirm={handleBatchDelete}
+        title="Suppression groupée"
+        message={`Confirmez-vous la suppression définitive des ${selectedIds.size} demandes sélectionnées ? Cette opération est irréversible.`}
+        confirmLabel={`Supprimer les ${selectedIds.size} demandes`}
+        isProcessing={isProcessingBatch}
+      />
     </div>
   );
 }

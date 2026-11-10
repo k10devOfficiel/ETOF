@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '../components/common/Icon.jsx';
+import { playSound } from '../utils/soundHelper.js';
 import styles from '../components/ui/Toast.module.css';
 
 const ToastContext = createContext(null);
@@ -180,8 +181,9 @@ export function ToastProvider({ children }) {
     });
   }, [showToast, t]);
 
-  // 4. Ajout au panier : « {name}, {item} a été ajouté à votre panier. »
+  // 4. Ajout au panier avec notification sonore : « {name}, {item} a été ajouté à votre panier. »
   const notifyCartAdd = useCallback((name, item) => {
+    playSound('cart_add');
     showToast({
       type: 'success',
       title: t('toast.titles.cart', 'Panier'),
@@ -207,8 +209,9 @@ export function ToastProvider({ children }) {
     });
   }, [showToast, t]);
 
-  // 7. Devis envoyé : « {name}, votre demande de devis a bien été envoyée (réf. {ref}). Nous vous répondrons au plus vite. »
+  // 7. Devis envoyé avec effet sonore : « {name}, votre demande de devis a bien été envoyée (réf. {ref}). Nous vous répondrons au plus vite. »
   const notifyQuoteSent = useCallback((name, ref) => {
+    playSound('status_success');
     showToast({
       type: 'success',
       title: t('toast.titles.requestSent', 'Demande enregistrée'),
@@ -216,8 +219,9 @@ export function ToastProvider({ children }) {
     });
   }, [showToast, t]);
 
-  // 8. Commande envoyée : « {name}, votre commande de {count} article(s) a bien été envoyée (réf. {ref}). Nous vous contacterons pour la confirmer. »
+  // 8. Commande envoyée avec effet sonore : « {name}, votre commande de {count} article(s) a bien été envoyée (réf. {ref}). »
   const notifyOrderSent = useCallback((name, count, ref) => {
+    playSound('status_success');
     showToast({
       type: 'success',
       title: t('toast.titles.orderSent', 'Commande envoyée'),
@@ -225,8 +229,9 @@ export function ToastProvider({ children }) {
     });
   }, [showToast, t]);
 
-  // 9. Réservation / location envoyée : « {name}, votre demande de location du {item} du {start} au {end} a bien été envoyée (réf. {ref}). »
+  // 9. Réservation / location envoyée avec effet sonore : « {name}, votre demande de location du {item} du {start} au {end} a bien été envoyée (réf. {ref}). »
   const notifyRentalSent = useCallback((name, item, start, end, ref) => {
+    playSound('status_success');
     showToast({
       type: 'success',
       title: t('toast.titles.rentalSent', 'Réservation enregistrée'),
@@ -234,8 +239,9 @@ export function ToastProvider({ children }) {
     });
   }, [showToast, t]);
 
-  // 10. Achat de véhicule : « {name}, votre demande d'achat pour {item} a bien été envoyée (réf. {ref}). »
+  // 10. Achat de véhicule avec effet sonore : « {name}, votre demande d'achat pour {item} a bien été envoyée (réf. {ref}). »
   const notifyBuySent = useCallback((name, item, ref) => {
+    playSound('status_success');
     showToast({
       type: 'success',
       title: t('toast.titles.buySent', 'Demande d’achat enregistrée'),
@@ -245,12 +251,99 @@ export function ToastProvider({ children }) {
 
   // 11. Confirmation admin : « {name}, votre demande {ref} est confirmée. »
   const notifyAdminConfirmed = useCallback((name, ref) => {
+    playSound('status_success');
     showToast({
       type: 'success',
       title: t('toast.titles.confirmed', 'Confirmation'),
       message: t('toast.adminConfirmed', { name, ref }),
     });
   }, [showToast, t]);
+
+  // 12. Notification en temps réel de changement de statut initié par l'administrateur
+  const notifyStatusUpdate = useCallback((reference, status, customMessage) => {
+    const isSuccess = status === 'confirmed';
+    const isAlert = status === 'rejected';
+    playSound(isSuccess ? 'status_success' : isAlert ? 'status_alert' : 'notification');
+
+    let title = t('toast.titles.orderUpdate', 'Suivi de commande');
+    let message = t('toast.orderStatusChanged', `Mise à jour concernant votre demande ${reference}`);
+    if (status === 'confirmed') {
+      title = t('toast.titles.confirmed', 'Commande validée !');
+      message = t('toast.orderConfirmed', `Votre demande ${reference} a été validée par notre équipe.`);
+    } else if (status === 'in_progress') {
+      title = t('toast.titles.inProgress', 'Commande en cours de validation');
+      message = t('toast.orderInProgress', `Votre demande ${reference} est actuellement en cours de traitement.`);
+    } else if (status === 'rejected') {
+      title = t('toast.titles.rejected', 'Mise à jour de commande');
+      message = t('toast.orderRejected', `Votre demande ${reference} n'a pas pu être retenue.`);
+    }
+
+    if (customMessage) {
+      message += ` Message : ${customMessage}`;
+    }
+
+    showToast({
+      type: isSuccess ? 'success' : isAlert ? 'error' : 'info',
+      title,
+      message,
+    });
+  }, [showToast, t]);
+
+  // Écoute temps réel des changements de statut d'ordre (multi-onglets et broadcast)
+  useEffect(() => {
+    const handleStatusSync = (data) => {
+      if (!data || !data.reference) return;
+      notifyStatusUpdate(data.reference, data.status, data.clientMessage);
+    };
+
+    const handleCustomEvent = (e) => {
+      handleStatusSync(e.detail);
+    };
+
+    window.addEventListener('etof:order-status-updated', handleCustomEvent);
+
+    let es = null;
+    try {
+      es = new EventSource('/api/notifications/stream?target=client');
+      es.addEventListener('order_status_updated', (event) => {
+        try {
+          const parsed = JSON.parse(event.data);
+          const payload = parsed.payload || parsed;
+          handleStatusSync(payload);
+        } catch {}
+      });
+      es.onerror = () => {
+        if (es) {
+          try { es.close(); } catch {}
+          es = null;
+        }
+      };
+    } catch {}
+
+    let bc = null;
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        bc = new BroadcastChannel('etof_orders_sync');
+        bc.onmessage = (event) => {
+          if (event.data?.type === 'order_status_updated' && event.data?.data) {
+            handleStatusSync(event.data.data);
+          }
+        };
+      } catch {}
+    }
+
+    return () => {
+      window.removeEventListener('etof:order-status-updated', handleCustomEvent);
+      if (es) {
+        try { es.close(); } catch {}
+      }
+      if (bc) {
+        try {
+          bc.close();
+        } catch {}
+      }
+    };
+  }, [notifyStatusUpdate]);
 
   const value = {
     showToast,
@@ -268,6 +361,7 @@ export function ToastProvider({ children }) {
     notifyRentalSent,
     notifyBuySent,
     notifyAdminConfirmed,
+    notifyStatusUpdate,
   };
 
   return (

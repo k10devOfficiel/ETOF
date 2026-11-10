@@ -16,6 +16,7 @@ const STATUS_CONFIG = {
   confirmed: { label: 'Confirmée', className: styles.statusConfirmed },
   rejected: { label: 'Rejetée', className: styles.statusRejected },
   closed: { label: 'Clôturée', className: styles.statusClosed },
+  cancelled: { label: 'Annulée client', className: styles.statusRejected },
 };
 
 const TYPE_LABELS = {
@@ -169,6 +170,7 @@ export function DashboardPage() {
         new: stats?.by_status?.new ?? recentRequests.filter((r) => r.status === 'new').length,
         in_progress: stats?.by_status?.in_progress ?? recentRequests.filter((r) => r.status === 'in_progress').length,
         confirmed: stats?.by_status?.confirmed ?? recentRequests.filter((r) => r.status === 'confirmed').length,
+        cancelled: stats?.by_status?.cancelled ?? recentRequests.filter((r) => r.status === 'cancelled').length,
         vehicles: stats?.vehicles_count ?? 6,
         products: stats?.products_count ?? 12,
       };
@@ -180,6 +182,7 @@ export function DashboardPage() {
       new: actRequests.filter((r) => r.status === 'new').length,
       in_progress: actRequests.filter((r) => r.status === 'in_progress').length,
       confirmed: actRequests.filter((r) => r.status === 'confirmed').length,
+      cancelled: actRequests.filter((r) => r.status === 'cancelled').length,
       vehicles: selectedActivity === 'vehicle' ? (stats?.vehicles_count ?? 6) : null,
       products: selectedActivity === 'farm'
         ? (stats?.farm_products_count ?? 6)
@@ -309,6 +312,24 @@ export function DashboardPage() {
                 <span className={styles.kpiSubtext}>validées</span>
               </div>
             </div>
+
+            {displayedStats.cancelled > 0 && (
+              <div className={styles.kpiCard}>
+                <div className={styles.kpiHeader}>
+                  <div className={styles.kpiIconWrapper} style={{ background: '#fee2e2', color: '#b91c1c' }}>
+                    <Icon name="circle-xmark" size={18} />
+                  </div>
+                  <span className={`${styles.kpiTrendBadge} ${styles.trendHighlight}`}>Traçabilité</span>
+                </div>
+                <p className={styles.kpiTitle}>Annulées client</p>
+                <div className={styles.kpiValueRow}>
+                  <span className={styles.kpiValue} style={{ color: '#b91c1c' }}>
+                    {displayedStats.cancelled}
+                  </span>
+                  <span className={styles.kpiSubtext}>archivées</span>
+                </div>
+              </div>
+            )}
 
             {/* Carte Voitures : affichée uniquement pour Tous les pôles et le pôle Véhicules */}
             {(selectedActivity === 'all' || selectedActivity === 'vehicle') && (

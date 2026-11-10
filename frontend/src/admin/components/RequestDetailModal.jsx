@@ -44,8 +44,25 @@ export function RequestDetailModal({ isOpen, onClose, requestId, onUpdated }) {
   const [internalNote, setInternalNote] = useState('');
   const [savingNote, setSavingNote] = useState(false);
 
+  // Édition complète des coordonnées et de la commande (CRUD Admin)
+  const [isEditing, setIsEditing] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    full_name: '',
+    email: '',
+    phone: '',
+    company: '',
+    message: '',
+  });
+  const [editItems, setEditItems] = useState([]);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+
+  // Suppression unitaire
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   // Changement de statut et confirmation
   const [pendingStatus, setPendingStatus] = useState(null);
+  const [clientCustomMessage, setClientCustomMessage] = useState('');
   const [markVehicleReserved, setMarkVehicleReserved] = useState(true);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
@@ -57,6 +74,14 @@ export function RequestDetailModal({ isOpen, onClose, requestId, onUpdated }) {
       const data = await adminApi.getRequest(requestId);
       setRequest(data);
       setInternalNote(data?.internal_note || '');
+      setEditFormData({
+        full_name: data?.full_name || data?.name || '',
+        email: data?.email || '',
+        phone: data?.phone || '',
+        company: data?.company || '',
+        message: data?.message || '',
+      });
+      setEditItems(data?.items || []);
     } catch (err) {
       setError('Impossible de charger le détail de la demande.');
     } finally {
@@ -93,9 +118,56 @@ export function RequestDetailModal({ isOpen, onClose, requestId, onUpdated }) {
     }
   };
 
+  // Enregistrement des modifications de coordonnées et de commande (CRUD)
+  const handleSaveEdit = async (e) => {
+    e.preventDefault();
+    try {
+      setIsSavingEdit(true);
+      setError(null);
+      await adminApi.updateRequest(requestId, {
+        full_name: editFormData.full_name.trim(),
+        email: editFormData.email.trim(),
+        phone: editFormData.phone.trim(),
+        company: editFormData.company.trim() || null,
+        message: editFormData.message.trim() || null,
+        items: editItems.map((it) => ({
+          id: it.id,
+          quantity: it.quantity,
+          unit_price: it.unit_price,
+        })),
+      });
+      setSuccessMessage('Informations de la demande modifiées avec succès.');
+      setIsEditing(false);
+      await loadDetail();
+      onUpdated();
+      setTimeout(() => setSuccessMessage(null), 3500);
+    } catch (err) {
+      setError(err?.message || 'Erreur lors de la modification de la demande.');
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  // Suppression unitaire confirmée
+  const handleDeleteRequest = async () => {
+    try {
+      setIsDeleting(true);
+      setError(null);
+      await adminApi.deleteRequest(requestId);
+      setIsConfirmDeleteOpen(false);
+      onUpdated();
+      onClose();
+    } catch (err) {
+      setError(err?.message || 'Erreur lors de la suppression de la demande.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   // Demande de confirmation de statut
   const promptStatusChange = (status) => {
     if (status === request?.status) return;
+    setClientCustomMessage('');
     setPendingStatus(status);
   };
 
@@ -112,12 +184,43 @@ export function RequestDetailModal({ isOpen, onClose, requestId, onUpdated }) {
         internal_note: internalNote.trim() || null,
       };
 
+      if (clientCustomMessage.trim()) {
+        payload.client_message = clientCustomMessage.trim();
+      }
+
       // Case "Marquer le véhicule comme réservé" pour les réservations confirmées
       if (pendingStatus === 'confirmed' && request?.type === 'reservation') {
         payload.update_vehicle = Boolean(markVehicleReserved);
       }
 
       await adminApi.updateRequest(requestId, payload);
+
+      // Notification en temps réel multi-onglets pour l'application cliente et l'admin
+      const statusPayload = {
+        id: requestId,
+        reference: request?.reference,
+        status: pendingStatus,
+        email: request?.email,
+        full_name: request?.full_name || request?.name,
+        clientMessage: clientCustomMessage.trim() || null,
+      };
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('etof:order-status-updated', { detail: statusPayload })
+        );
+      }
+
+      if (typeof BroadcastChannel !== 'undefined') {
+        try {
+          const bc = new BroadcastChannel('etof_orders_sync');
+          bc.postMessage({
+            type: 'order_status_updated',
+            data: statusPayload,
+          });
+          bc.close();
+        } catch {}
+      }
 
       setSuccessMessage(
         `Statut mis à jour avec succès : ${getStatusLabel(pendingStatus)}.${
@@ -147,6 +250,8 @@ export function RequestDetailModal({ isOpen, onClose, requestId, onUpdated }) {
         return 'Refusée';
       case 'closed':
         return 'Clôturée';
+      case 'cancelled':
+        return 'Annulée par le client';
       default:
         return st;
     }
@@ -160,6 +265,7 @@ export function RequestDetailModal({ isOpen, onClose, requestId, onUpdated }) {
         return 'reserved';
       case 'rejected':
       case 'closed':
+      case 'cancelled':
         return 'sold';
       default:
         return 'default';
@@ -216,54 +322,137 @@ export function RequestDetailModal({ isOpen, onClose, requestId, onUpdated }) {
             </div>
           </div>
 
-          {/* Coordonnées client avec liens cliquables */}
+          {/* Coordonnées client avec liens cliquables et mode édition */}
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-              </svg>
-              Coordonnées du Client
-            </h2>
-
-            <div className={styles.contactGrid}>
-              <div className={styles.contactItem}>
-                <span className={styles.contactLabel}>Nom complet</span>
-                <span className={styles.contactValue}>{request.full_name || request.name}</span>
-                {request.company && (
-                  <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Société : {request.company}</span>
-                )}
-              </div>
-
-              <div className={styles.contactItem}>
-                <span className={styles.contactLabel}>Téléphone</span>
-                <a href={`tel:${cleanPhone}`} className={styles.linkAction}>
-                  <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
-                    <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
-                  </svg>
-                  Appeler : {request.phone}
-                </a>
-                {cleanPhone && (
-                  <a
-                    href={`https://wa.me/${cleanPhone}?text=${encodeURIComponent(
-                      `Bonjour ${request.full_name}, nous revenons vers vous concernant votre demande ${request.reference} chez ETOF SARL.`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`${styles.linkAction} ${styles.whatsappLink}`}
-                    style={{ marginTop: '0.2rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                  >
-                    <Icon name="whatsapp" size={16} /> WhatsApp Direct
-                  </a>
-                )}
-              </div>
-
-              <div className={styles.contactItem}>
-                <span className={styles.contactLabel}>Adresse e-mail</span>
-                <a href={`mailto:${request.email}?subject=${encodeURIComponent(`ETOF SARL - Demande ${request.reference}`)}`} className={styles.linkAction} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <Icon name="envelope" size={16} /> {request.email}
-                </a>
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <h2 className={styles.sectionTitle}>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
+                Coordonnées du Client
+              </h2>
+              <button
+                type="button"
+                className={styles.editToggleBtn}
+                onClick={() => setIsEditing(!isEditing)}
+              >
+                <Icon name={isEditing ? 'xmark' : 'pen'} size={14} />
+                <span>{isEditing ? 'Fermer l’édition' : 'Modifier les données reçues'}</span>
+              </button>
             </div>
+
+            {isEditing ? (
+              <form onSubmit={handleSaveEdit} style={{ marginTop: '0.5rem' }}>
+                <div className={styles.editGrid}>
+                  <div className={styles.editField}>
+                    <label className={styles.editLabel}>Nom complet *</label>
+                    <input
+                      type="text"
+                      className={styles.editInput}
+                      value={editFormData.full_name}
+                      onChange={(e) => setEditFormData({ ...editFormData, full_name: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className={styles.editField}>
+                    <label className={styles.editLabel}>Adresse e-mail *</label>
+                    <input
+                      type="email"
+                      className={styles.editInput}
+                      value={editFormData.email}
+                      onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className={styles.editField}>
+                    <label className={styles.editLabel}>Téléphone *</label>
+                    <input
+                      type="text"
+                      className={styles.editInput}
+                      value={editFormData.phone}
+                      onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className={styles.editField}>
+                    <label className={styles.editLabel}>Société (optionnel)</label>
+                    <input
+                      type="text"
+                      className={styles.editInput}
+                      value={editFormData.company}
+                      onChange={(e) => setEditFormData({ ...editFormData, company: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.editField} style={{ marginTop: '0.75rem' }}>
+                  <label className={styles.editLabel}>Message / Note transmise par le client</label>
+                  <textarea
+                    rows={2}
+                    className={styles.editInput}
+                    value={editFormData.message}
+                    onChange={(e) => setEditFormData({ ...editFormData, message: e.target.value })}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
+                  <button
+                    type="button"
+                    className={styles.editToggleBtn}
+                    onClick={() => setIsEditing(false)}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    className={styles.saveEditBtn}
+                    disabled={isSavingEdit}
+                  >
+                    {isSavingEdit ? 'Enregistrement...' : 'Enregistrer les modifications'}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className={styles.contactGrid}>
+                <div className={styles.contactItem}>
+                  <span className={styles.contactLabel}>Nom complet</span>
+                  <span className={styles.contactValue}>{request.full_name || request.name}</span>
+                  {request.company && (
+                    <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Société : {request.company}</span>
+                  )}
+                </div>
+
+                <div className={styles.contactItem}>
+                  <span className={styles.contactLabel}>Téléphone</span>
+                  <a href={`tel:${cleanPhone}`} className={styles.linkAction}>
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
+                      <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+                    </svg>
+                    Appeler : {request.phone}
+                  </a>
+                  {cleanPhone && (
+                    <a
+                      href={`https://wa.me/${cleanPhone}?text=${encodeURIComponent(
+                        `Bonjour ${request.full_name}, nous revenons vers vous concernant votre demande ${request.reference} chez ETOF SARL.`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`${styles.linkAction} ${styles.whatsappLink}`}
+                      style={{ marginTop: '0.2rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      <Icon name="whatsapp" size={16} /> WhatsApp Direct
+                    </a>
+                  )}
+                </div>
+
+                <div className={styles.contactItem}>
+                  <span className={styles.contactLabel}>Adresse e-mail</span>
+                  <a href={`mailto:${request.email}?subject=${encodeURIComponent(`ETOF SARL - Demande ${request.reference}`)}`} className={styles.linkAction} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <Icon name="envelope" size={16} /> {request.email}
+                  </a>
+                </div>
+              </div>
+            )}
           </section>
 
           {/* Véhicule & Dates de réservation (si applicable) */}
@@ -415,8 +604,33 @@ export function RequestDetailModal({ isOpen, onClose, requestId, onUpdated }) {
               </button>
             </div>
           </section>
+          {/* Barre inférieure d'actions destructives (CRUD Delete) */}
+          <div className={styles.bottomBar}>
+            <button
+              type="button"
+              className={styles.deleteActionBtn}
+              onClick={() => setIsConfirmDeleteOpen(true)}
+            >
+              <Icon name="trash" size={15} />
+              <span>Supprimer définitivement cette demande</span>
+            </button>
+            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+              ID Système : #{request.id}
+            </span>
+          </div>
         </div>
       ) : null}
+
+      {/* Confirmation de suppression définitive */}
+      <ConfirmModal
+        isOpen={isConfirmDeleteOpen}
+        onClose={() => setIsConfirmDeleteOpen(false)}
+        onConfirm={handleDeleteRequest}
+        title="Supprimer définitivement la demande"
+        message={`Attention : vous êtes sur le point de supprimer définitivement la demande ${request?.reference} ainsi que tous les articles rattachés. Cette action est irréversible.`}
+        confirmLabel="Confirmer la suppression"
+        isProcessing={isDeleting}
+      />
 
       {/* Confirmation de changement de statut */}
       <ConfirmModal
@@ -428,6 +642,30 @@ export function RequestDetailModal({ isOpen, onClose, requestId, onUpdated }) {
         confirmLabel="Confirmer le statut"
         isProcessing={isUpdatingStatus}
       >
+        {pendingStatus && ['confirmed', 'in_progress', 'rejected'].includes(pendingStatus) && (
+          <div style={{ marginTop: '1rem', textAlign: 'left' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+              Message personnalisé envoyé au client (par e-mail et notification) :
+            </label>
+            <textarea
+              value={clientCustomMessage}
+              onChange={(e) => setClientCustomMessage(e.target.value)}
+              placeholder="Précisez un détail pratique, un délai de livraison ou un motif pour le client..."
+              rows={3}
+              style={{
+                width: '100%',
+                padding: '8px 10px',
+                borderRadius: '6px',
+                border: '1px solid #cbd5e1',
+                fontSize: '0.85rem',
+                fontFamily: 'inherit',
+                resize: 'vertical',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+        )}
+
         {pendingStatus === 'confirmed' && hasVehicle && (
           <div style={{ marginTop: '1rem' }}>
             <label className={styles.checkboxVehicle}>

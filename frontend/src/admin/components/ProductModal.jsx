@@ -169,7 +169,6 @@ export function ProductModal({ isOpen, onClose, product = null, categories = [],
     setSelectedFile(null);
     setGeneralError(null);
     setFieldErrors({});
-    setActiveTab('fr');
   }, [product, categories, isOpen]);
 
   if (!isOpen) return null;

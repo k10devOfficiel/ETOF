@@ -51,22 +51,51 @@ export function ClientProfilePage() {
     }
 
     let isMounted = true;
-    clientAuthApi
-      .getMyRequests()
-      .then((res) => {
-        if (isMounted) {
-          setRequests(res?.data?.items || []);
-        }
-      })
-      .catch(() => {
-        if (isMounted) setRequests([]);
-      })
-      .finally(() => {
-        if (isMounted) setLoadingRequests(false);
-      });
+
+    const fetchRequests = () => {
+      clientAuthApi
+        .getMyRequests()
+        .then((res) => {
+          if (isMounted) {
+            setRequests(res?.data?.items || []);
+          }
+        })
+        .catch(() => {
+          if (isMounted) setRequests([]);
+        })
+        .finally(() => {
+          if (isMounted) setLoadingRequests(false);
+        });
+    };
+
+    fetchRequests();
+
+    const handleSync = () => {
+      fetchRequests();
+    };
+
+    window.addEventListener('etof:order-status-updated', handleSync);
+    window.addEventListener('etof:new-request-submitted', handleSync);
+
+    let bc = null;
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        bc = new BroadcastChannel('etof_orders_sync');
+        bc.onmessage = () => {
+          fetchRequests();
+        };
+      } catch {}
+    }
 
     return () => {
       isMounted = false;
+      window.removeEventListener('etof:order-status-updated', handleSync);
+      window.removeEventListener('etof:new-request-submitted', handleSync);
+      if (bc) {
+        try {
+          bc.close();
+        } catch {}
+      }
     };
   }, [user, requireAuth, t]);
 
@@ -297,8 +326,10 @@ export function ClientProfilePage() {
                   variant={
                     req.status === 'confirmed'
                       ? 'available'
-                      : req.status === 'rejected'
-                      ? 'unavailable'
+                      : req.status === 'rejected' || req.status === 'cancelled'
+                      ? 'sold'
+                      : req.status === 'in_progress'
+                      ? 'reserved'
                       : 'available'
                   }
                 >
@@ -308,6 +339,8 @@ export function ClientProfilePage() {
                     ? t('requests.status_in_progress', 'En cours')
                     : req.status === 'rejected'
                     ? t('requests.status_rejected', 'Rejetée')
+                    : req.status === 'cancelled'
+                    ? t('requests.status_cancelled', 'Annulée')
                     : t('requests.status_new', 'Nouvelle')}
                 </Badge>
               </div>

@@ -165,13 +165,13 @@ export const adminApi = {
   getRequest: async (id) => adminFetch(`/api/admin/requests/${id}`, { method: 'GET' }),
 
   /**
-   * Mise à jour du statut et/ou de la note interne d'une demande
+   * Mise à jour du statut et/ou des données d'une demande
    * @param {number} id
-   * @param {{ status?: string, internal_note?: string|null, update_vehicle?: boolean }} data
+   * @param {Record<string, any>} data
    */
   updateRequest: async (id, data) =>
     adminFetch(`/api/admin/requests/${id}`, {
-      method: 'PATCH',
+      method: 'PUT',
       body: data,
     }),
 
@@ -182,6 +182,46 @@ export const adminApi = {
     adminFetch(`/api/admin/requests/${id}`, {
       method: 'PATCH',
       body: { status, internal_note: notes },
+    }),
+
+  /**
+   * Supprimer une demande client
+   * @param {number} id
+   */
+  deleteRequest: async (id) =>
+    adminFetch(`/api/admin/requests/${id}`, {
+      method: 'DELETE',
+    }),
+
+  /**
+   * Suppression groupée de demandes sélectionnées
+   * @param {number[]} ids
+   */
+  batchDeleteRequests: async (ids) =>
+    adminFetch('/api/admin/requests/batch-delete', {
+      method: 'POST',
+      body: { ids },
+    }),
+
+  /**
+   * Mise à jour groupée du statut de demandes sélectionnées
+   * @param {number[]} ids
+   * @param {string} status
+   * @param {string|null} [clientMessage]
+   */
+  batchUpdateRequestStatus: async (ids, status, clientMessage = null) =>
+    adminFetch('/api/admin/requests/batch-status', {
+      method: 'POST',
+      body: { ids, status, client_message: clientMessage },
+    }),
+
+  /**
+   * Récupère les notifications instantanées serveur
+   * @param {number} [sinceId=0]
+   */
+  pollNotifications: async (sinceId = 0) =>
+    adminFetch(`/api/notifications/poll?target=admin&since_id=${sinceId}`, {
+      method: 'GET',
     }),
 
   /**
